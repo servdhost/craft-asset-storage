@@ -1,0 +1,39 @@
+{
+  "name": "servd/craft-asset-storage",
+  "description": "Servd Asset Storage integration for Craft CMS",
+  "version": "1.0.0",
+  "type": "craft-plugin",
+  "keywords": [
+    "cms",
+    "craftcms",
+    "servd",
+    "yii2"
+  ],
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Servd",
+      "homepage": "https://servd.host/"
+    }
+  ],
+  "support": {
+    "email": "hello@servd.host",
+    "issues": "https://gitlab.com/servd/craft-asset-storage/issues",
+    "source": "https://gitlab.com/servd/craft-asset-storage",
+    "docs": "https://gitlab.com/servd/craft-asset-storage"
+  },
+  "require": {
+    "craftcms/cms": "^3.1.5",
+    "league/flysystem-aws-s3-v3": "^1.0.13"
+  },
+  "autoload": {
+    "psr-4": {
+      "servd\\AssetStorage\\": "src/"
+    }
+  },
+  "extra": {
+    "name": "Servd Asset Storage",
+    "handle": "servd-asset-storage",
+    "documentationUrl": "https://gitlab.com/servd/craft-asset-storage"
+  }
+}
