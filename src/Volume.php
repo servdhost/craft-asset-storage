@@ -106,7 +106,7 @@ class Volume extends FlysystemVolume
         $fullPath = $this->_getProjectSlug() . '/';
 
         $environment = getenv('ENVIRONMENT');
-        if ($environment == 'stage' || $environment == 'prod') {
+        if ($environment == 'staging' || $environment == 'production') {
             $fullPath .= $environment . '/';
         } else {
             $fullPath .= 'local/';
