@@ -188,11 +188,6 @@ class Volume extends FlysystemVolume
         ]);
         $res = json_decode($response->getBody(), true);
         return $res['credentials'];
-        // return [
-        //     "key"    => "ASIAWAH5TOD4KBGQMQVS",
-        //     "secret" => "w1EhWnXM2S4c1q5tnlshlSv9frBHY+geyMJkqXU7",
-        //     "token"  => "FQoGZXIvYXdzEF8aDAywfwvhOGHxRhA3UyKyA/r81aToL9vzVkv3M9UZjGvOxptNvpyeJPQJ0w3gqzsmh1jlaCMzKcm1kgAx2hnmkjVfp0rV+E7hMGjptU8qAph/nXKf4zjC41/j/1TFbbAxQJS50X4VUhDa0VMR6CHKdI5Wa09Rf1N9FVmdvz85BlgLCiODpxUddBTSbtp7hfBB9TN6JQquVKzoww/gThB8nwjiocFw5q4ENtTGwDz8dltE587ebkBNLlhiylaWAfB8YZb6B4EZDsDPmT06gYNt5WswBpH0PZF2AxHnZcrafXBxFlNVLHTs/coJ9gykA8Nu+M62og69NYenKTYiVZzrrC3uPq/04KVd7vXk8gQmb4zYZJa7niQiGizTfXm2tAJC3nDqK4Ta0X7Jnx/Thl8BBKQgKzlnReMZtVUm2BZakCr19DQpsy6aWoCFjl+UvJ6mKhVeMWA2DM/BMUfO8lArmSeLdXVTjh+Oqyiqp2mE7f0DIRtcJ1x1XTxZWA4+47tbP5xYiB2AkesQSLJMRC4xoH9QiSB/K80S4dEyEvhkpGAuLQvxUxF7MyawwjoPGpt+Iw4zbbwDpxZavrWmZ2AZqg2dKLnM5OgF"
-        // ];
     }
 
     protected function visibility(): string {
