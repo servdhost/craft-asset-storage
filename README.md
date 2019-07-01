@@ -2,7 +2,7 @@
 
 # Servd Asset Storage for Craft CMS
 
-This plugin provides a Servd Asset Storage integration for [Craft CMS](https://servd.host/).
+This plugin provides a [Servd](https://servd.host) Asset Storage integration for [Craft CMS](https://craftcms.com/).
 
 ## Requirements
 
