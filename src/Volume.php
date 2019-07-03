@@ -173,7 +173,7 @@ class Volume extends FlysystemVolume
 
         $securityTokenUrl = getenv('SECURITY_TOKEN_URL');
         if (empty($securityTokenUrl)) {
-            $securityTokenUrl = 'https://servd.host/create-assets-token';
+            $securityTokenUrl = 'https://app.servd.host/create-assets-token';
         }
 
         $client = Craft::createGuzzleClient();
