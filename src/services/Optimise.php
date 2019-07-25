@@ -58,7 +58,6 @@ class Optimise extends Component
         $assetTransforms = Craft::$app->getAssetTransforms();
         $edits = [];
         if (null !== $transform) {
-            // Figure out the format of the transform
             if (empty($transform->format)) {
                 try {
                     $transform->format = $assetTransforms->detectAutoTransformFormat($asset);
@@ -127,18 +126,8 @@ class Optimise extends Component
                     }
                 }
             }
-            // Map the mode param
             $mode = $edits['resize']['fit'];
             $edits['resize']['fit'] = self::TRANSFORM_MODES[$mode] ?? $mode ?? 'cover';
-            // Handle auto-sharpening
-            /*if ($settings->autoSharpenScaledImages) {
-                // See if the image has been scaled >= 50%
-                $widthScale = $asset->getWidth() / ($transform->width ?? $asset->getWidth());
-                $heightScale = $asset->getHeight() / ($transform->height ?? $asset->getHeight());
-                if (($widthScale >= 2.0) || ($heightScale >= 2.0)) {
-                    $edits['sharpen'] = true;
-                }
-            }*/
         }
 
         return $edits;
