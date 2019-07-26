@@ -32,3 +32,7 @@ composer require servd/craft-asset-storage
 ```
 
 ## Setup
+
+## Thanks
+
+NYStudio107 for the Craft Transform -> SharpJS edits array transformation logic from [Image Optimize](https://github.com/nystudio107/craft-imageoptimize)

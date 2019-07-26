@@ -53,6 +53,13 @@ class Optimise extends Component
         return 'https://optimise.assets-servd.host/'.base64_encode($strConfig);
     }
 
+    /**
+     * Thanks to NYStudio107 for the Craft Transform -> SharpJS edits array transformation logic
+     * from Image Optimize (https://github.com/nystudio107/craft-imageoptimize).
+     *
+     * @param mixed $asset
+     * @param mixed $transform
+     */
     private function transformToSharpEdits($asset, $transform)
     {
         $assetTransforms = Craft::$app->getAssetTransforms();
