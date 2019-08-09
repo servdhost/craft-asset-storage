@@ -2,11 +2,19 @@
 
 namespace servd\AssetStorage;
 
+use craft\base\Element;
+use craft\elements\Entry;
+use craft\events\DeleteTemplateCachesEvent;
+use craft\events\ElementEvent;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
+use craft\events\RegisterCacheOptionsEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\services\Assets;
+use craft\services\Elements;
+use craft\services\TemplateCaches;
 use craft\services\Volumes;
+use craft\utilities\ClearCaches;
 use servd\AssetStorage\services\Handlers;
 use servd\AssetStorage\services\Optimise;
 use yii\base\Event;
