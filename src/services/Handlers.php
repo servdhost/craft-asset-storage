@@ -7,9 +7,12 @@ use craft\base\Component;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\helpers\Assets as AssetsHelper;
+use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\models\AssetTransform;
 use servd\AssetStorage\Plugin;
+use yii\base\ErrorException;
+use yii\base\Event;
 
 /** @noinspection MissingPropertyAnnotationsInspection */
 
@@ -66,5 +69,21 @@ class Handlers extends Component
         ]);
 
         return Plugin::$plugin->optimise->transformUrl($asset, $transform);
+    }
+
+    public function clearStaticCache(Event $event = null)
+    {
+        //Clear the cache
+        $cachePath = '/nginxcache';
+
+        if (!file_exists($cachePath)) {
+            return;
+        }
+
+        try {
+            FileHelper::clearDirectory($cachePath);
+        } catch (ErrorException $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
     }
 }

@@ -62,5 +62,40 @@ class Plugin extends \craft\base\Plugin
                 }
             }
         );
+
+        Event::on(
+            Elements::class,
+            Elements::EVENT_AFTER_SAVE_ELEMENT,
+            function (ElementEvent $event) {
+                $element = $event->element;
+                if (Element::STATUS_ENABLED == $element->getStatus()
+                    || Entry::STATUS_LIVE == $element->getStatus()
+                ) {
+                    Plugin::$plugin->handlers->clearStaticCache($event);
+                }
+            }
+        );
+
+        Event::on(
+            TemplateCaches::class,
+            TemplateCaches::EVENT_AFTER_DELETE_CACHES,
+            function (DeleteTemplateCachesEvent $event) {
+                Plugin::$plugin->handlers->clearStaticCache($event);
+            }
+        );
+
+        Event::on(
+            ClearCaches::class,
+            ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
+            function (RegisterCacheOptionsEvent $event) {
+                $event->options[] = [
+                    'key' => 'servd-asset-storage',
+                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache'),
+                    'action' => function () {
+                        Plugin::$plugin->handlers->clearStaticCache();
+                    },
+                ];
+            }
+        );
     }
 }
