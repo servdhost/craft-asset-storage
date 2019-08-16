@@ -2,6 +2,7 @@
 
 namespace servd\AssetStorage;
 
+use Craft;
 use craft\base\Element;
 use craft\elements\Entry;
 use craft\events\DeleteTemplateCachesEvent;
