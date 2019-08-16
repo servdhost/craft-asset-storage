@@ -16,6 +16,7 @@ use craft\services\Elements;
 use craft\services\TemplateCaches;
 use craft\services\Volumes;
 use craft\utilities\ClearCaches;
+use craft\web\View;
 use servd\AssetStorage\services\Handlers;
 use servd\AssetStorage\services\Optimise;
 use yii\base\Event;
@@ -32,6 +33,7 @@ class Plugin extends \craft\base\Plugin
 
         $this->registerComponentsAndServices();
         $this->installEventHandlers();
+        $this->injectCSRFTokenScript();
     }
 
     public function registerComponentsAndServices()
@@ -40,6 +42,34 @@ class Plugin extends \craft\base\Plugin
             'handlers' => Handlers::class,
             'optimise' => Optimise::class,
         ]);
+    }
+
+    protected function injectCSRFTokenScript()
+    {
+        $view = Craft::$app->getView();
+
+        $url = '/'.Craft::$app->getConfig()->getGeneral()->actionTrigger.'/servd-asset-storage/csrf-token/get-token';
+
+        $view->registerJs('
+            function injectCSRF() {
+                var xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    if (xhr.status >= 200 && xhr.status <= 299) {
+                        var tokenInfo = JSON.parse(this.responseText);
+                        window.csrfTokenName = tokenInfo.name;
+                        window.csrfTokenValue = tokenInfo.token;
+                        var inputs = document.getElementsByName(tokenInfo.name);
+                        var len = inputs.length;
+                        for (var i=0; i<len; i++) {
+                            inputs[i].setAttribute("value", tokenInfo.token);
+                        }
+                    }
+                };
+                xhr.open("GET", "'.$url.'");
+                xhr.send();
+            }
+            setTimeout(injectCSRF, 200);
+        ', View::POS_END);
     }
 
     protected function installEventHandlers()
