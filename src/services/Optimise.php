@@ -8,13 +8,6 @@ use craft\elements\Asset;
 use craft\errors\AssetLogicException;
 use craft\helpers\Json;
 
-/** @noinspection MissingPropertyAnnotationsInspection */
-
-/**
- * @author    nystudio107
- *
- * @since     1.0.0
- */
 class Optimise extends Component
 {
     const TRANSFORM_RESIZE_ATTRIBUTES_MAP = [
@@ -51,6 +44,21 @@ class Optimise extends Component
         );
 
         return 'https://optimise.assets-servd.host/'.base64_encode($strConfig);
+    }
+
+    public function outputWillBeSVG($asset, $transform)
+    {
+        if (empty($transform->format)) {
+            $assetTransforms = Craft::$app->getAssetTransforms();
+            $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
+            if ('svg' == $autoFormat) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return 'svg' == $transform->format;
     }
 
     /**

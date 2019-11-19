@@ -14,13 +14,6 @@ use servd\AssetStorage\Plugin;
 use yii\base\ErrorException;
 use yii\base\Event;
 
-/** @noinspection MissingPropertyAnnotationsInspection */
-
-/**
- * @author    nystudio107
- *
- * @since     1.0.0
- */
 class Handlers extends Component
 {
     public function getAssetUrlEvent(GetAssetUrlEvent $event)
@@ -50,6 +43,12 @@ class Handlers extends Component
             $transform = $assetTransforms->getTransformByHandle($transform);
         }
 
+        //If the output type is svg, no transform is occuring, just let Craft handle it
+        //This should return a link to the CDN path without optimisation
+        if (Plugin::$plugin->optimise->outputWillBeSVG($asset, $transform)) {
+            return null;
+        }
+
         return Plugin::$plugin->optimise->transformUrl($asset, $transform);
     }
 
@@ -67,6 +66,12 @@ class Handlers extends Component
             'width' => $event->width,
             'interlace' => 'line',
         ]);
+
+        //If the output type is svg, no transform is occuring, just let Craft handle it
+        //This should return a link to the CDN path without optimisation
+        if (Plugin::$plugin->optimise->outputWillBeSVG($asset, $transform)) {
+            return null;
+        }
 
         return Plugin::$plugin->optimise->transformUrl($asset, $transform);
     }
