@@ -1,4 +1,4 @@
-![Servd Icon](/src/icon.png "Servd Icon")
+<img src="/servdhost/craft-asset-storage/raw/master/src/icon.png" width="200px" alt="Servd Icon" title="Servd Icon" style="max-width:100%;">
 
 # Servd Asset Storage for Craft CMS
 
