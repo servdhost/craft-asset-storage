@@ -85,8 +85,9 @@ class Volume extends FlysystemVolume
             $fullPath .= 'local/';
         }
 
-        if (!empty($this->subfolder)) {
-            $fullPath .= rtrim(Craft::parseEnv($this->subfolder), '/').'/';
+        $trimmedSubfolder = rtrim(Craft::parseEnv($this->subfolder), '/');
+        if (!empty($trimmedSubfolder)) {
+            $fullPath .= $trimmedSubfolder.'/';
         }
 
         return $fullPath;
