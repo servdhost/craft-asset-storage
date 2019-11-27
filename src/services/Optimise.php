@@ -114,35 +114,43 @@ class Optimise extends Component
             }
 
             $position = $transform->position;
-            $focalPoint = $asset->getFocalPoint();
-            if (!empty($focalPoint)) {
-                if ($focalPoint['x'] < 0.33) {
-                    $xPos = 'left';
-                } elseif ($focalPoint['x'] < 0.66) {
-                    $xPos = 'center';
-                } else {
-                    $xPos = 'right';
+            if ($asset->getHasFocalPoint()) {
+                $focalPoint = $asset->getFocalPoint();
+                if (!empty($focalPoint)) {
+                    if ($focalPoint['x'] < 0.33) {
+                        $xPos = 'left';
+                    } elseif ($focalPoint['x'] < 0.66) {
+                        $xPos = 'center';
+                    } else {
+                        $xPos = 'right';
+                    }
+                    if ($focalPoint['y'] < 0.33) {
+                        $yPos = 'top';
+                    } elseif ($focalPoint['y'] < 0.66) {
+                        $yPos = 'center';
+                    } else {
+                        $yPos = 'bottom';
+                    }
+                    $position = $yPos.'-'.$xPos;
                 }
-                if ($focalPoint['y'] < 0.33) {
-                    $yPos = 'top';
-                } elseif ($focalPoint['y'] < 0.66) {
-                    $yPos = 'center';
-                } else {
-                    $yPos = 'bottom';
-                }
-                $position = $yPos.'-'.$xPos;
             }
             if (!empty($position)) {
                 if (preg_match('/(top|center|bottom)-(left|center|right)/', $position)) {
                     $positions = explode('-', $position);
                     $positions = array_diff($positions, ['center']);
                     if (!empty($positions) && 'center-center' !== $transform->position) {
-                        $edits['resize']['position'] = implode(',', $positions);
+                        //Reverse them for sharp
+                        $edits['resize']['position'] = $positions[1].' '.$positions[0];
                     }
                 }
             }
             $mode = $edits['resize']['fit'];
-            $edits['resize']['fit'] = self::TRANSFORM_MODES[$mode] ?? $mode ?? 'cover';
+            if ('fit' == $mode) {
+                unset($edits['resize']['fit']);
+                $edits['max'] = null;
+            } else {
+                $edits['resize']['fit'] = self::TRANSFORM_MODES[$mode] ?? $mode ?? 'cover';
+            }
         }
 
         return $edits;
