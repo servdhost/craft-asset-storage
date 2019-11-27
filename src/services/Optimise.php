@@ -140,7 +140,7 @@ class Optimise extends Component
                     $positions = array_diff($positions, ['center']);
                     if (!empty($positions) && 'center-center' !== $transform->position) {
                         //Reverse them for sharp
-                        $edits['resize']['position'] = $positions[1].' '.$positions[0];
+                        $edits['resize']['position'] = implode(' ', array_reverse($positions));
                     }
                 }
             }
