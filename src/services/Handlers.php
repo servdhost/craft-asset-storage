@@ -10,6 +10,8 @@ use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\FileHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\models\AssetTransform;
+use Exception;
+use Redis;
 use servd\AssetStorage\Plugin;
 use yii\base\ErrorException;
 use yii\base\Event;
@@ -79,6 +81,38 @@ class Handlers extends Component
     public function clearStaticCache(Event $event = null)
     {
         //Clear the cache
+        $this->clearFolderBasedCache();
+        $this->clearRedisBasedCache();
+    }
+
+    private function clearRedisBasedCache()
+    {
+        if (!extension_loaded('redis')) {
+            return;
+        }
+
+        if (
+            empty(getenv('REDIS_STATIC_CACHE_DB'))
+            || empty(getenv('REDIS_HOST'))
+            || empty(getenv('REDIS_PORT'))
+        ) {
+            return;
+        }
+
+        try {
+            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
+            $redis = new Redis();
+            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+            $redis->select($redisDb);
+            $redis->flushDb(true);
+            $redis->close();
+        } catch (Exception $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
+    }
+
+    private function clearFolderBasedCache()
+    {
         $cachePath = '/nginxcache';
 
         if (!file_exists($cachePath)) {
