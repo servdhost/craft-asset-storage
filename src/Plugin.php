@@ -48,28 +48,29 @@ class Plugin extends \craft\base\Plugin
     {
         $view = Craft::$app->getView();
 
-        $url = '/'.Craft::$app->getConfig()->getGeneral()->actionTrigger.'/servd-asset-storage/csrf-token/get-token';
-
-        $view->registerJs('
-            function injectCSRF() {
-                var xhr = new XMLHttpRequest();
-                xhr.onload = function () {
-                    if (xhr.status >= 200 && xhr.status <= 299) {
-                        var tokenInfo = JSON.parse(this.responseText);
-                        window.csrfTokenName = tokenInfo.name;
-                        window.csrfTokenValue = tokenInfo.token;
-                        var inputs = document.getElementsByName(tokenInfo.name);
-                        var len = inputs.length;
-                        for (var i=0; i<len; i++) {
-                            inputs[i].setAttribute("value", tokenInfo.token);
+        if(!Craft::$app->getRequest()->getIsCpRequest()){
+            $url = '/'.Craft::$app->getConfig()->getGeneral()->actionTrigger.'/servd-asset-storage/csrf-token/get-token';
+            $view->registerJs('
+                function injectCSRF() {
+                    var xhr = new XMLHttpRequest();
+                    xhr.onload = function () {
+                        if (xhr.status >= 200 && xhr.status <= 299) {
+                            var tokenInfo = JSON.parse(this.responseText);
+                            window.csrfTokenName = tokenInfo.name;
+                            window.csrfTokenValue = tokenInfo.token;
+                            var inputs = document.getElementsByName(tokenInfo.name);
+                            var len = inputs.length;
+                            for (var i=0; i<len; i++) {
+                                inputs[i].setAttribute("value", tokenInfo.token);
+                            }
                         }
-                    }
-                };
-                xhr.open("GET", "'.$url.'");
-                xhr.send();
-            }
-            setTimeout(injectCSRF, 200);
-        ', View::POS_END);
+                    };
+                    xhr.open("GET", "'.$url.'");
+                    xhr.send();
+                }
+                setTimeout(injectCSRF, 200);
+            ', View::POS_END);
+        }
     }
 
     protected function installEventHandlers()
