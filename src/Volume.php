@@ -42,20 +42,11 @@ class Volume extends FlysystemVolume
     public function behaviors()
     {
         return parent::behaviors();
-        // $behaviors['parser'] = [
-        //     'class' => EnvAttributeParserBehavior::class,
-        //     'attributes' => [
-        //         'keyId',
-        //         'secret',
-        //         'subfolder',
-        //     ],
-        // ];
     }
 
     public function rules()
     {
         return parent::rules();
-        //$rules[] = [['bucket', 'region'], 'required'];
     }
 
     public function getSettingsHtml()
@@ -109,7 +100,8 @@ class Volume extends FlysystemVolume
 
     protected function visibility(): string
     {
-        return $this->makeUploadsPublic ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
+        return AdapterInterface::VISIBILITY_PUBLIC;
+        //return $this->makeUploadsPublic ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }
 
     private function _getProjectSlug()
