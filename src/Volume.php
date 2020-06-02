@@ -26,6 +26,7 @@ class Volume extends FlysystemVolume
     public $projectSlug = '';
     public $securityKey = '';
     public $makeUploadsPublic = true;
+    public static $bucketName = 'cdn.assets-servd.host';
 
     protected $isVolumeLocal = false;
 
@@ -90,7 +91,7 @@ class Volume extends FlysystemVolume
 
         $client = static::client($config);
 
-        return new AwsS3Adapter($client, static::S3_BUCKET, $this->_subfolder());
+        return new AwsS3Adapter($client, static::$bucketName, $this->_subfolder());
     }
 
     protected static function client(array $config = []): S3Client
@@ -150,6 +151,7 @@ class Volume extends FlysystemVolume
         $config['credentials'] = $credentials;
         if (isset($credentials['backblaze']) && $credentials['backblaze'] == true) {
             $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
+            static::$bucketName = 'cdn-assets-servd-host';
         }
 
         $client = Craft::createGuzzleClient();
