@@ -137,15 +137,19 @@ class Volume extends FlysystemVolume
             'version' => 'latest',
         ];
 
+        $credentials = [];
         $tokenKey = static::CACHE_KEY_PREFIX.md5($projectSlug);
         if (Craft::$app->cache->exists($tokenKey)) {
-            $cached = Craft::$app->cache->get($tokenKey);
-            $config['credentials'] = $cached;
+            $credentials = Craft::$app->cache->get($tokenKey);
         } else {
             //Grab tokens from token service
             $credentials = self::_getSecurityToken($projectSlug, $securityKey);
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
-            $config['credentials'] = $credentials;
+        }
+        
+        $config['credentials'] = $credentials;
+        if (isset($credentials['backblaze']) && $credentials['backblaze'] == true) {
+            $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
         }
 
         $client = Craft::createGuzzleClient();

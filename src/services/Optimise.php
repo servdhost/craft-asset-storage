@@ -23,6 +23,21 @@ class Optimise extends Component
 
     public function transformUrl(Asset $asset, $transform)
     {
+        $useLegacy = getenv('USE_LEGACY_ASSETS');
+        if (!empty($useLegacy) && $useLegacy == 'true') {
+            return $this->legacyTransformUrl($asset, $transform);
+        } else {
+            return $this->newTransformUrl($asset, $transform);
+        }
+    }
+
+    public function newTransformUrl(Asset $asset, $transform)
+    {
+        //TODO
+    }
+
+    public function legacyTransformUrl(Asset $asset, $transform)
+    {
         $bucket = 'cdn.assets-servd.host';
         $volume = $asset->getVolume();
         $key = rtrim($volume->_subfolder(), '/').'/'.$asset->getPath();

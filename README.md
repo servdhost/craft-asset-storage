@@ -53,7 +53,7 @@ Once set you can start uploading your assets and displaying them in your templat
 
 If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project > Assets.
 
-You can create multiple Servd Asset volumes (maybe to keep public and private files separate). If you do this you will need to supply a `subfolder` for each of the volumes - otherwise your files will all get mixed up.
+You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each of the volumes - otherwise your files will all get mixed up.
 
 ![Servd Volume Subfolder](/images/subfolder.png "Servd Volume Subfolder")
 
