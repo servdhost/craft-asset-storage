@@ -33,15 +33,119 @@ class Optimise extends Component
 
     public function newTransformUrl(Asset $asset, $transform)
     {
-        //TODO
+        $bucket = 'cdn-assets-servd-host';
+        //Not a secret, just a sanity check
+        $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
+
+        $path = $this->getUrlForAssetsAndTranform($asset, $transform);
+        if (!$path) {
+            return;
+        }
+        $hash = md5($signingKey . $path);
+        $path .= '&s='.$hash;
+
+        return 'https://optimise2.assets-servd.host' . $path;
+
+    }
+
+    public function getUrlForAssetsAndTranform(Asset $asset, $transform)
+    {
+        if (!$asset) {
+            return;
+        }
+
+        $params = [];
+        $volume = $asset->getVolume();
+        $base = rtrim($volume->_subfolder(), '/') . '/' . $asset->getPath();
+
+        if ($transform) {
+            //Get params
+            $attr_map = [
+                'width'   => 'w',
+                'height'  => 'h',
+                'quality' => 'q',
+                'format'  => 'fm',
+            ];
+
+            foreach ($attr_map as $key => $value) {
+                if (!empty($transform[$key])) {
+                    $params[$value] = $transform[$key];
+                }
+            }
+
+            $autoParams = [];
+            if (empty($params['q'])) {
+                $autoParams[] = 'compress';
+            }
+            if (empty($params['fm'])) {
+                $autoParams[] = 'format';
+            }
+            if (!empty($autoParams)) {
+                $params['auto'] = implode(',', $autoParams);
+            }
+
+            // Handle interlaced images
+            //TODO: Consider adding to transform function
+            // if (property_exists($transform, 'interlace')) {
+            //     if (($transform->interlace != 'none')
+            //         && (!empty($params['fm']))
+            //         && ($params['fm'] == 'jpg')
+            //     ) {
+            //         $params['fm'] = 'pjpg';
+            //     }
+            // }
+
+            switch ($transform->mode) {
+                case 'fit':
+                    $params['fit'] = 'clip';
+                    break;
+
+                case 'stretch':
+                    $params['fit'] = 'scale';
+                    break;
+
+                default:
+                    // Set a sane default
+                    if (empty($transform->position)) {
+                        $transform->position = 'center-center';
+                    }
+                    // Fit mode
+                    $params['fit'] = 'crop';
+                    $cropParams = [];
+                    // Handle the focal point
+                    $focalPoint = $asset->getFocalPoint();
+                    if (!empty($focalPoint)) {
+                        $params['fp-x'] = $focalPoint['x'];
+                        $params['fp-y'] = $focalPoint['y'];
+                        $cropParams[] = 'focalpoint';
+                        $params['crop'] = implode(',', $cropParams);
+                    } elseif (preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
+                        // Imgix defaults to 'center' if no param is present
+                        $filteredCropParams = explode('-', $transform->position);
+                        $filteredCropParams = array_diff($filteredCropParams, ['center']);
+                        $cropParams[] = $filteredCropParams;
+                        // Imgix
+                        if (!empty($cropParams) && $transform->position !== 'center-center') {
+                            $params['crop'] = implode(',', $cropParams);
+                        }
+                    }
+                    break;
+            }
+
+        } else {
+            $params['auto'] = 'format,compress';
+        }
+        
+        return $base . "?" . http_build_query($params);
+        
     }
 
     public function legacyTransformUrl(Asset $asset, $transform)
     {
         $bucket = 'cdn.assets-servd.host';
         $volume = $asset->getVolume();
-        $key = rtrim($volume->_subfolder(), '/').'/'.$asset->getPath();
-        $edits = $this->transformToSharpEdits($asset, $transform);
+        $key = rtrim($volume->_subfolder(), '/') . '/' . $asset->getPath();
+        $edits = $this->legacyTransformToSharpEdits($asset, $transform);
         $sharpConfig = [
             'bucket' => $bucket,
             'key' => $key,
@@ -53,12 +157,12 @@ class Optimise extends Component
         $strConfig = Json::encode(
             $sharpConfig,
             JSON_FORCE_OBJECT
-            | JSON_UNESCAPED_SLASHES
-            | JSON_UNESCAPED_UNICODE
-            | JSON_NUMERIC_CHECK
+                | JSON_UNESCAPED_SLASHES
+                | JSON_UNESCAPED_UNICODE
+                | JSON_NUMERIC_CHECK
         );
 
-        return 'https://optimise.assets-servd.host/'.base64_encode($strConfig);
+        return 'https://optimise.assets-servd.host/' . base64_encode($strConfig);
     }
 
     public function outputWillBeSVG($asset, $transform)
@@ -83,7 +187,7 @@ class Optimise extends Component
      * @param mixed $asset
      * @param mixed $transform
      */
-    private function transformToSharpEdits($asset, $transform)
+    private function legacyTransformToSharpEdits($asset, $transform)
     {
         $assetTransforms = Craft::$app->getAssetTransforms();
         $edits = [];
@@ -146,7 +250,7 @@ class Optimise extends Component
                     } else {
                         $yPos = 'bottom';
                     }
-                    $position = $yPos.'-'.$xPos;
+                    $position = $yPos . '-' . $xPos;
                 }
             }
             if (!empty($position)) {
