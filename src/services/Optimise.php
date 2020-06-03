@@ -44,7 +44,7 @@ class Optimise extends Component
         $hash = md5($signingKey . $path);
         $path .= '&s='.$hash;
 
-        return 'https://optimise2.assets-servd.host' . $path;
+        return 'https://optimise2.assets-servd.host/' . $path;
 
     }
 
