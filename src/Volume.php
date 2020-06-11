@@ -26,6 +26,7 @@ class Volume extends FlysystemVolume
     public $projectSlug = '';
     public $securityKey = '';
     public $makeUploadsPublic = true;
+    public static $bucketName = 'cdn.assets-servd.host';
 
     protected $isVolumeLocal = false;
 
@@ -90,7 +91,7 @@ class Volume extends FlysystemVolume
 
         $client = static::client($config);
 
-        return new AwsS3Adapter($client, static::S3_BUCKET, $this->_subfolder());
+        return new AwsS3Adapter($client, static::$bucketName, $this->_subfolder());
     }
 
     protected static function client(array $config = []): S3Client
@@ -137,15 +138,20 @@ class Volume extends FlysystemVolume
             'version' => 'latest',
         ];
 
+        $credentials = [];
         $tokenKey = static::CACHE_KEY_PREFIX.md5($projectSlug);
         if (Craft::$app->cache->exists($tokenKey)) {
-            $cached = Craft::$app->cache->get($tokenKey);
-            $config['credentials'] = $cached;
+            $credentials = Craft::$app->cache->get($tokenKey);
         } else {
             //Grab tokens from token service
             $credentials = self::_getSecurityToken($projectSlug, $securityKey);
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
-            $config['credentials'] = $credentials;
+        }
+        
+        $config['credentials'] = $credentials;
+        if (isset($credentials['backblaze']) && $credentials['backblaze'] == true) {
+            $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
+            static::$bucketName = 'cdn-assets-servd-host';
         }
 
         $client = Craft::createGuzzleClient();

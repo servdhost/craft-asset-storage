@@ -1,39 +1,37 @@
 {
-  "name": "servd/craft-asset-storage",
-  "description": "Servd Asset Storage and Helpers integration for Craft CMS",
-  "version": "1.2.10",
-  "type": "craft-plugin",
-  "keywords": [
-    "cms",
-    "craftcms",
-    "servd",
-    "yii2"
-  ],
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Servd",
-      "homepage": "https://servd.host/"
+    "name": "servd/craft-asset-storage",
+    "description": "Servd Asset Storage and Helpers integration for Craft CMS",
+    "version": "1.3.0",
+    "type": "craft-plugin",
+    "keywords": [
+        "cms",
+        "craftcms",
+        "servd",
+        "yii2"
+    ],
+    "license": "MIT",
+    "authors": [{
+        "name": "Servd",
+        "homepage": "https://servd.host/"
+    }],
+    "support": {
+        "email": "hello@servd.host",
+        "issues": "https://github.com/servdhost/craft-asset-storage/issues",
+        "source": "https://github.com/servdhost/craft-asset-storage",
+        "docs": "https://github.com/servdhost/craft-asset-storage"
+    },
+    "require": {
+        "craftcms/cms": "^3.1.5",
+        "league/flysystem-aws-s3-v3": "^1.0.13"
+    },
+    "autoload": {
+        "psr-4": {
+            "servd\\AssetStorage\\": "src/"
+        }
+    },
+    "extra": {
+        "name": "Servd Assets and Helpers",
+        "handle": "servd-asset-storage",
+        "documentationUrl": "https://github.com/servdhost/craft-asset-storage"
     }
-  ],
-  "support": {
-    "email": "hello@servd.host",
-    "issues": "https://github.com/servdhost/craft-asset-storage/issues",
-    "source": "https://github.com/servdhost/craft-asset-storage",
-    "docs": "https://github.com/servdhost/craft-asset-storage"
-  },
-  "require": {
-    "craftcms/cms": "^3.1.5",
-    "league/flysystem-aws-s3-v3": "^1.0.13"
-  },
-  "autoload": {
-    "psr-4": {
-      "servd\\AssetStorage\\": "src/"
-    }
-  },
-  "extra": {
-    "name": "Servd Assets and Helpers",
-    "handle": "servd-asset-storage",
-    "documentationUrl": "https://github.com/servdhost/craft-asset-storage"
-  }
 }
