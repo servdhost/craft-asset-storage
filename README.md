@@ -45,17 +45,26 @@ Once the plugin is installed you will be able to create 'Servd Asset Storage' vo
 
 ![Servd Volume Type](/images/volume-type.png "Servd Asset Storage Volume")
 
-If you are only using the Servd Asset volumes on projects within Servd's staging and production environments there's only one mandatory setting: `Base URL` which should be set to `https://cdn.assets-servd.host`. 
+If you are only using the Servd Asset volumes on projects within Servd's staging and production environments there's only one mandatory setting: `Base URL` which should be set to `https://cdn2.assets-servd.host`. 
 
 ![Servd Volume Base URL](/images/base-url.png "Servd Volume Base URL")
 
 Once set you can start uploading your assets and displaying them in your templates using Craft's standard asset URL generators and transforms.
 
-If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project > Assets.
+If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
 
 You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each of the volumes - otherwise your files will all get mixed up.
 
 ![Servd Volume Subfolder](/images/subfolder.png "Servd Volume Subfolder")
+
+## Legacy Assets Platform
+
+If you created a project on Servd before 15h Junw 2020, you might be using Servd's legacy Assets Platform. If so you'll need to do two things:
+
+1. Change your asset volume `Base URL` to `https://cdn.assets-servd.host`
+2. Add an environment variable to your local development environment: `USE_LEGACY_ASSETS=true`
+
+Once both of those changes have been made the plugin will use the legacy platform for all of its functionality.
 
 ## Thanks
 
