@@ -47,8 +47,6 @@ Once the plugin is installed you will be able to create 'Servd Asset Storage' vo
 
 If you are only using the Servd Asset volumes on projects within Servd's staging and production environments there's only one mandatory setting: `Base URL` which should be set to `https://cdn2.assets-servd.host`. 
 
-![Servd Volume Base URL](/images/base-url.png "Servd Volume Base URL")
-
 Once set you can start uploading your assets and displaying them in your templates using Craft's standard asset URL generators and transforms.
 
 If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
