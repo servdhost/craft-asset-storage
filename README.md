@@ -57,7 +57,7 @@ You can create multiple Servd Asset volumes. If you do this you will need to sup
 
 ## Legacy Assets Platform
 
-If you created a project on Servd before 15h Junw 2020, you might be using Servd's legacy Assets Platform. If so you'll need to do two things:
+If you created a project on Servd before 15h June 2020, you might be using Servd's legacy Assets Platform. If so you'll need to do two things:
 
 1. Change your asset volume `Base URL` to `https://cdn.assets-servd.host`
 2. Add an environment variable to your local development environment: `USE_LEGACY_ASSETS=true`

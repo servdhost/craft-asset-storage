@@ -25,15 +25,32 @@ class Plugin extends \craft\base\Plugin
 {
     public $schemaVersion = '1.0';
     public static $plugin;
+    public $hasCpSettings = true;
 
     public function init()
     {
         parent::init();
         self::$plugin = $this;
 
+        $settings = $this->getSettings();
+
         $this->registerComponentsAndServices();
         $this->installEventHandlers();
-        $this->injectCSRFTokenScript();
+        if ($settings->injectCors) {
+            $this->injectCSRFTokenScript();
+        }
+    }
+
+    protected function createSettingsModel()
+    {
+        return new \servd\AssetStorage\models\Settings();
+    }
+
+    protected function settingsHtml()
+    {
+        return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [
+            'settings' => $this->getSettings()
+        ]);
     }
 
     public function registerComponentsAndServices()
@@ -48,8 +65,8 @@ class Plugin extends \craft\base\Plugin
     {
         $view = Craft::$app->getView();
 
-        if(!Craft::$app->getRequest()->getIsCpRequest()){
-            $url = '/'.Craft::$app->getConfig()->getGeneral()->actionTrigger.'/servd-asset-storage/csrf-token/get-token';
+        if (!Craft::$app->getRequest()->getIsCpRequest()) {
+            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/csrf-token/get-token';
             $view->registerJs('
                 function injectCSRF() {
                     var xhr = new XMLHttpRequest();
@@ -65,7 +82,7 @@ class Plugin extends \craft\base\Plugin
                             }
                         }
                     };
-                    xhr.open("GET", "'.$url.'");
+                    xhr.open("GET", "' . $url . '");
                     xhr.send();
                 }
                 setTimeout(injectCSRF, 200);
@@ -108,7 +125,8 @@ class Plugin extends \craft\base\Plugin
             Elements::EVENT_AFTER_SAVE_ELEMENT,
             function (ElementEvent $event) {
                 $element = $event->element;
-                if (Element::STATUS_ENABLED == $element->getStatus()
+                if (
+                    Element::STATUS_ENABLED == $element->getStatus()
                     || Entry::STATUS_LIVE == $element->getStatus()
                 ) {
                     Plugin::$plugin->handlers->clearStaticCache($event);
