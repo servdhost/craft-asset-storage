@@ -32,7 +32,7 @@ class Plugin extends \craft\base\Plugin
         parent::init();
         self::$plugin = $this;
 
-        $settings = $this->getSettings()->foo;
+        $settings = $this->getSettings();
 
         $this->registerComponentsAndServices();
         $this->installEventHandlers();
