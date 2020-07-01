@@ -11,7 +11,7 @@ class Settings extends Model
     public function rules()
     {
         return [
-            [['injectCors'], 'required'],
+            //[['injectCors'], 'required'],
             // ...
         ];
     }
