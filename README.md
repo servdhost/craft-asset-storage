@@ -49,9 +49,11 @@ If you are only using the Servd Asset volumes on projects within Servd's staging
 
 Once set you can start uploading your assets and displaying them in your templates using Craft's standard asset URL generators and transforms.
 
-If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
+## Local Development
 
-You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each of the volumes - otherwise your files will all get mixed up.
+If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project Settings > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
+
+You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each volume - otherwise your files will all get mixed up.
 
 ![Servd Volume Subfolder](/images/subfolder.png "Servd Volume Subfolder")
 
@@ -63,6 +65,30 @@ If you created a project on Servd before 15h June 2020, you might be using Servd
 2. Add an environment variable to your local development environment: `USE_LEGACY_ASSETS=true`
 
 Once both of those changes have been made the plugin will use the legacy platform for all of its functionality.
+
+## Use With Craft Asset Transforms
+
+The plugin will automatically intercet any `getUrl()` calls on assets in both your twig templates and from within other plugins.
+If the asset exists on a Servd Asset Volume the returned URL will point towards the Servd Asset Platform. This also supports Craft
+Asset Transforms, both pre-defined and dynmically generated:
+
+In your twig template:
+
+```
+{{ asset->getUrl('large') }}
+
+OR
+
+{% set thumb = {
+    mode: 'crop',
+    width: 100,
+    height: 100,
+    quality: 75,
+    position: 'top-center'
+} %}
+
+{{ asset->getUrl(thumb) }}
+```
 
 ## Thanks
 
