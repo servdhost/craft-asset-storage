@@ -70,7 +70,7 @@ Once both of those changes have been made the plugin will use the legacy platfor
 
 The plugin will automatically intercet any `getUrl()` calls on assets in both your twig templates and from within other plugins.
 If the asset exists on a Servd Asset Volume the returned URL will point towards the Servd Asset Platform. This also supports Craft
-Asset Transforms, both pre-defined and dynmically generated:
+Asset Transforms, both pre-defined and dynamically generated:
 
 In your twig template:
 
