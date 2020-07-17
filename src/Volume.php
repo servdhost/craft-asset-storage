@@ -1,4 +1,5 @@
 <?php
+
 /**
  * @see https://servd.host/
  *
@@ -14,7 +15,7 @@ use Craft;
 use craft\base\FlysystemVolume;
 use craft\behaviors\EnvAttributeParserBehavior;
 use League\Flysystem\AdapterInterface;
-use League\Flysystem\AwsS3v3\AwsS3Adapter;
+use servd\AssetStorage\volumeDriver\AwsS3Adapter;
 
 class Volume extends FlysystemVolume
 {
@@ -68,18 +69,18 @@ class Volume extends FlysystemVolume
 
     public function _subfolder(): string
     {
-        $fullPath = $this->_getProjectSlug().'/';
+        $fullPath = $this->_getProjectSlug() . '/';
 
         $environment = getenv('ENVIRONMENT');
         if ('staging' == $environment || 'production' == $environment) {
-            $fullPath .= $environment.'/';
+            $fullPath .= $environment . '/';
         } else {
             $fullPath .= 'local/';
         }
 
         $trimmedSubfolder = rtrim(Craft::parseEnv($this->subfolder), '/');
         if (!empty($trimmedSubfolder)) {
-            $fullPath .= $trimmedSubfolder.'/';
+            $fullPath .= $trimmedSubfolder . '/';
         }
 
         return $fullPath;
@@ -139,7 +140,7 @@ class Volume extends FlysystemVolume
         ];
 
         $credentials = [];
-        $tokenKey = static::CACHE_KEY_PREFIX.md5($projectSlug);
+        $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
         if (Craft::$app->cache->exists($tokenKey)) {
             $credentials = Craft::$app->cache->get($tokenKey);
         } else {
@@ -147,7 +148,7 @@ class Volume extends FlysystemVolume
             $credentials = self::_getSecurityToken($projectSlug, $securityKey);
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
         }
-        
+
         $config['credentials'] = $credentials;
         if (isset($credentials['backblaze']) && $credentials['backblaze'] == true) {
             $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
