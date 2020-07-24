@@ -5,6 +5,7 @@ namespace servd\AssetStorage\volumeDriver;
 use League\Flysystem\AwsS3v3\AwsS3Adapter as OriginalAwsS3Adapter;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
+use League\Flysystem\Config;
 
 class AwsS3Adapter extends OriginalAwsS3Adapter
 {
@@ -30,5 +31,11 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
         }
 
         return true;
+    }
+
+    protected function upload($path, $body, Config $config)
+    {
+        $config->set('ACL', 'public-read');
+        return parent::upload($path, $body, $config);
     }
 }
