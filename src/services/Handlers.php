@@ -28,9 +28,15 @@ class Handlers extends Component
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
+        //If the input type is gif just load the original image
+        //TODO: detect if it's animated instead using https://www.php.net/manual/en/imagick.getnumberimages.php
+        if (Plugin::$plugin->optimise->inputIsGif($asset)) {
+            return null;
+        }
+
         if (empty($transform)) {
             $transform = new AssetTransform([
-                'height' => $asset->height,
+                //'height' => $asset->height,
                 'width' => $asset->width,
                 'interlace' => 'line',
             ]);

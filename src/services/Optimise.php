@@ -42,10 +42,9 @@ class Optimise extends Component
             return;
         }
         $hash = md5($signingKey . '/' . $path);
-        $path .= '&s='.$hash;
+        $path .= '&s=' . $hash;
 
         return 'https://optimise2.assets-servd.host/' . $path;
-
     }
 
     public function getUrlForAssetsAndTranform(Asset $asset, $transform)
@@ -131,13 +130,11 @@ class Optimise extends Component
                     }
                     break;
             }
-
         } else {
             $params['auto'] = 'format,compress';
         }
-        
+
         return $base . "?" . http_build_query($params);
-        
     }
 
     public function legacyTransformUrl(Asset $asset, $transform)
@@ -178,6 +175,13 @@ class Optimise extends Component
         }
 
         return 'svg' == $transform->format;
+    }
+
+    public function inputIsGif($asset)
+    {
+        $assetTransforms = Craft::$app->getAssetTransforms();
+        $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
+        return 'gif' == $autoFormat;
     }
 
     /**
