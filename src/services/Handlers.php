@@ -28,10 +28,9 @@ class Handlers extends Component
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
-        //If the input type is gif just load the original image
-        //TODO: detect if it's animated instead using https://www.php.net/manual/en/imagick.getnumberimages.php
-        if (Plugin::$plugin->optimise->inputIsGif($asset)) {
-            return null;
+        //If the input type is gif respect the no transform flag
+        if (Plugin::$plugin->optimise->inputIsGif($asset) && !(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false)) {
+            return AssetsHelper::generateUrl($volume, $asset);
         }
 
         if (empty($transform)) {
@@ -66,6 +65,11 @@ class Handlers extends Component
         $volume = $asset->getVolume();
 
         if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+            return AssetsHelper::generateUrl($volume, $asset);
+        }
+
+        //If the input type is gif respect the no transform flag
+        if (Plugin::$plugin->optimise->inputIsGif($asset) && !(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false)) {
             return AssetsHelper::generateUrl($volume, $asset);
         }
 
