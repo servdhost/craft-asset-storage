@@ -37,3 +37,15 @@
     placeholder: "path/"|t('servd-asset-storage')
 }) }}
 
+{{ forms.autosuggestField({
+    label: "Optimise Prefix"|t('servd-asset-storage'),
+    id: 'optimisePrefix',
+    name: 'optimisePrefix',
+    suggestEnvVars: true,
+    value: volume.optimisePrefix,
+    errors: volume.getErrors('optimisePrefix'),
+    class: '',
+    instructions: 'A custom domain to use for optimised images. Only set this if you have configured a proxy which will forward requests to Servd\'s optimisation service domain.'|t('servd-asset-storage'),
+    placeholder: "https://images.yourdomain.com"|t('servd-asset-storage')
+
+}) }}

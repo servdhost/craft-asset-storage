@@ -44,7 +44,15 @@ class Optimise extends Component
         $hash = md5($signingKey . '/' . $path);
         $path .= '&s=' . $hash;
 
-        return 'https://optimise2.assets-servd.host/' . $path;
+        $optimisePrefix = Craft::parseEnv($asset->volume->optimisePrefix);
+        if (empty($optimisePrefix)) {
+            $optimisePrefix = 'https://optimise2.assets-servd.host/';
+        }
+
+        $optimisePrefix = trim($optimisePrefix, '/');
+        $optimisePrefix .= '/';
+
+        return $optimisePrefix . $path;
     }
 
     public function getUrlForAssetsAndTranform(Asset $asset, $transform)
@@ -159,7 +167,16 @@ class Optimise extends Component
                 | JSON_NUMERIC_CHECK
         );
 
-        return 'https://optimise.assets-servd.host/' . base64_encode($strConfig);
+
+        $optimisePrefix = Craft::parseEnv($asset->volume->optimisePrefix);
+        if (empty($optimisePrefix)) {
+            $optimisePrefix = 'https://optimise.assets-servd.host/';
+        }
+
+        $optimisePrefix = trim($optimisePrefix, '/');
+        $optimisePrefix .= '/';
+
+        return $optimisePrefix . base64_encode($strConfig);
     }
 
     public function outputWillBeSVG($asset, $transform)

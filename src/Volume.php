@@ -28,6 +28,7 @@ class Volume extends FlysystemVolume
     public $securityKey = '';
     public $makeUploadsPublic = true;
     public static $bucketName = 'cdn.assets-servd.host';
+    public $optimisePrefix = '';
 
     protected $isVolumeLocal = false;
 
