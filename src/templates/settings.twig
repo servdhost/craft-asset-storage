@@ -8,3 +8,16 @@
     name: 'injectCors',
     on: settings.injectCors
 }) }}
+
+{{ forms.selectField({
+    label: "Clear Servd's static cache on entry update events",
+    instructions: "Clears all cached HTML which has been stored as part of Servd's Static caching mechanism whenever an entry in created or updated",
+    options: {
+        'never' : 'Never',
+        'control-panel' : 'Only entries updated via the Control Panel',
+        'always' : 'All entry updates'
+    },
+    id: 'clearCachesOnSave',
+    name: 'clearCachesOnSave',
+    value: settings.clearCachesOnSave
+}) }}

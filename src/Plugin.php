@@ -92,6 +92,8 @@ class Plugin extends \craft\base\Plugin
 
     protected function installEventHandlers()
     {
+        $settings = $this->getSettings();
+
         Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $event) {
             $event->types[] = Volume::class;
         });
@@ -120,19 +122,25 @@ class Plugin extends \craft\base\Plugin
             }
         );
 
-        Event::on(
-            Elements::class,
-            Elements::EVENT_AFTER_SAVE_ELEMENT,
-            function (ElementEvent $event) {
-                $element = $event->element;
-                if (
-                    Element::STATUS_ENABLED == $element->getStatus()
-                    || Entry::STATUS_LIVE == $element->getStatus()
-                ) {
-                    Plugin::$plugin->handlers->clearStaticCache($event);
+        if (
+            $settings->clearCachesOnSave == 'always'
+            || ($settings->clearCachesOnSave == 'control-panel'
+                && Craft::$app->getRequest()->getIsCpRequest())
+        ) {
+            Event::on(
+                Elements::class,
+                Elements::EVENT_AFTER_SAVE_ELEMENT,
+                function (ElementEvent $event) {
+                    $element = $event->element;
+                    if (
+                        Element::STATUS_ENABLED == $element->getStatus()
+                        || Entry::STATUS_LIVE == $element->getStatus()
+                    ) {
+                        Plugin::$plugin->handlers->clearStaticCache($event);
+                    }
                 }
-            }
-        );
+            );
+        }
 
         Event::on(
             TemplateCaches::class,
