@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.7 - 2020-08-25
+
+### Added
+- Ability to disable automatic static cache clearing or restrict it to only occur when entries are saved as part of a control panel request.
+
 ## 1.3.6 - 2020-08-07
 
 ### Added
