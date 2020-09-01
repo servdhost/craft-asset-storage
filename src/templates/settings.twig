@@ -21,3 +21,16 @@
     name: 'clearCachesOnSave',
     value: settings.clearCachesOnSave
 }) }}
+
+{{ forms.autosuggestField({
+    label: "Overwrite Assets Volume Environment"|t('servd-asset-storage'),
+    id: 'assetsEnvironmentOverwrite',
+    name: 'assetsEnvironmentOverwrite',
+    suggestEnvVars: true,
+    value: volume.assetsEnvironmentOverwrite,
+    errors: volume.getErrors('assetsEnvironmentOverwrite'),
+    instructions: 'Overwrite the automatically detected environment to force a specific one to be used. ' ~
+    'You should set this to an environment variable as it will be stored in your project config and you probably don\'t want to be applied to your staging and production environments'
+    |t('servd-asset-storage'),
+    placeholder: "$SERVD_ASSETS_ENVIRONMENT"|t('servd-asset-storage')
+}) }}
