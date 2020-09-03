@@ -29,8 +29,8 @@
     suggestEnvVars: true,
     value: volume.assetsEnvironmentOverwrite,
     errors: volume.getErrors('assetsEnvironmentOverwrite'),
-    instructions: 'Overwrite the automatically detected environment to force a specific one to be used. ' ~
-    'You should set this to an environment variable as it will be stored in your project config and you probably don\'t want to be applied to your staging and production environments'
+    instructions: 'Overwrite the automatically detected environment to force a specific one to be used. This will change the path used to upload assets as well as the URLs used to access them. ' ~
+    'You should set this to an environment variable as it will be stored in your project config and you probably don\'t want it to be applied to your staging and production environments'
     |t('servd-asset-storage'),
     placeholder: "$SERVD_ASSETS_ENVIRONMENT"|t('servd-asset-storage')
 }) }}

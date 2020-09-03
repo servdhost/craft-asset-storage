@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.9 - 2020-09-03
+
+### Added
+- Ability to override the automatically detected environment for assets. This allows, for E.G., developers to use the assets stored in their production environment whilst working locally.
+
 ## 1.3.8 - 2020-09-03
 
 ### Fixed
