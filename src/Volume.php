@@ -74,7 +74,7 @@ class Volume extends FlysystemVolume
 
         $settings = Plugin::$plugin->getSettings();
         $overwrite = Craft::parseEnv($settings->assetsEnvironmentOverwrite);
-        if (!empty($overwrite)) {
+        if (!empty($overwrite) && substr($overwrite, 0, 1) != '$') {
             $fullPath .= trim($overwrite, '/') . '/';
         } else {
             $environment = getenv('ENVIRONMENT');
