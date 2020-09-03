@@ -8,6 +8,7 @@ class Settings extends Model
 {
     public $injectCors = false;
     public $clearCachesOnSave = 'always';
+    public $assetsEnvironmentOverwrite = '';
 
     public function rules()
     {

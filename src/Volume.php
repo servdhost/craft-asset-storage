@@ -72,12 +72,19 @@ class Volume extends FlysystemVolume
     {
         $fullPath = $this->_getProjectSlug() . '/';
 
-        $environment = getenv('ENVIRONMENT');
-        if ('staging' == $environment || 'production' == $environment) {
-            $fullPath .= $environment . '/';
+        $settings = Plugin::$plugin->getSettings();
+        $overwrite = Craft::parseEnv($settings->assetsEnvironmentOverwrite);
+        if (!empty($overwrite)) {
+            $fullPath .= trim($overwrite, '/') . '/';
         } else {
-            $fullPath .= 'local/';
+            $environment = getenv('ENVIRONMENT');
+            if ('staging' == $environment || 'production' == $environment) {
+                $fullPath .= $environment . '/';
+            } else {
+                $fullPath .= 'local/';
+            }
         }
+
 
         $trimmedSubfolder = rtrim(Craft::parseEnv($this->subfolder), '/');
         if (!empty($trimmedSubfolder)) {
@@ -104,7 +111,6 @@ class Volume extends FlysystemVolume
     protected function visibility(): string
     {
         return AdapterInterface::VISIBILITY_PUBLIC;
-        //return $this->makeUploadsPublic ? AdapterInterface::VISIBILITY_PUBLIC : AdapterInterface::VISIBILITY_PRIVATE;
     }
 
     private function _getProjectSlug()
