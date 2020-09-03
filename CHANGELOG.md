@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.8 - 2020-09-03
+
+### Fixed
+- Fixed a typo in the plugin settings
+
 ## 1.3.7 - 2020-08-25
 
 ### Added
