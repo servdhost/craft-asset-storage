@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.10 - 2020-09-10
+
+### Fixed
+- Optimised assets with special characters in their filename were generating an incorrect security token because of some url encoding things. That is now longer the case and everyone can now safely include spaces, copyright symbols or aubergine emojis in their filenames.
+
 ## 1.3.9 - 2020-09-03
 
 ### Added
