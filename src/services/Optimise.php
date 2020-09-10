@@ -137,7 +137,7 @@ class Optimise extends Component
             $params['auto'] = 'format,compress';
         }
 
-        return $base . "?" . http_build_query($params);
+        return $base . "?" . rawurlencode(http_build_query($params));
     }
 
     public function outputWillBeSVG($asset, $transform)
