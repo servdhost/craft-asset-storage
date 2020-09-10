@@ -1,7 +1,7 @@
 {
     "name": "servd/craft-asset-storage",
     "description": "Servd Asset Storage and Helpers integration for Craft CMS",
-    "version": "1.3.9",
+    "version": "1.3.10",
     "type": "craft-plugin",
     "keywords": [
         "cms",
@@ -10,12 +10,10 @@
         "yii2"
     ],
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Servd",
-            "homepage": "https://servd.host/"
-        }
-    ],
+    "authors": [{
+        "name": "Servd",
+        "homepage": "https://servd.host/"
+    }],
     "support": {
         "email": "hello@servd.host",
         "issues": "https://github.com/servdhost/craft-asset-storage/issues",
