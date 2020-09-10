@@ -58,6 +58,14 @@ class Optimise extends Component
 
         $params = [];
         $volume = $asset->getVolume();
+
+        $filePath = $asset->getPath();
+        $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+            return rawurlencode($match[0]);
+        }, $filePath);
+        $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
+
+
         $base = rtrim($volume->_subfolder(), '/') . '/' . $asset->getPath();
 
         if ($transform) {
@@ -137,7 +145,7 @@ class Optimise extends Component
             $params['auto'] = 'format,compress';
         }
 
-        return $base . "?" . rawurlencode(http_build_query($params));
+        return $base . "?" . http_build_query($params);
     }
 
     public function outputWillBeSVG($asset, $transform)
