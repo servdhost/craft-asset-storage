@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.11 - 2020-09-11
+
+## Updated
+- Only asynchronously load CSRF tokens if there's an element on the page which will actually use it. Reduces precious PHP executions for statically cached sites.
+
 ## 1.3.10 - 2020-09-10
 
 ### Fixed
