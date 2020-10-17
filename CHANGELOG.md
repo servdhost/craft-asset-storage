@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 1.3.12 - 2020-10-17
+
+## Fixed
+
+- Fixed a bug introduced with Craft 3.5 which prevents assets being downloaded from the control panel
+
 ## 1.3.11 - 2020-09-11
 
 ## Updated
