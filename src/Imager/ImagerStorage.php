@@ -22,7 +22,6 @@ class ImagerStorage implements ImagerStorageInterface
         $config = ImagerService::getConfig();
 
         $clientConfig = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
-        $environment = $settings->getAssetsEnvironment();
 
         try {
             $s3 = new S3Client($clientConfig);
@@ -31,7 +30,8 @@ class ImagerStorage implements ImagerStorageInterface
             return false;
         }
 
-        $baseUri = $environment . '/';
+        $baseUri = Plugin::$plugin->assetsPlatform->getStorageBaseDirectory();
+
         if (isset($settings['folder']) && $settings['folder'] !== '') {
             $baseUri .= FileHelper::normalizePath($settings['folder'] . '/');
         }

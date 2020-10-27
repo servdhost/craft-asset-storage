@@ -70,7 +70,7 @@ class Volume extends FlysystemVolume
         $settings = Plugin::$plugin->getSettings();
         $environment = $settings->getAssetsEnvironment();
 
-        $fullPath = $settings->getProjectSlug() . '/';
+        $fullPath = Plugin::$plugin->assetsPlatform->getStorageBaseDirectory();
         $fullPath .= trim($environment, '/') . '/';
 
         $trimmedSubfolder = trim(Craft::parseEnv($this->customSubfolder), '/');

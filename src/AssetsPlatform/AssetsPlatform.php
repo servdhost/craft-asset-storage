@@ -35,6 +35,13 @@ class AssetsPlatform extends Component
         $this->registerEventHandlers();
     }
 
+    public function getStorageBaseDirectory()
+    {
+        $settings = Plugin::$plugin->getSettings();
+        $fullPath = $settings->getProjectSlug() . '/';
+        return $fullPath;
+    }
+
     public function getS3ConfigArray()
     {
 
