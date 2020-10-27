@@ -122,9 +122,4 @@ class Volume extends FlysystemVolume
         }
         return false;
     }
-
-    public function getFieldLayout()
-    {
-        return null;
-    }
 }

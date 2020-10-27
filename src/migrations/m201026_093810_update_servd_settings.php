@@ -57,7 +57,7 @@ class m201026_093810_update_servd_settings extends Migration
 
         foreach ($results as $v) {
             $s = json_decode($v['settings'], true);
-            $s['customSubfolder'] = $s['subfolder'];
+            $s['customSubfolder'] = $s['subfolder'] ?? null;
             unset($s['subfolder']);
             $this->update(
                 Table::VOLUMES,
