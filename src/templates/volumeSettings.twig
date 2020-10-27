@@ -1,39 +1,14 @@
 {% import "_includes/forms" as forms %}
 
 {{ forms.autosuggestField({
-    label: "Project Slug"|t('servd-asset-storage'),
-    id: 'projectSlug',
-    name: 'projectSlug',
-    suggestEnvVars: true,
-    value: volume.projectSlug,
-    errors: volume.getErrors('projectSlug'),
-    class: 'servd-project-slug',
-    instructions: 'Your Servd project\'s slug. Defaults to using the environment variable $SERVD_PROJECT_SLUG which is auto injected in stage and production.'|t('servd-asset-storage'),
-    placeholder: "$SERVD_PROJECT_SLUG"|t('servd-asset-storage')
-
-}) }}
-
-{{ forms.autosuggestField({
-    label: "Secret Access Key"|t('servd-asset-storage'),
-    id: 'securityKey',
-    name: 'securityKey',
-    suggestEnvVars: true,
-    value: volume.securityKey,
-    errors: volume.getErrors('securityKey'),
-    class: 'servd-security-key',
-    instructions: 'Your Servd project\'s security key. Defaults to using the environment variable $SERVD_SECURITY_KEY which is auto injected in stage and production.'|t('servd-asset-storage'),
-    placeholder: "$SERVD_SECURITY_KEY"|t('servd-asset-storage')
-}) }}
-
-{{ forms.autosuggestField({
     label: "Subfolder"|t('servd-asset-storage'),
     instructions: "The plugin will automatically differentiate between local, stage and production data, but if you want to use a further subfolder, specify the path to use here."|t('servd-asset-storage'),
-    id: 'subfolder',
+    id: 'customSubfolder',
     class: 'ltr',
-    name: 'subfolder',
+    name: 'customSubfolder',
     suggestEnvVars: true,
-    value: volume.subfolder,
-    errors: volume.getErrors('subfolder'),
+    value: volume.customSubfolder,
+    errors: volume.getErrors('customSubfolder'),
     placeholder: "path/"|t('servd-asset-storage')
 }) }}
 

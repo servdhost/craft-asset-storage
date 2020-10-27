@@ -1,14 +1,12 @@
 <?php
 
-namespace servd\AssetStorage\services;
+namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
-use craft\base\Component;
 use craft\elements\Asset;
-use craft\errors\AssetLogicException;
-use craft\helpers\Json;
+use servd\AssetStorage\Volume;
 
-class Optimise extends Component
+class ImageTransforms
 {
     const TRANSFORM_RESIZE_ATTRIBUTES_MAP = [
         'width' => 'width',
@@ -23,16 +21,10 @@ class Optimise extends Component
 
     public function transformUrl(Asset $asset, $transform)
     {
-        return $this->newTransformUrl($asset, $transform);
-    }
-
-    public function newTransformUrl(Asset $asset, $transform)
-    {
-        $bucket = 'cdn-assets-servd-host';
         //Not a secret, just a sanity check
         $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
 
-        $path = $this->getUrlForAssetsAndTranform($asset, $transform);
+        $path = $this->getUrlForAssetAndTransform($asset, $transform);
         if (!$path) {
             return;
         }
@@ -50,13 +42,13 @@ class Optimise extends Component
         return $optimisePrefix . $path;
     }
 
-    public function getUrlForAssetsAndTranform(Asset $asset, $transform)
+    public function getUrlForAssetAndTransform(Asset $asset, $transform)
     {
         if (!$asset) {
             return;
         }
 
-        $params = [];
+        /** @var \servd\AssetStorage\Volume */
         $volume = $asset->getVolume();
 
         $filePath = $asset->getPath();
@@ -64,10 +56,16 @@ class Optimise extends Component
             return rawurlencode($match[0]);
         }, $filePath);
         $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
+        $base = ltrim($base, '/');
 
+        $params = $this->getParamsForTransform($asset, $transform);
 
-        $base = rtrim($volume->_subfolder(), '/') . '/' . $asset->getPath();
+        return $base . "?" . http_build_query($params);
+    }
 
+    public function getParamsForTransform($asset, $transform)
+    {
+        $params = [];
         if ($transform) {
             //Get params
             $attr_map = [
@@ -144,8 +142,7 @@ class Optimise extends Component
         } else {
             $params['auto'] = 'format,compress';
         }
-
-        return $base . "?" . http_build_query($params);
+        return $params;
     }
 
     public function outputWillBeSVG($asset, $transform)
