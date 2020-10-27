@@ -3,27 +3,16 @@
 namespace servd\AssetStorage;
 
 use Craft;
-use craft\base\Element;
-use craft\elements\Entry;
-use craft\events\DeleteTemplateCachesEvent;
-use craft\events\ElementEvent;
-use craft\events\GetAssetThumbUrlEvent;
-use craft\events\GetAssetUrlEvent;
-use craft\events\RegisterCacheOptionsEvent;
-use craft\events\RegisterComponentTypesEvent;
-use craft\services\Assets;
-use craft\services\Elements;
-use craft\services\TemplateCaches;
-use craft\services\Volumes;
-use craft\utilities\ClearCaches;
-use craft\web\View;
-use servd\AssetStorage\services\Handlers;
-use servd\AssetStorage\services\Optimise;
+use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
+use servd\AssetStorage\AssetsPlatform\ImageTransforms;
+use servd\AssetStorage\CsrfInjection\CsrfInjection;
+use servd\AssetStorage\Imager\Imager;
+use servd\AssetStorage\StaticCache\StaticCache;
 use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
 {
-    public $schemaVersion = '1.0';
+    public $schemaVersion = '2.0.0-beta.1';
     public static $plugin;
     public $hasCpSettings = true;
 
@@ -35,10 +24,7 @@ class Plugin extends \craft\base\Plugin
         $settings = $this->getSettings();
 
         $this->registerComponentsAndServices();
-        $this->installEventHandlers();
-        if ($settings->injectCors) {
-            $this->injectCSRFTokenScript();
-        }
+        $this->initialiseComponentsAndServices();
     }
 
     protected function createSettingsModel()
@@ -56,117 +42,19 @@ class Plugin extends \craft\base\Plugin
     public function registerComponentsAndServices()
     {
         $this->setComponents([
-            'handlers' => Handlers::class,
-            'optimise' => Optimise::class,
+            'staticCache' => StaticCache::class,
+            'assetsPlatform' => AssetsPlatform::class,
+            'imager' => Imager::class,
+            'csrfInjection' => CsrfInjection::class,
         ]);
     }
 
-    protected function injectCSRFTokenScript()
+    public function initialiseComponentsAndServices()
     {
-        $view = Craft::$app->getView();
-
-        $csrfTokenName = Craft::$app->getConfig()->getGeneral()->csrfTokenName;
-
-        if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/csrf-token/get-token';
-            $view->registerJs('
-                window.SERVD_CSRF_TOKEN_NAME = "' . $csrfTokenName . '";
-                function injectCSRF() {
-                    var inputs = document.getElementsByName(window.SERVD_CSRF_TOKEN_NAME);
-                    var len = inputs.length;
-                    if (len > 0) {
-                        var xhr = new XMLHttpRequest();
-                        xhr.onload = function () {
-                            if (xhr.status >= 200 && xhr.status <= 299) {
-                                var tokenInfo = JSON.parse(this.responseText);
-                                window.csrfTokenValue = tokenInfo.token;
-                                window.csrfTokenName = tokenInfo.name;
-                                for (var i=0; i<len; i++) {
-                                    inputs[i].setAttribute("value", tokenInfo.token);
-                                }
-                            }
-                        };
-                        xhr.open("GET", "' . $url . '");
-                        xhr.send();
-                    }
-                }
-                setTimeout(injectCSRF, 200);
-            ', View::POS_END);
-        }
-    }
-
-    protected function installEventHandlers()
-    {
-        $settings = $this->getSettings();
-
-        Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $event) {
-            $event->types[] = Volume::class;
-        });
-
-        Event::on(
-            Assets::class,
-            Assets::EVENT_GET_ASSET_URL,
-            function (GetAssetUrlEvent $event) {
-                $asset = $event->asset;
-                $volume = $asset->getVolume();
-                if ($volume instanceof Volume) {
-                    $event->url = Plugin::$plugin->handlers->getAssetUrlEvent($event);
-                }
-            }
-        );
-
-        Event::on(
-            Assets::class,
-            Assets::EVENT_GET_ASSET_THUMB_URL,
-            function (GetAssetThumbUrlEvent $event) {
-                $asset = $event->asset;
-                $volume = $asset->getVolume();
-                if ($volume instanceof Volume) {
-                    $event->url = Plugin::$plugin->handlers->getAssetThumbUrlEvent($event);
-                }
-            }
-        );
-
-        if (
-            $settings->clearCachesOnSave == 'always'
-            || ($settings->clearCachesOnSave == 'control-panel'
-                && Craft::$app->getRequest()->getIsCpRequest())
-        ) {
-            Event::on(
-                Elements::class,
-                Elements::EVENT_AFTER_SAVE_ELEMENT,
-                function (ElementEvent $event) {
-                    $element = $event->element;
-                    if (
-                        Element::STATUS_ENABLED == $element->getStatus()
-                        || Entry::STATUS_LIVE == $element->getStatus()
-                    ) {
-                        Plugin::$plugin->handlers->clearStaticCache($event);
-                    }
-                }
-            );
-        }
-
-        Event::on(
-            TemplateCaches::class,
-            TemplateCaches::EVENT_AFTER_DELETE_CACHES,
-            function (DeleteTemplateCachesEvent $event) {
-                Plugin::$plugin->handlers->clearStaticCache($event);
-            }
-        );
-
-        Event::on(
-            ClearCaches::class,
-            ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
-            function (RegisterCacheOptionsEvent $event) {
-                $event->options[] = [
-                    'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache'),
-                    'action' => function () {
-                        Plugin::$plugin->handlers->clearStaticCache();
-                    },
-                ];
-            }
-        );
+        //Resolves the components which calls their init methods automatically
+        $this->imager;
+        $this->staticCache;
+        $this->csrfInjection;
+        $this->assetsPlatform;
     }
 }

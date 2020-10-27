@@ -15,20 +15,17 @@ use Craft;
 use craft\base\FlysystemVolume;
 use craft\behaviors\EnvAttributeParserBehavior;
 use League\Flysystem\AdapterInterface;
-use servd\AssetStorage\volumeDriver\AwsS3Adapter;
+use servd\AssetStorage\assetsPlatform\AssetsPlatform;
+use servd\AssetStorage\AssetsPlatform\AwsS3Adapter;
 
 class Volume extends FlysystemVolume
 {
-    const S3_BUCKET = 'cdn.assets-servd.host';
-    const S3_REGION = 'eu-west-1';
-    const CACHE_KEY_PREFIX = 'servdassets.';
-    const CACHE_DURATION_SECONDS = 3600 * 24;
-    public $subfolder = '';
+    const S3_BUCKET = 'cdn-assets-servd-host';
+    public $customSubfolder = '';
+    public $makeUploadsPublic = true;
+    public $optimisePrefix = '';
     public $projectSlug = '';
     public $securityKey = '';
-    public $makeUploadsPublic = true;
-    public static $bucketName = 'cdn.assets-servd.host';
-    public $optimisePrefix = '';
 
     protected $isVolumeLocal = false;
 
@@ -70,23 +67,13 @@ class Volume extends FlysystemVolume
 
     public function _subfolder(): string
     {
-        $fullPath = $this->_getProjectSlug() . '/';
-
         $settings = Plugin::$plugin->getSettings();
-        $overwrite = Craft::parseEnv($settings->assetsEnvironmentOverwrite);
-        if (!empty($overwrite) && substr($overwrite, 0, 1) != '$') {
-            $fullPath .= trim($overwrite, '/') . '/';
-        } else {
-            $environment = getenv('ENVIRONMENT');
-            if ('staging' == $environment || 'production' == $environment) {
-                $fullPath .= $environment . '/';
-            } else {
-                $fullPath .= 'local/';
-            }
-        }
+        $environment = $settings->getAssetsEnvironment();
 
+        $fullPath = Plugin::$plugin->assetsPlatform->getStorageBaseDirectory();
+        $fullPath .= trim($environment, '/') . '/';
 
-        $trimmedSubfolder = rtrim(Craft::parseEnv($this->subfolder), '/');
+        $trimmedSubfolder = trim(Craft::parseEnv($this->customSubfolder), '/');
         if (!empty($trimmedSubfolder)) {
             $fullPath .= $trimmedSubfolder . '/';
         }
@@ -96,11 +83,9 @@ class Volume extends FlysystemVolume
 
     protected function createAdapter()
     {
-        $config = $this->_getConfigArray();
-
+        $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
         $client = static::client($config);
-
-        return new AwsS3Adapter($client, static::$bucketName, $this->_subfolder(), [], false);
+        return new AwsS3Adapter($client, AssetsPlatform::S3_BUCKET, $this->_subfolder(), [], false);
     }
 
     protected static function client(array $config = []): S3Client
@@ -113,80 +98,33 @@ class Volume extends FlysystemVolume
         return AdapterInterface::VISIBILITY_PUBLIC;
     }
 
-    private function _getProjectSlug()
+    public function __get($name)
     {
-        if (!empty($this->projectSlug)) {
-            return Craft::parseEnv($this->projectSlug);
+        if ($name == 'subfolder') {
+            return $this->_subfolder();
         }
-
-        return getenv('SERVD_PROJECT_SLUG');
+        return $this->$name;
     }
 
-    private function _getSecurityKey()
+    public function __set($name, $value)
     {
-        if (!empty($this->securityKey)) {
-            return Craft::parseEnv($this->securityKey);
+        if ($name == 'subfolder') {
+            //Squash
         }
-
-        return getenv('SERVD_SECURITY_KEY');
+        $this->$name = $value;
     }
 
-    private function _getConfigArray()
+    public function __isset($name)
     {
-        $projectSlug = $this->_getProjectSlug();
-        $securityKey = $this->_getSecurityKey();
-
-        return self::_buildConfigArray($projectSlug, $securityKey);
+        if ($name == 'subfolder') {
+            $t = $this->_subfolder();
+            return isset($t);
+        }
+        return false;
     }
 
-    private static function _buildConfigArray($projectSlug, $securityKey)
+    public function getFieldLayout()
     {
-        $config = [
-            'region' => static::S3_REGION,
-            'version' => 'latest',
-        ];
-
-        $credentials = [];
-        $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
-        if (Craft::$app->cache->exists($tokenKey)) {
-            $credentials = Craft::$app->cache->get($tokenKey);
-        } else {
-            //Grab tokens from token service
-            $credentials = self::_getSecurityToken($projectSlug, $securityKey);
-            Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
-        }
-
-        $config['credentials'] = $credentials;
-        if (isset($credentials['backblaze']) && $credentials['backblaze'] == true) {
-            $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
-            static::$bucketName = 'cdn-assets-servd-host';
-        }
-
-        $client = Craft::createGuzzleClient();
-        $config['http_handler'] = new GuzzleHandler($client);
-
-        return $config;
-    }
-
-    private static function _getSecurityToken($projectSlug, $securityKey)
-    {
-        $securityTokenUrl = getenv('SECURITY_TOKEN_URL');
-        if (empty($securityTokenUrl)) {
-            $securityTokenUrl = 'https://app.servd.host/create-assets-token';
-        }
-
-        $client = Craft::createGuzzleClient();
-        $response = $client->post($securityTokenUrl, [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
-            'form_params' => [
-                'slug' => $projectSlug,
-                'key' => $securityKey,
-            ],
-        ]);
-        $res = json_decode($response->getBody(), true);
-
-        return $res['credentials'];
+        return null;
     }
 }

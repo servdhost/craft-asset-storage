@@ -1,5 +1,20 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.0-beta.1 - 2020-10-26
+
+## Added
+- ImagerX support for Servd assets platform (requires ImagerX Pro)
+
+## Updated
+- Large code refactor to plan for upcoming new features
+- Moved Servd Project Slug and Security Key config param to plugin settings instead of volume settings
+
+## Fixed 
+- No default env var fallback for $SERVD_ASSETS_ENVIRONMENT (#11)
+
+## Removed
+- Support for Servd's legacy asset platform
+
 ## 1.3.12 - 2020-10-17
 
 ## Fixed

@@ -1,5 +1,25 @@
 {% import "_includes/forms" as forms %}
 
+{{ forms.autosuggestField({
+    label: "Servd Project Slug",
+    id: 'projectSlug',
+    name: 'projectSlug',
+    suggestEnvVars: true,
+    value: settings.projectSlug,
+    instructions: 'The primary identifier for your project. Defaults to the value of $SERVD_PROJECT_SLUG if not defined. This value can be found on the Asseets page in the Servd dashboard.',
+    placeholder: "$SERVD_PROJECT_SLUG"
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Servd Security Key",
+    id: 'securityKey',
+    name: 'securityKey',
+    suggestEnvVars: true,
+    value: settings.securityKey,
+    instructions: 'The security key used to interact with your project on Servd. Defaults to the value of $SERVD_SECURITY_KEY if not defined. This value can be found on the Assets page in the Servd dashboard.',
+    placeholder: "$SERVD_SECURITY_KEY"
+}) }}
+
 {{ forms.lightswitchField({
     first: true,
     label: "Inject CSRF tokens using AJAX",
@@ -23,13 +43,12 @@
 }) }}
 
 {{ forms.autosuggestField({
-    label: "Overwrite Assets Volume Environment"|t('servd-asset-storage'),
-    id: 'assetsEnvironmentOverwrite',
-    name: 'assetsEnvironmentOverwrite',
+    label: "Assets Volume Environment",
+    id: 'assetsEnvironment',
+    name: 'assetsEnvironment',
     suggestEnvVars: true,
-    value: settings.assetsEnvironmentOverwrite,
-    instructions: 'Overwrite the automatically detected environment to force a specific one to be used. This will change the path used to upload assets as well as the URLs used to access them. ' ~
-    'You should set this to an environment variable as it will be stored in your project config and you probably don\'t want it to be applied to your staging and production environments'
-    |t('servd-asset-storage'),
-    placeholder: "$SERVD_ASSETS_ENVIRONMENT"|t('servd-asset-storage')
+    value: settings.assetsEnvironment,
+    instructions: 'Overwrite the automatically detected assets environment to force a specific folder to be used within the Servd Assets Platform. ' ~
+    'Defaults to the value of $SERVD_ASSETS_ENVIRONMENT if not defined and finally falls back to an auto-detected environemt.',
+    placeholder: "$SERVD_ASSETS_ENVIRONMENT"
 }) }}
