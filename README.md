@@ -37,7 +37,10 @@ composer require servd/craft-asset-storage
 * (Nearly) zero-config
 * Automatically separates local, staging and production assets
 * Built-in CDN + edge caching for super-fast delivery to users
-* Zero config, off-server image transforms - never worry about image resizing ruining your life again
+* Zero config, off-server image transforms
+* Imager-X extensions to make use of the Servd Assets Platform
+* CSRF token injection to help with static caching
+* Automatic static cache busting upon entry save events
 
 ## Setup
 
@@ -51,20 +54,11 @@ Once set you can start uploading your assets and displaying them in your templat
 
 ## Local Development
 
-If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Secret Access Key` settings. These can be found in the Servd dashboard under Project Settings > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
+If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Security Key` settings in the main plugin settings. The values for these can be found in the Servd dashboard under Project Settings > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
 
 You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each volume - otherwise your files will all get mixed up.
 
 ![Servd Volume Subfolder](/images/subfolder.png "Servd Volume Subfolder")
-
-## Legacy Assets Platform
-
-If you created a project on Servd before 15h June 2020, you might be using Servd's legacy Assets Platform. If so you'll need to do two things:
-
-1. Change your asset volume `Base URL` to `https://cdn.assets-servd.host`
-2. Add an environment variable to your local development environment: `USE_LEGACY_ASSETS=true`
-
-Once both of those changes have been made the plugin will use the legacy platform for all of its functionality.
 
 ## Use With Craft Asset Transforms
 
@@ -74,7 +68,7 @@ Asset Transforms, both pre-defined and dynamically generated:
 
 In your twig template:
 
-```
+```twig
 {{ asset->getUrl('large') }}
 
 OR
@@ -90,6 +84,52 @@ OR
 {{ asset->getUrl(thumb) }}
 ```
 
-## Thanks
+## Use with Imager-X
 
-NYStudio107 for the Craft Transform -> SharpJS edits array transformation logic from [Image Optimize](https://github.com/nystudio107/craft-imageoptimize)
+The plugin contains storage and tranform adapters for [ImagerX](https://github.com/spacecatninja/craft-imager-x). These allow you to use
+the ImagerX template syntax whilst utilising Servd's Asset Pltform for storage, optimisation and transformation of your images.
+
+You can use any combination of the storage and transformer components as you wish. Here are a few example ImagerX configurations:
+
+### Use Servd For Everything (only works with Images stored on a Servd Assets Volume)
+
+```php
+return [
+    'transformer' => 'servd',
+];
+```
+
+### Use Servd For Storage Only (assets transformed on-server - should work with assets stored anywhere)
+
+```php
+return [
+    'storages' => ['servd'],
+    'storageConfig' => [
+        'servd' => [
+            'folder' => 'transforms',
+        ]
+    ],
+    'imagerUrl' => 'https://cdn2.assets-servd.host/[you-servd-project-slug]/transforms/',
+];
+```
+
+### Use Imgix For Transforms, Servd For Storage (only works with Images stored on a Servd Assets Volume)
+
+```php
+return [
+    'transformer' => 'imgix',
+    'imgixConfig' => [
+        'default' => [
+            'domain' => '[your-imgix-domain].imgix.net',
+            'useHttps' => true,
+            'useCloudSourcePath' => true,
+        ]
+    ]
+];
+```
+
+Combine the above with an imgix 'Web Folder' source set up to point to `https://cdn2.assets-servd.host/`
+
+### Known Issues with Imager-X
+
+- Currently, focal point overrides are not respected when using the 'servd' transformer
