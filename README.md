@@ -1,8 +1,8 @@
 <img src="/src/icon.png" width="200px" alt="Servd Icon" title="Servd Icon" style="max-width:100%;">
 
-# Servd Asset Storage for Craft CMS
+# Servd Assets and Helpers for Craft CMS
 
-This plugin provides a [Servd](https://servd.host) Asset Storage integration for [Craft CMS](https://craftcms.com/).
+This plugin provides a [Servd](https://servd.host) Asset Storage integration for [Craft CMS](https://craftcms.com/) along with a host of other deep integration functionality.
 
 ## Requirements
 
