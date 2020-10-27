@@ -16,6 +16,7 @@ use spacecatninja\imagerx\helpers\ImgixHelpers;
 
 use Imgix\UrlBuilder;
 use servd\AssetStorage\Plugin;
+use servd\AssetStorage\Volume;
 use spacecatninja\imagerx\transformers\TransformerInterface;
 
 class ImagerTransformer extends Component implements TransformerInterface
@@ -38,6 +39,16 @@ class ImagerTransformer extends Component implements TransformerInterface
     public function transform($image, $transforms)
     {
         $transformedImages = [];
+
+        if (is_string($image)) {
+            return [];
+        }
+
+        $volume = $image->getVolume();
+
+        if (get_class($volume) !== Volume::class) {
+            return null;
+        }
 
         foreach ($transforms as $transform) {
             $realTransformProps = [

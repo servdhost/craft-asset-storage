@@ -21,6 +21,13 @@ class ImageTransforms
 
     public function transformUrl(Asset $asset, $transform)
     {
+
+        $volume = $asset->getVolume();
+
+        if (get_class($volume) !== Volume::class) {
+            return null;
+        }
+
         //Not a secret, just a sanity check
         $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
 
