@@ -99,7 +99,7 @@ return [
 ];
 ```
 
-### Use Servd For Storage Only (assets transformed on-server - should work with assets stored anywhere)
+### Use Servd For Storage Of Transformed Images Only (assets transformed on-server - should work with source assets stored anywhere)
 
 ```php
 return [
