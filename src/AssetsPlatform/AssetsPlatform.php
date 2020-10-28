@@ -5,6 +5,7 @@ namespace servd\AssetStorage\AssetsPlatform;
 use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Craft;
 use craft\base\Component;
+use craft\elements\Asset;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\RegisterComponentTypesEvent;
@@ -137,7 +138,7 @@ class AssetsPlatform extends Component
         );
     }
 
-    public function handleAssetTransform($asset, $transform)
+    public function handleAssetTransform(Asset $asset, $transform)
     {
         $volume = $asset->getVolume();
 
@@ -173,6 +174,8 @@ class AssetsPlatform extends Component
             return null;
         }
 
-        return $this->imageTransforms->transformUrl($asset, $transform);
+        $transformOptions = new TransformOptions();
+        $transformOptions->fillFromCraftTransform($asset, $transform);
+        return $this->imageTransforms->transformUrl($asset, $transformOptions);
     }
 }

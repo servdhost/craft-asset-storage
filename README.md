@@ -129,7 +129,3 @@ return [
 ```
 
 Combine the above with an imgix 'Web Folder' source set up to point to `https://cdn2.assets-servd.host/`
-
-### Known Issues with Imager-X
-
-- Currently, focal point overrides are not respected when using the 'servd' transformer

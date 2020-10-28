@@ -19,7 +19,7 @@ class ImageTransforms
         'stretch' => 'fill',
     ];
 
-    public function transformUrl(Asset $asset, $transform)
+    public function transformUrl(Asset $asset, TransformOptions $transform)
     {
 
         $volume = $asset->getVolume();
@@ -28,28 +28,32 @@ class ImageTransforms
             return null;
         }
 
-        //Not a secret, just a sanity check
-        $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
-
-        $path = $this->getUrlForAssetAndTransform($asset, $transform);
-        if (!$path) {
+        $fullPath = $this->getFullPathForAssetAndTransform($asset, $transform);
+        if (!$fullPath) {
             return;
         }
-        $hash = md5($signingKey . '/' . $path);
-        $path .= '&s=' . $hash;
+        $signedPath = $this->signFullPath($fullPath);
 
         $optimisePrefix = Craft::parseEnv($asset->volume->optimisePrefix);
         if (empty($optimisePrefix)) {
             $optimisePrefix = 'https://optimise2.assets-servd.host/';
         }
-
         $optimisePrefix = trim($optimisePrefix, '/');
         $optimisePrefix .= '/';
 
-        return $optimisePrefix . $path;
+        return $optimisePrefix . $signedPath;
     }
 
-    public function getUrlForAssetAndTransform(Asset $asset, $transform)
+    public function signFullPath($path)
+    {
+        //Not a secret, just a sanity check
+        $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
+        $hash = md5($signingKey . '/' . $path);
+        $path .= '&s=' . $hash;
+        return $path;
+    }
+
+    public function getFullPathForAssetAndTransform(Asset $asset, TransformOptions $transform)
     {
         if (!$asset) {
             return;
@@ -65,90 +69,62 @@ class ImageTransforms
         $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
         $base = ltrim($base, '/');
 
-        $params = $this->getParamsForTransform($asset, $transform);
+        $params = $this->getParamsForTransform($transform);
 
         return $base . "?" . http_build_query($params);
     }
 
-    public function getParamsForTransform($asset, $transform)
+    public function getParamsForTransform(TransformOptions $transform)
     {
         $params = [];
-        if ($transform) {
-            //Get params
-            $attr_map = [
-                'width'   => 'w',
-                'height'  => 'h',
-                'quality' => 'q',
-                'format'  => 'fm',
-            ];
+        $autoParams = [];
 
-            foreach ($attr_map as $key => $value) {
-                if (!empty($transform[$key])) {
-                    $params[$value] = $transform[$key];
-                }
-            }
-
-            $autoParams = [];
-            if (empty($params['q'])) {
-                $autoParams[] = 'compress';
-            }
-            if (empty($params['fm'])) {
-                $autoParams[] = 'format';
-            }
-            if (!empty($autoParams)) {
-                $params['auto'] = implode(',', $autoParams);
-            }
-
-            // Handle interlaced images
-            //TODO: Consider adding to transform function
-            // if (property_exists($transform, 'interlace')) {
-            //     if (($transform->interlace != 'none')
-            //         && (!empty($params['fm']))
-            //         && ($params['fm'] == 'jpg')
-            //     ) {
-            //         $params['fm'] = 'pjpg';
-            //     }
-            // }
-
-            switch ($transform->mode) {
-                case 'fit':
-                    $params['fit'] = 'clip';
-                    break;
-
-                case 'stretch':
-                    $params['fit'] = 'scale';
-                    break;
-
-                default:
-                    // Set a sane default
-                    if (empty($transform->position)) {
-                        $transform->position = 'center-center';
-                    }
-                    // Fit mode
-                    $params['fit'] = 'crop';
-                    $cropParams = [];
-                    // Handle the focal point
-                    $focalPoint = $asset->getFocalPoint();
-                    if (!empty($focalPoint)) {
-                        $params['fp-x'] = $focalPoint['x'];
-                        $params['fp-y'] = $focalPoint['y'];
-                        $cropParams[] = 'focalpoint';
-                        $params['crop'] = implode(',', $cropParams);
-                    } elseif (preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                        // Imgix defaults to 'center' if no param is present
-                        $filteredCropParams = explode('-', $transform->position);
-                        $filteredCropParams = array_diff($filteredCropParams, ['center']);
-                        $cropParams[] = $filteredCropParams;
-                        // Imgix
-                        if (!empty($cropParams) && $transform->position !== 'center-center') {
-                            $params['crop'] = implode(',', $cropParams);
-                        }
-                    }
-                    break;
-            }
-        } else {
-            $params['auto'] = 'format,compress';
+        if (!empty($transform->width)) {
+            $params['w'] = $transform->width;
         }
+
+        if (!empty($transform->height)) {
+            $params['h'] = $transform->height;
+        }
+
+        if (!empty($transform->quality)) {
+            $params['q'] = $transform->quality;
+        } else {
+            $autoParams[] = 'compress';
+        }
+
+        if (!empty($transform->format)) {
+            $params['fm'] = $transform->format;
+        } else {
+            $autoParams[] = 'format';
+        }
+
+        if (!empty($autoParams)) {
+            $params['auto'] = implode(',', $autoParams);
+        }
+
+        if (!empty($transform->fit) && in_array($transform->fit, ['fill', 'scale', 'crop', 'clip', 'min', 'max'])) {
+            $params['fit'] = $transform->fit;
+        } else {
+            $params['fit'] = 'clip';
+        }
+
+        if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
+            $params['fp-x'] = $transform->fpx;
+        }
+
+        if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
+            $params['fp-y'] = $transform->fpy;
+        }
+
+        if (!empty($transform->fillColor)) {
+            $params['fill-color'] = $transform->fillColor;
+        }
+
+        if (!empty($transform->dpr) && is_numeric($transform->dpr) && $transform->dpr != 1) {
+            $params['dpr'] = $transform->dpr;
+        }
+
         return $params;
     }
 
