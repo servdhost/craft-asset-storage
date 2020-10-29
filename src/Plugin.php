@@ -9,6 +9,7 @@ use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
+use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use yii\base\Event;
 
@@ -49,7 +50,8 @@ class Plugin extends \craft\base\Plugin
             'imager' => Imager::class,
             'imageOptimize' => ImageOptimize::class,
             'csrfInjection' => CsrfInjection::class,
-            'cpAlerts' => CPAlerts::class
+            'cpAlerts' => CPAlerts::class,
+            'redisDebug' => RedisDebug::class,
         ]);
     }
 
@@ -62,5 +64,6 @@ class Plugin extends \craft\base\Plugin
         $this->csrfInjection;
         $this->assetsPlatform;
         $this->cpAlerts;
+        $this->redisDebug;
     }
 }
