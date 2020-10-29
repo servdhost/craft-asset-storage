@@ -37,7 +37,9 @@ class RedisDebug extends Component
                 if (empty($debugModule)) {
                     return;
                 }
+                // Replace the default debug bar implementation's log storage
                 $debugModule->logTarget = Craft::$app->getLog()->targets['debug'] = new RedisLogTarget($debugModule);
+                // Shim the controllers with custom ones (because the log target's implementation has leaked into them)
                 $debugModule->controllerNamespace = 'servd\AssetStorage\RedisDebug\Controllers';
             }
         );
