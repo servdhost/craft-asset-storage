@@ -5,6 +5,7 @@ namespace servd\AssetStorage;
 use Craft;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
+use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\Imager\Imager;
 use servd\AssetStorage\StaticCache\StaticCache;
@@ -46,6 +47,7 @@ class Plugin extends \craft\base\Plugin
             'assetsPlatform' => AssetsPlatform::class,
             'imager' => Imager::class,
             'csrfInjection' => CsrfInjection::class,
+            'cpAlerts' => CPAlerts::class
         ]);
     }
 
@@ -56,5 +58,6 @@ class Plugin extends \craft\base\Plugin
         $this->staticCache;
         $this->csrfInjection;
         $this->assetsPlatform;
+        $this->cpAlerts;
     }
 }
