@@ -1,5 +1,14 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.0-beta.6 - 2020-10-29
+
+## Added
+- ImageOptimize support for Servd assets platform
+- Control panel warnings for Servd related misconfigurations
+
+## Fixed 
+- Some things that previously broke, but nobody noticed 🤫
+
 ## 2.0.0-beta.1 - 2020-10-26
 
 ## Added

@@ -11,6 +11,9 @@ class Imager extends Component
 
     public function init()
     {
+        if (!class_exists('\spacecatninja\imagerx\ImagerX')) {
+            return;
+        }
         $this->registerListeners();
     }
 

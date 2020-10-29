@@ -7,6 +7,7 @@ use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
+use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
 use servd\AssetStorage\StaticCache\StaticCache;
 use yii\base\Event;
@@ -46,6 +47,7 @@ class Plugin extends \craft\base\Plugin
             'staticCache' => StaticCache::class,
             'assetsPlatform' => AssetsPlatform::class,
             'imager' => Imager::class,
+            'imageOptimize' => ImageOptimize::class,
             'csrfInjection' => CsrfInjection::class,
             'cpAlerts' => CPAlerts::class
         ]);
@@ -55,6 +57,7 @@ class Plugin extends \craft\base\Plugin
     {
         //Resolves the components which calls their init methods automatically
         $this->imager;
+        $this->imageOptimize;
         $this->staticCache;
         $this->csrfInjection;
         $this->assetsPlatform;
