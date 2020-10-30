@@ -39,6 +39,7 @@ composer require servd/craft-asset-storage
 * Built-in CDN + edge caching for super-fast delivery to users
 * Zero config, off-server image transforms
 * Imager-X extensions to make use of the Servd Assets Platform
+* ImageOptimise extensions to make use of the Servd Assets Platform
 * CSRF token injection to help with static caching
 * Automatic static cache busting upon entry save events
 
@@ -48,23 +49,39 @@ Once the plugin is installed you will be able to create 'Servd Asset Storage' vo
 
 ![Servd Volume Type](/images/volume-type.png "Servd Asset Storage Volume")
 
-If you are only using the Servd Asset volumes on projects within Servd's staging and production environments there's only one mandatory setting: `Base URL` which should be set to `https://cdn2.assets-servd.host`. 
+For every new Servd Assets Storage volume you should set the Base URL to `https://cdn2.assets-servd.host` or an environment variable which holds this value. 
 
 Once set you can start uploading your assets and displaying them in your templates using Craft's standard asset URL generators and transforms.
 
-## Local Development
-
-If you would like to use Servd Asset volumes during local development you will need to fill in the `Project Slug` and `Security Key` settings in the main plugin settings. The values for these can be found in the Servd dashboard under Project Settings > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
+## Multiple Volumes
 
 You can create multiple Servd Asset volumes. If you do this you will need to supply a `subfolder` for each volume - otherwise your files will all get mixed up.
 
 ![Servd Volume Subfolder](/images/subfolder.png "Servd Volume Subfolder")
 
+## Local Development
+
+If you would like to use Servd Asset Storage volumes during local development you will need to fill in the `Project Slug` and `Security Key` settings in the main plugin settings. The values for these can be found in the Servd dashboard under Project Settings > Assets. We recommend you set these as environment variables to avoid them being added to your project config file.
+
+## Environment Detection
+
+The plugin will automatically select a subfolder within the Servd Assets Platform from the following:
+
+- local
+- staging
+- production
+
+based on your current working environment. This allows Servd to be able to clone assets between these environments.
+
+I.E if you perform a full clone from staging -> production the platform will not only copy your database, but also your assets by copying them between these directories.
+
+If you wish to prevent the plugin from auto-detecting the current environment (so that you can E.G. interact with production assets whilst working locally) you can override the environment detection using the Environment Override setting in the main plugin settings.
+
 ## Use With Craft Asset Transforms
 
-The plugin will automatically intercet any `getUrl()` calls on assets in both your twig templates and from within other plugins.
-If the asset exists on a Servd Asset Volume the returned URL will point towards the Servd Asset Platform. This also supports Craft
-Asset Transforms, both pre-defined and dynamically generated:
+The plugin will automatically intercept any `getUrl()` calls on assets which are stored in Servd Asset Storage volumes in both your twig templates and from within other plugins.
+
+The returned URL will point towards the Servd Asset Platform. This also supports Craft Asset Transforms, both pre-defined and dynamically generated:
 
 In your twig template:
 
@@ -86,8 +103,7 @@ OR
 
 ## Use with Imager-X
 
-The plugin contains storage and tranform adapters for [ImagerX](https://github.com/spacecatninja/craft-imager-x). These allow you to use
-the ImagerX template syntax whilst utilising Servd's Asset Pltform for storage, optimisation and transformation of your images.
+The plugin contains storage and transform adapters for [ImagerX](https://github.com/spacecatninja/craft-imager-x). These allow you to use the ImagerX template syntax whilst utilising Servd's Asset Platform for storage, optimisation and transformation of your images.
 
 You can use any combination of the storage and transformer components as you wish. Here are a few example ImagerX configurations:
 
@@ -129,3 +145,11 @@ return [
 ```
 
 Combine the above with an imgix 'Web Folder' source set up to point to `https://cdn2.assets-servd.host/`
+
+## Use with ImageOptimise
+
+The plugin contains a transform adapter for [ImageOptimize](https://github.com/nystudio107/craft-imageoptimize). Simply select 'Servd' as the active transformer in ImageOptimise's settings. 
+
+If you'd like to pre-generate resized images (not really necessary and can slow down the Craft CP) add the 
+ImageOptimise Optimized Images Field to the Servd Asset Volume's fieldset.
+
