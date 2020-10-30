@@ -69,7 +69,6 @@ class ImagerTransformer extends Component implements TransformerInterface
     private function imagerTransformToTransformOptions($asset, $transform)
     {
         $config = ImagerService::getConfig();
-        $transform = $this->mergeImagerDefaultStuff($transform);
 
         $transformOptions = new TransformOptions();
 
@@ -138,26 +137,6 @@ class ImagerTransformer extends Component implements TransformerInterface
         }
 
         return $transformOptions;
-    }
-
-    private function mergeImagerDefaultStuff($transform)
-    {
-        $config = ImagerService::getConfig();
-        $profile = $config->getSetting('imgixProfile', $transform);
-        $imgixConfigArr = $config->getSetting('imgixConfig', $transform);
-
-        if (!isset($imgixConfigArr[$profile])) {
-            $msg = 'Imgix profile “' . $profile . '” does not exist.';
-            Craft::error($msg, __METHOD__);
-            throw new ImagerException($msg);
-        }
-
-        $imgixConfig = new ImgixSettings($imgixConfigArr[$profile]);
-        if (\is_array($imgixConfig->defaultParams)) {
-            $transform = array_merge($imgixConfig->defaultParams, $transform);
-        }
-
-        return $transform;
     }
 
     private function getLetterboxColor($letterboxDef): string
