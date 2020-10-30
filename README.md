@@ -42,6 +42,7 @@ composer require servd/craft-asset-storage
 * ImageOptimise extensions to make use of the Servd Assets Platform
 * CSRF token injection to help with static caching
 * Automatic static cache busting upon entry save events
+* Support for using the debug bar in a load balanced environment (like Servd)
 
 ## Setup
 
