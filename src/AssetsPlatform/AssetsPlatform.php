@@ -91,8 +91,6 @@ class AssetsPlatform extends Component
             ],
         ]);
         $res = json_decode($response->getBody(), true);
-        //Craft::warning($res);
-        //$res['credentials']['key'] = substr($res['credentials']['key'], 0, strlen($res['credentials']['key']) - 1) . '1';
         return $res['credentials'];
     }
 
