@@ -86,7 +86,7 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
                 $this->s3Client->execute($command);
             } catch (S3Exception $e) {
                 //If it's access denied throw it so that the wrapper block handles it
-                if ($e->getAwsErrorCode() == 'AccessDenied') {
+                if ($e->getAwsErrorCode() == 'AccessDenied' || $e->getAwsErrorCode() == 'InvalidAccessKeyId') {
                     throw $e;
                 }
                 return false;
@@ -143,7 +143,7 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
                 $result = $this->s3Client->execute($command);
                 return $result['Contents'] || $result['CommonPrefixes'];
             } catch (S3Exception $e) {
-                if ($e->getAwsErrorCode() == 'AccessDenied') {
+                if ($e->getAwsErrorCode() == 'AccessDenied' || $e->getAwsErrorCode() == 'InvalidAccessKeyId') {
                     throw $e;
                 }
                 if (in_array($e->getStatusCode(), [403, 404], true)) {
@@ -168,9 +168,9 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
 
             try {
                 $this->s3Client->execute($command);
-            } catch (S3Exception $exception) {
-                if ($exception->getAwsErrorCode() == 'AccessDenied') {
-                    throw $exception;
+            } catch (S3Exception $e) {
+                if ($e->getAwsErrorCode() == 'AccessDenied' || $e->getAwsErrorCode() == 'InvalidAccessKeyId') {
+                    throw $e;
                 }
                 return false;
             }
@@ -184,7 +184,7 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
         try {
             return $next();
         } catch (AwsException $e) {
-            if ($e->getAwsErrorCode() == 'AccessDenied') {
+            if ($e->getAwsErrorCode() == 'AccessDenied' || $e->getAwsErrorCode() == 'InvalidAccessKeyId') {
                 //Refresh creds and retry
                 $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray(true);
                 $client = new S3Client($config);
