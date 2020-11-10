@@ -59,11 +59,11 @@ class CPAlerts extends Component
     {
         $messages = [];
 
-        //If we aren't in staging or prod and the serve plugin hasn't been configured
+        //If we aren't in staging or prod and the servd plugin hasn't been configured
         $env = Craft::$app->getConfig()->env;
         if (!in_array($env, ['staging', 'production'])) {
             $settings = Plugin::$plugin->getSettings();
-            if (empty($settings->projectSlug) || empty($settings->securityKey)) {
+            if (empty($settings->getProjectSlug()) || empty($settings->getSecurityKey())) {
                 $messages[] = 'You have not set a Servd \'Project Slug\' or \'Security Key\' which are required during local development.' .
                     ' ' . '<a class="go" href="' . UrlHelper::url('settings/plugins/servd-asset-storage') . '">Update</a>';
             }
