@@ -1,32 +1,38 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.1 - 2020-11-13
+
+### Fixed 
+- Graceful handling of a situation in which the $SERVD_ASSETS_ENVIRONMENT is explicitly set in the plugin settings, but the env var doesn't actually exist
+- Fixed display of a control panel alert which prompts user to add appropriate plugin settings
+
 ## 2.0.0 - 2020-11-08
 
-## Added
+### Added
 - ImageOptimize support for Servd assets platform
 - ImagerX support for Servd assets platform (requires ImagerX Pro)
 - Control panel warnings for Servd related misconfigurations
 
-## Updated
+### Updated
 - Large code refactor to plan for upcoming new features
 - Moved Servd Project Slug and Security Key config param to plugin settings instead of volume settings
 
-## Fixed 
+### Fixed 
 - Some things that previously broke, but nobody noticed 🤫
 - No default env var fallback for $SERVD_ASSETS_ENVIRONMENT (#11)
 
-## Removed
+### Removed
 - Support for Servd's legacy asset platform
 
 ## 1.3.12 - 2020-10-17
 
-## Fixed
+### Fixed
 
 - Fixed a bug introduced with Craft 3.5 which prevents assets being downloaded from the control panel
 
 ## 1.3.11 - 2020-09-11
 
-## Updated
+### Updated
 - Only asynchronously load CSRF tokens if there's an element on the page which will actually use it. Reduces precious PHP executions for statically cached sites.
 
 ## 1.3.10 - 2020-09-10
