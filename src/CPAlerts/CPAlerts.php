@@ -7,8 +7,10 @@ use craft\base\Component;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\RegisterCpAlertsEvent;
+use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
+use craft\mail\transportadapters\Sendmail;
 use craft\volumes\Local;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
@@ -30,6 +32,7 @@ class CPAlerts extends Component
                 $event->alerts = array_merge($event->alerts, $this->checkForVolumeErrors());
                 $event->alerts = array_merge($event->alerts, $this->checkForSettingsErrors());
                 $event->alerts = array_merge($event->alerts, $this->checkForStorageFull());
+                $event->alerts = array_merge($event->alerts, $this->checkForSendmail());
             }
         );
     }
@@ -74,6 +77,19 @@ class CPAlerts extends Component
     private function checkForStorageFull()
     {
         $messages = [];
+
+        return $messages;
+    }
+
+    private function checkForSendmail()
+    {
+        $messages = [];
+
+        $settings = App::mailSettings();
+        if ($settings['transportType'] == Sendmail::class) {
+            $messages[] = 'Your mail settings are currently configured to use sendmail which is not available on Servd' .
+                ' ' . '<a class="go" href="' . UrlHelper::url('settings/email') . '">Update</a>';
+        }
 
         return $messages;
     }
