@@ -53,6 +53,10 @@ class AssetsPlatform extends Component
         $config = [
             'region' => static::S3_REGION,
             'version' => 'latest',
+            'http'    => [
+                'connect_timeout' => 3,
+                'timeout' => 30,
+            ]
         ];
 
         $credentials = [];
