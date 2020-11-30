@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.2 - 2020-11-30
+
+### Fixed 
+- CORS tokens were being injected into pages even when they were disabled. These overexicted tokens are now firmly back under control.
+
 ## 2.0.1 - 2020-11-13
 
 ### Fixed 
