@@ -130,12 +130,6 @@ class RedisLogTarget extends Target
             foreach (array_keys($manifest) as $tag) {
                 $redisKey = 'debugbar-tag-' . $tag;
                 $this->redisCon->del($redisKey);
-
-                // if (isset($manifest[$tag]['mailFiles'])) {
-                //     foreach ($manifest[$tag]['mailFiles'] as $mailFile) {
-                //         @unlink(Yii::getAlias($this->module->panels['mail']->mailPath) . "/$mailFile");
-                //     }
-                // }
                 unset($manifest[$tag]);
                 if (--$n <= 0) {
                     break;
@@ -154,21 +148,7 @@ class RedisLogTarget extends Target
      */
     protected function removeStaleDataFiles($manifest)
     {
-        // TODO
-        // Could potentially just set a TTL on the data entries in redis
-
-        // $storageTags = array_map(
-        //     function ($file) {
-        //         return pathinfo($file, PATHINFO_FILENAME);
-        //     },
-        //     FileHelper::findFiles($this->module->dataPath, ['except' => ['index.data']])
-        // );
-
-        // $staledTags = array_diff($storageTags, array_keys($manifest));
-
-        // foreach ($staledTags as $tag) {
-        //     @unlink($this->module->dataPath . "/$tag.data");
-        // }
+        //NOTE: No longer needed - redis TTL will clean up old request data
     }
 
     /**
