@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.4 - 2020-12-14
+
+### Added
+- The data for the Yii2 Debug Bar will be stored in Redis instead of the filesystem, allowing it to work on ephemeral or load balanced environments.
+
 ## 2.0.3 - 2020-12-14
 
 ### Added
