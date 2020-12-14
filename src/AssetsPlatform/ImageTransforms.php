@@ -71,6 +71,8 @@ class ImageTransforms
 
         $params = $this->getParamsForTransform($transform);
 
+        $params['dm'] = $asset->dateUpdated->getTimestamp();
+
         return $base . "?" . http_build_query($params);
     }
 
