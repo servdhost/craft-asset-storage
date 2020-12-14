@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.3 - 2020-12-14
+
+### Added
+- You can now clear the CDN cache for the Servd Assets Platform by clicking a button in the Craft CP. This will cause any image transforms to be re-applied and any caches for original files will be destroyed.
+
 ## 2.0.2 - 2020-11-30
 
 ### Fixed 
