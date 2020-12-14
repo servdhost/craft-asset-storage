@@ -9,11 +9,13 @@ use craft\elements\Asset;
 use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\models\AssetTransform;
 use craft\services\Assets;
 use craft\services\Volumes;
+use craft\web\UrlManager;
 use Exception;
 use servd\AssetStorage\Plugin;
 use servd\AssetStorage\Volume as AssetStorageVolume;
@@ -34,6 +36,7 @@ class AssetsPlatform extends Component
     {
         $this->imageTransforms = new ImageTransforms();
         $this->registerEventHandlers();
+        $this->hookCPSidebarTemplate();
     }
 
     public function getStorageBaseDirectory()
@@ -53,6 +56,10 @@ class AssetsPlatform extends Component
         $config = [
             'region' => static::S3_REGION,
             'version' => 'latest',
+            'http'    => [
+                'connect_timeout' => 3,
+                'timeout' => 30,
+            ]
         ];
 
         $credentials = [];
@@ -177,5 +184,30 @@ class AssetsPlatform extends Component
         $transformOptions = new TransformOptions();
         $transformOptions->fillFromCraftTransform($asset, $transform);
         return $this->imageTransforms->transformUrl($asset, $transformOptions);
+    }
+
+    private function hookCPSidebarTemplate()
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
+
+            Event::on(
+                UrlManager::class,
+                UrlManager::EVENT_REGISTER_CP_URL_RULES,
+                function (RegisterUrlRulesEvent $event) {
+                    $event->rules['servd-asset-storage/assets-platform/clear-cache'] = 'servd-asset-storage/assets-platform/clear-cache';
+                }
+            );
+
+            Craft::$app->view->hook('cp.assets.edit.details', function (array &$context) {
+                $html = '';
+                $element = $context['element'];
+                $volume = $context['volume'];
+                if ($volume instanceof AssetStorageVolume) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $element->uid]);
+                }
+                return '';
+            });
+        }
     }
 }

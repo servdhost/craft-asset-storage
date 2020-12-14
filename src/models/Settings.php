@@ -41,7 +41,10 @@ class Settings extends Model
     public function getAssetsEnvironment()
     {
         if (!empty($this->assetsEnvironment)) {
-            return Craft::parseEnv($this->assetsEnvironment);
+            $overwrite = Craft::parseEnv($this->assetsEnvironment);
+            if (strlen($overwrite) > 0 && substr($overwrite, 0, 1) != '$') {
+                return $overwrite;
+            }
         }
         if (!empty(getenv('SERVD_ASSETS_ENVIRONMENT'))) {
             return Craft::parseEnv(getenv('SERVD_ASSETS_ENVIRONMENT'));

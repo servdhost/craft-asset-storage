@@ -5,13 +5,17 @@ namespace servd\AssetStorage\CsrfInjection;
 use Craft;
 use craft\base\Component;
 use craft\web\View;
+use servd\AssetStorage\Plugin;
 
 class CsrfInjection extends Component
 {
 
     public function init()
     {
-        $this->injectCSRFTokenScript();
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->injectCors) {
+            $this->injectCSRFTokenScript();
+        }
     }
 
     private function injectCSRFTokenScript()
