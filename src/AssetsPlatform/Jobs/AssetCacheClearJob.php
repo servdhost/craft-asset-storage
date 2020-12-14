@@ -39,7 +39,9 @@ class AssetCacheClearJob extends BaseJob
 
         try {
             $client = new Client();
-            $response = $client->post($url, $data);
+            $response = $client->post($url, [
+                'json' => $data
+            ]);
         } catch (\GuzzleHttp\Exception\GuzzleException $e) {
             throw new Exception("Failed to contact Servd cache clear endpoint: " . $e->getMessage());
         }
