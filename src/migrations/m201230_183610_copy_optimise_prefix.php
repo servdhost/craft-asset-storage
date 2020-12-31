@@ -24,8 +24,16 @@ class m201230_183610_copy_optimise_prefix extends Migration
         $schemaVersion = Craft::$app->projectConfig
             ->get('plugins.servd-asset-storage.schemaVersion', true);
 
-        //The yaml has already been updated so do nothing, craft will take care of syncing the changes from PC over
-        if (version_compare($schemaVersion, '2.0.5', '>=')) {
+        $allowAdminChanges = Craft::$app->getConfig()->getGeneral()->allowAdminChanges;
+
+        // If allowAdminChanges is false (using PC) and the yaml has already been updated, back out and
+        // allow PC sync to apply the changes
+        // NOTE: This will allow an error to occur if the migration is attempted for the very first time
+        // on an $allowAdminChanges=false environment, but we _want_ that error to occur because
+        // it tells users that they should be performing this migration in local dev first
+        // NOTE: Multi-developer local development will end up running the migration multiple times even though
+        // it shouldn't because the results are held in PC and merged between devs. Don't know what to do about that.
+        if (!$allowAdminChanges && version_compare($schemaVersion, '2.0.5', '>=')) {
             return;
         }
 
