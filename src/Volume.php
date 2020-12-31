@@ -23,9 +23,11 @@ class Volume extends FlysystemVolume
     const S3_BUCKET = 'cdn-assets-servd-host';
     public $customSubfolder = '';
     public $makeUploadsPublic = true;
-    public $optimisePrefix = '';
+    public $optimisePrefix = ''; //DEPRECATED
     public $projectSlug = '';
     public $securityKey = '';
+    public $cdnUrlPattern = '';
+    public $optimiseUrlPattern = '';
 
     protected $isVolumeLocal = false;
 

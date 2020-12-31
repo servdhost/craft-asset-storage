@@ -4,6 +4,7 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
+use servd\AssetStorage\Plugin;
 use servd\AssetStorage\Volume;
 
 class ImageTransforms
@@ -22,38 +23,58 @@ class ImageTransforms
     public function transformUrl(Asset $asset, TransformOptions $transform)
     {
 
+        $settings = Plugin::$plugin->getSettings();
         $volume = $asset->getVolume();
 
         if (get_class($volume) !== Volume::class) {
             return null;
         }
 
-        $fullPath = $this->getFullPathForAssetAndTransform($asset, $transform);
+        if (!$asset) {
+            return null;
+        }
+
+        $params = $this->getParamsForTransform($transform);
+        $params['dm'] = $asset->dateUpdated->getTimestamp();
+
+        //Full path of asset on the CDN platform
+        $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);
         if (!$fullPath) {
             return;
         }
-        $signedPath = $this->signFullPath($fullPath);
+        $signingKey = $this->getKeyForPath($fullPath);
+        $params['s'] = $signingKey;
 
-        $optimisePrefix = Craft::parseEnv($asset->volume->optimisePrefix);
-        if (empty($optimisePrefix)) {
-            $optimisePrefix = 'https://optimise2.assets-servd.host/';
+        // Use a custom URL template if one has been provided
+        $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
+        if (!empty($customPattern)) {
+            $variables = [
+                "environment" => $settings->getAssetsEnvironment(),
+                "projectSlug" => $settings->getProjectSlug(),
+                "subfolder" => trim($volume->customSubfolder, "/"),
+                "filePath" => $asset->getPath(),
+                "params" => '?' . http_build_query($params),
+            ];
+            $finalUrl = $customPattern;
+            foreach ($variables as $key => $value) {
+                $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
+            }
+            return $finalUrl;
         }
-        $optimisePrefix = trim($optimisePrefix, '/');
-        $optimisePrefix .= '/';
 
-        return $optimisePrefix . $signedPath;
+        //Otherwise
+        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
     }
 
-    public function signFullPath($path)
+    public function getKeyForPath($path)
     {
         //Not a secret, just a sanity check
         $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
         $hash = md5($signingKey . '/' . $path);
-        $path .= '&s=' . $hash;
-        return $path;
+        return $hash;
     }
 
-    public function getFullPathForAssetAndTransform(Asset $asset, TransformOptions $transform)
+    public function getFullPathForAssetAndTransform(Asset $asset, $params)
     {
         if (!$asset) {
             return;
@@ -68,10 +89,6 @@ class ImageTransforms
         }, $filePath);
         $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
         $base = ltrim($base, '/');
-
-        $params = $this->getParamsForTransform($transform);
-
-        $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         return $base . "?" . http_build_query($params);
     }

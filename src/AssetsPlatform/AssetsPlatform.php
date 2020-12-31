@@ -10,6 +10,7 @@ use craft\events\GetAssetThumbUrlEvent;
 use craft\events\GetAssetUrlEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\events\RegisterUrlRulesEvent;
+use craft\events\VolumeEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\models\AssetTransform;
@@ -108,6 +109,15 @@ class AssetsPlatform extends Component
             $event->types[] = AssetStorageVolume::class;
         });
 
+        // Force Servd asset volumes to use the correct public root URL
+        Event::on(Volumes::class, Volumes::EVENT_BEFORE_SAVE_VOLUME, function (VolumeEvent $event) {
+            $volume = $event->volume;
+            if ($volume instanceof AssetStorageVolume) {
+                $volume->hasUrls = true;
+                $volume->url = 'https://cdn2.assets-servd.host/';
+            }
+        });
+
         Event::on(
             Assets::class,
             Assets::EVENT_GET_ASSET_URL,
@@ -145,17 +155,42 @@ class AssetsPlatform extends Component
         );
     }
 
+    public function getFileUrl(Asset $asset)
+    {
+
+        $settings = Plugin::$plugin->getSettings();
+        $volume = $asset->getVolume();
+
+        //If a custom pattern is set, use that
+        $customPattern = Craft::parseEnv($volume->cdnUrlPattern);
+        if (!empty($customPattern)) {
+            $variables = [
+                "environment" => $settings->getAssetsEnvironment(),
+                "projectSlug" => $settings->getProjectSlug(),
+                "subfolder" => trim($volume->customSubfolder, "/"),
+                "filePath" => $asset->getPath(),
+            ];
+            $finalUrl = $customPattern;
+            foreach ($variables as $key => $value) {
+                $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
+            }
+            return $finalUrl;
+        }
+
+        return AssetsHelper::generateUrl($volume, $asset);
+    }
+
     public function handleAssetTransform(Asset $asset, $transform)
     {
         $volume = $asset->getVolume();
 
         if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
-            return AssetsHelper::generateUrl($volume, $asset);
+            return $this->getFileUrl($asset);
         }
 
         //If the input type is gif respect the no transform flag
         if ($this->imageTransforms->inputIsGif($asset) && !(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false)) {
-            return AssetsHelper::generateUrl($volume, $asset);
+            return $this->getFileUrl($asset);
         }
 
         if (empty($transform)) {
@@ -178,7 +213,7 @@ class AssetsPlatform extends Component
         //If the output type is svg, no transform is occuring, just let Craft handle it
         //This should return a link to the CDN path without optimisation
         if ($this->imageTransforms->outputWillBeSVG($asset, $transform)) {
-            return null;
+            return $this->getFileUrl($asset);
         }
 
         $transformOptions = new TransformOptions();
