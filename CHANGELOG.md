@@ -1,5 +1,15 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.5 - 2021-01-05
+
+{note} This update contains a migration which attempts to maintain any existing custom domains which you have used in previous versions of the plugin. Please double check your volume settings after updating to make sure that this migration has had the intended effect.
+
+### Added
+- You can now define fully custom URL structures for source files and optimised images which make use of custom domains. You'll need to provide your own logic (in a Cloudflare worker or Lambda@edge) to proxy this request and convert the URL structure back to Servd's expected format.
+
+### Updated
+- Servd asset volumes are now forced to use the correct Base URL to avoid incorrect settings for this value
+
 ## 2.0.4 - 2020-12-14
 
 ### Added
