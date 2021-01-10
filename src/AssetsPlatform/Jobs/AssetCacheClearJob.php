@@ -23,8 +23,9 @@ class AssetCacheClearJob extends BaseJob
         $environment = $settings->getAssetsEnvironment();
         $assetPath = $element->path;
         $securityKey = $settings->getSecurityKey();
+        $subfolder = $element->volume->_subfolder() ?? '';
 
-        $assetPath = '/' . $slug . '/' . $environment . '/' . $assetPath;
+        $assetPath = '/' . trim($subfolder, '/') . '/' . trim($assetPath, '/');
 
         $data = [
             'slug' => $slug,
