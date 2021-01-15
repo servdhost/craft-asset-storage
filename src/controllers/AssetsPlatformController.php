@@ -15,7 +15,7 @@ class AssetsPlatformController extends Controller
         $req = Craft::$app->getRequest();
 
         $elements = Craft::$app->elements;
-        $element = $elements->getElementByUid($req->get('elementUid'));
+        $element = $elements->getElementById($req->get('elementUid'));
         $element->markAsDirty();
         $elements->saveElement($element);
 

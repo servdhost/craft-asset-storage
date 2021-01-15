@@ -208,6 +208,7 @@ class AssetsPlatform extends Component
         if (\is_string($transform)) {
             $assetTransforms = Craft::$app->getAssetTransforms();
             $transform = $assetTransforms->getTransformByHandle($transform);
+            //TODO: Check if the transform is null. If so throw a nice error to let the user know what happened
         }
 
         //If the output type is svg, no transform is occuring, just let Craft handle it
@@ -239,7 +240,7 @@ class AssetsPlatform extends Component
                 $element = $context['element'];
                 $volume = $context['volume'];
                 if ($volume instanceof AssetStorageVolume) {
-                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $element->uid]);
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $element->id]);
                 }
                 return '';
             });

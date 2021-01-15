@@ -16,7 +16,7 @@ class AssetCacheClearJob extends BaseJob
     public function execute($queue)
     {
         $elements = Craft::$app->elements;
-        $element = $elements->getElementByUid($this->elementUid);
+        $element = $elements->getElementById($this->elementUid);
 
         $settings = Plugin::$plugin->getSettings();
         $slug = $settings->getProjectSlug();
