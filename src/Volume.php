@@ -100,28 +100,8 @@ class Volume extends FlysystemVolume
         return AdapterInterface::VISIBILITY_PUBLIC;
     }
 
-    public function __get($name)
+    public function getSubfolder()
     {
-        if ($name == 'subfolder') {
-            return $this->_subfolder();
-        }
-        return $this->$name;
-    }
-
-    public function __set($name, $value)
-    {
-        if ($name == 'subfolder') {
-            //Squash
-        }
-        $this->$name = $value;
-    }
-
-    public function __isset($name)
-    {
-        if ($name == 'subfolder') {
-            $t = $this->_subfolder();
-            return isset($t);
-        }
-        return false;
+        return $this->_subfolder();
     }
 }

@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.7 - 2021-01-20
+
+### Fixed
+
+- Fixed a bug which prevented the `settings` property from being accessed on a Servd Assets Volume
+
 ## 2.0.6 - 2021-01-10
 
 ### Fixed
