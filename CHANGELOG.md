@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.1 - 2021-01-21
+
+### Fixed
+
+- Fixed an upgrade path error from V1 to V2.1
+
 ## 2.1.0 - 2021-01-21
 
 ### Added
