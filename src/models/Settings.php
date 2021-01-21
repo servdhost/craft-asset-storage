@@ -7,8 +7,10 @@ use craft\base\Model;
 
 class Settings extends Model
 {
+
     public $injectCors = false;
     public $clearCachesOnSave = 'always';
+    public $cacheClearMode = 'full';
     public $assetsEnvironmentOverwrite = ''; #Deprecated
     public $assetsEnvironment = '';
     public $projectSlug = '';

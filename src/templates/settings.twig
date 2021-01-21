@@ -30,16 +30,28 @@
 }) }}
 
 {{ forms.selectField({
-    label: "Clear Servd's static cache on entry update events",
-    instructions: "Clears all cached HTML which has been stored as part of Servd's Static caching mechanism whenever an entry in created or updated",
+    label: "Cache Clear Trigger",
+    instructions: "Determine when to trigger a static cache clear",
     options: {
         'never' : 'Never',
-        'control-panel' : 'Only entries updated via the Control Panel',
-        'always' : 'All entry updates'
+        'control-panel' : 'Only when entries are updated via the Control Panel',
+        'always' : 'When entries are updated in any way'
     },
     id: 'clearCachesOnSave',
     name: 'clearCachesOnSave',
     value: settings.clearCachesOnSave
+}) }}
+
+{{ forms.selectField({
+    label: "Cache Clear Strategy",
+    instructions: "Determine how Servd static cache entries are invalidated when changes are made to Craft Elements",
+    options: {
+        'full' : 'Full Purge',
+        'tags' : 'Automated Tag Based Purge'
+    },
+    id: 'cacheClearMode',
+    name: 'cacheClearMode',
+    value: settings.cacheClearMode
 }) }}
 
 {{ forms.autosuggestField({
