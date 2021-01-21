@@ -1,5 +1,19 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.0.8 - 2021-01-20
+
+### Added
+
+- Automatic, tag based static cache invalidation
+
+### Deprecated
+
+- CLI command `clear-caches/servd-asset-storage` use `clear-caches/servd-static-cache` instead
+
+### Removed
+
+- Handling of filesystem based static cache which is no longer used
+
 ## 2.0.7 - 2021-01-20
 
 ### Fixed

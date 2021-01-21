@@ -11,6 +11,7 @@ use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
+use servd\AssetStorage\StaticCache\Tags;
 use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
@@ -46,6 +47,7 @@ class Plugin extends \craft\base\Plugin
     {
         $this->setComponents([
             'staticCache' => StaticCache::class,
+            'tags' => Tags::class,
             'assetsPlatform' => AssetsPlatform::class,
             'imager' => Imager::class,
             'imageOptimize' => ImageOptimize::class,
