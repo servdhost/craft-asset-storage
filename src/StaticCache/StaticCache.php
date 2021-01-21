@@ -190,6 +190,9 @@ class StaticCache extends Component
 
         //Full cache clear
         if ($settings->cacheClearMode == 'full') {
+            if (!isset($event->element)) {
+                return;
+            }
             $element = $event->element;
             if (
                 Element::STATUS_ENABLED == $element->getStatus()

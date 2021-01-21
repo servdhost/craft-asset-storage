@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.2 - 2021-01-21
+
+### Fixed
+
+- Fixed a bug when using full purge static caching and saving a Craft Section
+
 ## 2.1.1 - 2021-01-21
 
 ### Fixed
