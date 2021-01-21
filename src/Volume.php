@@ -104,4 +104,9 @@ class Volume extends FlysystemVolume
     {
         return $this->_subfolder();
     }
+
+    public function setSubfolder()
+    {
+        //Do nothing
+    }
 }
