@@ -1,6 +1,6 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.1.3 - Unreleased
+## 2.1.3 - 2021-01-28
 
 ### Added
 
