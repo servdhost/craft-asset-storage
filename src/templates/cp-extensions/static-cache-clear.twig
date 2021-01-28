@@ -1,4 +1,11 @@
 <div id="settings" class="meta" style="padding: 24px">
 	<h2 class="heading">Servd Static Cache</h2>
-	<a href="{{ url('servd-asset-storage/static-cache/purge-cache', {'entryId': entryId}) }}" class="btn submit">Purge Entry URL</a>
+	<div {{ showTagPurge ? 'style="margin-bottom: 10px;"' : '' }}>
+		<a href="{{ url('servd-asset-storage/static-cache/purge-cache', {'entryId': entryId}) }}" class="btn submit">Purge Entry URL</a>
+	</div>
+	{% if showTagPurge %}
+		<div>
+			<a href="{{ url('servd-asset-storage/static-cache/purge-tag', {'entryId': entryId}) }}" class="btn submit">Purge All URLs Tagged With This Entry</a>
+		</div>
+	{% endif %}
 </div>

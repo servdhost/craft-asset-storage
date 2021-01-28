@@ -321,14 +321,19 @@ class StaticCache extends Component
                 UrlManager::EVENT_REGISTER_CP_URL_RULES,
                 function (RegisterUrlRulesEvent $event) {
                     $event->rules['servd-asset-storage/static-cache/purge-cache'] = 'servd-asset-storage/static-cache/purge-cache';
+                    $event->rules['servd-asset-storage/static-cache/purge-tag'] = 'servd-asset-storage/static-cache/purge-tag';
                 }
             );
 
             Craft::$app->view->hook('cp.entries.edit.details', function (array &$context) {
+                $settings = Plugin::$plugin->getSettings();
                 $entry = $context['entry'];
                 $url = $entry->getUrl();
                 if (!empty($url)) {
-                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', ['entryId' => $entry->id]);
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        'entryId' => $entry->id,
+                        'showTagPurge' => $settings->cacheClearMode == 'tags'
+                    ]);
                 }
                 return '';
             });
