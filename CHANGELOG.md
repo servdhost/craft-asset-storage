@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.3 - Unreleased
+
+### Added
+
+- Manual control panel button for clearing individual Entries from the static cache
+- Protected against a potential error when an asset is deleted while another CP user is doing things
+
 ## 2.1.2 - 2021-01-21
 
 ### Fixed
