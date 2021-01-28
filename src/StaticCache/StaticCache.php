@@ -19,6 +19,7 @@ use craft\events\ElementStructureEvent;
 use craft\events\MoveElementEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\events\SectionEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
@@ -27,6 +28,7 @@ use craft\services\Sections;
 use craft\services\Structures;
 use craft\services\TemplateCaches;
 use craft\utilities\ClearCaches;
+use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
 
@@ -52,6 +54,7 @@ class StaticCache extends Component
         $this->registerEventHandlers();
         $this->registerFrontendEventHandlers();
         $this->registerElementUpdateHandlers();
+        $this->hookCPSidebarTemplate();
     }
 
     private function registerEventHandlers()
@@ -305,6 +308,30 @@ class StaticCache extends Component
             $redis->close();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
+        }
+    }
+
+    private function hookCPSidebarTemplate()
+    {
+        $request = Craft::$app->getRequest();
+        if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
+
+            Event::on(
+                UrlManager::class,
+                UrlManager::EVENT_REGISTER_CP_URL_RULES,
+                function (RegisterUrlRulesEvent $event) {
+                    $event->rules['servd-asset-storage/static-cache/purge-cache'] = 'servd-asset-storage/static-cache/purge-cache';
+                }
+            );
+
+            Craft::$app->view->hook('cp.entries.edit.details', function (array &$context) {
+                $entry = $context['entry'];
+                $url = $entry->getUrl();
+                if (!empty($url)) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', ['entryId' => $entry->id]);
+                }
+                return '';
+            });
         }
     }
 }
