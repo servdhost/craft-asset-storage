@@ -16,6 +16,10 @@ class AssetsPlatformController extends Controller
 
         $elements = Craft::$app->elements;
         $element = $elements->getElementById($req->get('elementUid'));
+        if (empty($element)) {
+            $this->redirect($req->getReferrer());
+        }
+
         $element->markAsDirty();
         $elements->saveElement($element);
 
