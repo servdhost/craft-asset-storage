@@ -92,7 +92,7 @@ class Tags extends Component
                 $redis->sRem(static::TAG_PREFIX . $tag, $url);
             }
             //Clear the url -> tags associations
-            $redis->delete(static::URL_PREFIX . $urlMd5);
+            $redis->unlink(static::URL_PREFIX . $urlMd5);
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
