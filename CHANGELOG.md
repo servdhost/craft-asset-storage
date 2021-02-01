@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.4 - 2021-02-01
+
+### Fixed
+
+- Removed use of a deprecated redis call
+
 ## 2.1.3 - 2021-01-28
 
 ### Added
