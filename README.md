@@ -1,4 +1,4 @@
-<img src="/src/icon.png" width="200px" alt="Servd Icon" title="Servd Icon" style="max-width:100%;">
+<img src="/src/icon.svg" width="200px" alt="Servd Icon" title="Servd Icon" style="max-width:100%;">
 
 # Servd Assets and Helpers for Craft CMS
 
