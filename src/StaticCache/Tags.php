@@ -62,8 +62,8 @@ class Tags extends Component
             $redisBatch = $redis->multi();
             foreach ($uniqueTags as $tag) {
                 $redisBatch->sAdd(static::TAG_PREFIX . $tag, $url);
-                $redisBatch->sAddArray(static::URL_PREFIX . $urlMd5, $uniqueTags);
             }
+            $redisBatch->sAddArray(static::URL_PREFIX . $urlMd5, $uniqueTags);
             $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
