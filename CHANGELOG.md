@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.7 - 2021-02-03
+
+### Updated
+
+- Batched redis commands during url <-> tag associations
+- Deduplicated static cache tags
+
 ## 2.1.6 - 2021-02-03
 
 ### Fixed
