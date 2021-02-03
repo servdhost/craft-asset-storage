@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.5 - 2021-02-03
+
+### Fixed
+
+- Prevented the S3 URL structure from being mangled by any other competing configurations
+
 ## 2.1.4 - 2021-02-01
 
 ### Fixed
