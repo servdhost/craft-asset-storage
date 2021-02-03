@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.8 - 2021-02-03
+
+### Fixed
+
+- Fixed a bug which was causing more tags to be associated with statically cached URLs than necessary.
+
 ## 2.1.7 - 2021-02-03
 
 ### Updated
