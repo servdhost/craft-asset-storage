@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.6 - 2021-02-03
+
+### Fixed
+
+- Pinned the AWS PHP SDK version allowed to those that do not contain a critical bug: https://github.com/aws/aws-sdk-php/issues/2189
+
 ## 2.1.5 - 2021-02-03
 
 ### Fixed
