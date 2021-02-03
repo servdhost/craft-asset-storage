@@ -59,7 +59,7 @@ class Tags extends Component
 
         try {
             $redis = $this->getRedisConnection();
-            $redisBatch = $redis->multi();
+            $redisBatch = $redis->multi(Redis::PIPELINE);
             foreach ($uniqueTags as $tag) {
                 $redisBatch->sAdd(static::TAG_PREFIX . $tag, $url);
             }
@@ -89,7 +89,7 @@ class Tags extends Component
         $urlMd5 = md5($url);
         try {
             $redis = $this->getRedisConnection();
-            $redisBatch = $redis->multi();
+            $redisBatch = $redis->multi(Redis::PIPELINE);
 
             //Get all tags for the url
             $tags = $redisBatch->sMembers(static::URL_PREFIX . $urlMd5);

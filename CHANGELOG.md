@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.9 - 2021-02-03
+
+### Updated
+
+- Further improvements to static cache tagging performance
+
 ## 2.1.8 - 2021-02-03
 
 ### Fixed
