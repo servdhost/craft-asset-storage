@@ -51,20 +51,25 @@ class Tags extends Component
 
     public function associateCurrentRequestTagsWithUrl($url)
     {
+        Craft::beginProfile('Tags::associateCurrentRequestTagsWithUrl', __METHOD__);
         $url = $this->normaliseUrl($url);
         $urlMd5 = md5($url);
 
-        foreach ($this->tags as $tag) {
-            try {
-                $redis = $this->getRedisConnection();
-                $redis->sAdd(static::TAG_PREFIX . $tag, $url);
-                $redis->sAddArray(static::URL_PREFIX . $urlMd5, $this->tags);
-            } catch (Exception $e) {
-                Craft::error($e->getMessage(), __METHOD__);
-            }
-        }
+        $uniqueTags = $this->getAllTagsForCurrentRequest();
 
-        return $this->tags;
+        try {
+            $redis = $this->getRedisConnection();
+            $redisBatch = $redis->multi();
+            foreach ($uniqueTags as $tag) {
+                $redisBatch->sAdd(static::TAG_PREFIX . $tag, $url);
+                $redisBatch->sAddArray(static::URL_PREFIX . $urlMd5, $uniqueTags);
+            }
+            $redisBatch->exec();
+        } catch (Exception $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
+        Craft::endProfile('Tags::associateCurrentRequestTagsWithUrl', __METHOD__);
+        return $uniqueTags;
     }
 
     public function getUrlsForTag($tag)
@@ -84,15 +89,17 @@ class Tags extends Component
         $urlMd5 = md5($url);
         try {
             $redis = $this->getRedisConnection();
+            $redisBatch = $redis->multi();
 
             //Get all tags for the url
-            $tags = $redis->sMembers(static::URL_PREFIX . $urlMd5);
+            $tags = $redisBatch->sMembers(static::URL_PREFIX . $urlMd5);
             foreach ($tags as $tag) {
                 //Clear the tag -> url association
-                $redis->sRem(static::TAG_PREFIX . $tag, $url);
+                $redisBatch->sRem(static::TAG_PREFIX . $tag, $url);
             }
             //Clear the url -> tags associations
-            $redis->unlink(static::URL_PREFIX . $urlMd5);
+            $redisBatch->unlink(static::URL_PREFIX . $urlMd5);
+            $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }

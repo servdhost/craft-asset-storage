@@ -123,6 +123,7 @@ class StaticCache extends Component
         Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, function (TemplateEvent $event) {
 
             //Associate collected tags with the url
+            Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
             $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
@@ -130,6 +131,7 @@ class StaticCache extends Component
                 'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),
                 __METHOD__
             );
+            Craft::endProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
         });
     }
 
@@ -153,7 +155,6 @@ class StaticCache extends Component
                 $tags[] = $props[$prop] . $databaseRow[$prop];
             }
         }
-
         return $tags;
     }
 
