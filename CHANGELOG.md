@@ -1,5 +1,15 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.10 - 2021-02-04
+
+### Added
+
+- Compatibility with optional GET param inclusion in static cache keys
+
+### Updated
+
+- Improved cache tag garbage collection
+
 ## 2.1.9 - 2021-02-03
 
 ### Updated
