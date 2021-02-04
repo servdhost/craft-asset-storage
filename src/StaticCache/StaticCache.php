@@ -43,6 +43,11 @@ class StaticCache extends Component
             return;
         }
 
+        // If static caching is disabled, this component does nothing
+        if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
+            return;
+        }
+
         if (
             empty(getenv('REDIS_STATIC_CACHE_DB'))
             || empty(getenv('REDIS_HOST'))
@@ -126,6 +131,9 @@ class StaticCache extends Component
             Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
+            if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
+                $url = preg_replace('/\?.*/', '', $url);
+            }
             $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
             Craft::info(
                 'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),

@@ -89,10 +89,9 @@ class Tags extends Component
         $urlMd5 = md5($url);
         try {
             $redis = $this->getRedisConnection();
-            $redisBatch = $redis->multi(Redis::PIPELINE);
-
             //Get all tags for the url
-            $tags = $redisBatch->sMembers(static::URL_PREFIX . $urlMd5);
+            $tags = $redis->sMembers(static::URL_PREFIX . $urlMd5);
+            $redisBatch = $redis->multi(Redis::PIPELINE);
             foreach ($tags as $tag) {
                 //Clear the tag -> url association
                 $redisBatch->sRem(static::TAG_PREFIX . $tag, $url);
