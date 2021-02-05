@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.11 - 2021-02-05
+
+### Fixed
+
+- Do not track static cache tags against pages which return a non-200 response code, they won't get cached anyway
+
 ## 2.1.10 - 2021-02-04
 
 ### Added

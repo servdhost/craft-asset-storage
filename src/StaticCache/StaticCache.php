@@ -127,8 +127,16 @@ class StaticCache extends Component
 
         Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, function (TemplateEvent $event) {
 
+            // Only store tags for pages which return a 200 response
+            $response = \Craft::$app->getResponse();
+            $responseCode = $response->statusCode;
+            if ($responseCode !== 200) {
+                return;
+            }
+
             //Associate collected tags with the url
             Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
+
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
             if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {

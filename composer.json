@@ -1,7 +1,7 @@
 {
     "name": "servd/craft-asset-storage",
     "description": "Servd Asset Storage and Helpers integration for Craft CMS",
-    "version": "2.1.10",
+    "version": "2.1.11",
     "type": "craft-plugin",
     "keywords": [
         "cms",
