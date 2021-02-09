@@ -106,6 +106,6 @@ class Tags extends Component
 
     public function normaliseUrl($url)
     {
-        return $url; //TODO
+        return str_ireplace('https://', 'http://', $url);
     }
 }

@@ -18,14 +18,16 @@ class PurgeUrlsJob extends BaseJob
     {
         $tags = Plugin::$plugin->get('tags');
 
-        $totalLength = sizeof($this->urls);
-        foreach ($this->urls as $i => $url) {
-            echo "Purging static cache for URL: " . $url;
+        $chunks = array_chunk($this->urls, 50);
+        $totalLength = sizeof($chunks);
+
+        foreach ($chunks as $i => $chunk) {
             $this->setProgress($queue, $i / $totalLength);
-            //Perform the purge
             try {
-                Ledge::purgeUrl($url);
-                $tags->clearTagsForUrl($url);
+                Ledge::purgeUrls($chunk);
+                foreach ($chunk as $url) {
+                    $tags->clearTagsForUrl($url);
+                }
             } catch (\Exception $e) {
                 throw new Exception("Failed to purge all urls: " . $e->getMessage());
             }
