@@ -5,6 +5,7 @@
 ### Updated
 
 - Purge URLs in batches of 50 to ensure the Craft queue doesn't get clogged up when large purge requests are triggered
+- Only track static cache tags on URLs which are actually going to be cached
 
 ## 2.1.12 - 2021-02-09
 
