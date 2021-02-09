@@ -12,6 +12,7 @@ use servd\AssetStorage\StaticCache\Ledge;
 class PurgeUrlsJob extends BaseJob
 {
     public $urls;
+    public $triggers;
 
     public function execute($queue)
     {
