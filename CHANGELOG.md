@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.13 - Unreleased
+
+### Updated
+
+- Purge URLs in batches of 50 to ensure the Craft queue doesn't get clogged up when large purge requests are triggered
+
 ## 2.1.12 - 2021-02-09
 
 ### Updated
