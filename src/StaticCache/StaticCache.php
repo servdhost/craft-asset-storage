@@ -258,6 +258,7 @@ class StaticCache extends Component
         Craft::$app->queue->push(new PurgeUrlsJob([
             'description' => 'Purge static cache',
             'urls' => $allUrlsToPurge,
+            'triggers' => $updatedTags,
         ]));
     }
 

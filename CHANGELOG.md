@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.12 - 2021-02-09
+
+### Updated
+
+- Include the triggers for cache purges in the background task for informational purposes
+
 ## 2.1.11 - 2021-02-05
 
 ### Fixed
