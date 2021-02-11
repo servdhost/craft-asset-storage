@@ -12,6 +12,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\volumes\Local;
+use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
 
@@ -77,6 +78,17 @@ class CPAlerts extends Component
     private function checkForStorageFull()
     {
         $messages = [];
+
+        $settings = Plugin::$plugin->getSettings();
+        $projectSlug = $settings->getProjectSlug();
+
+        $tokenKey = AssetsPlatform::CACHE_KEY_PREFIX . md5($projectSlug);
+        if (Craft::$app->cache->exists($tokenKey)) {
+            $credentials = Craft::$app->cache->get($tokenKey);
+            if (isset($credentials['full']) && $credentials['full'] === true) {
+                $messages[] = 'Your Servd Assets Platform storage is full! You can clean up some files or upgrade within the Servd dashboard.';
+            }
+        }
 
         return $messages;
     }

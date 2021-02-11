@@ -47,7 +47,7 @@ class AssetsPlatform extends Component
         return $fullPath;
     }
 
-    public function getS3ConfigArray()
+    public function getS3ConfigArray($skipCache = false)
     {
 
         $settings = Plugin::$plugin->getSettings();
@@ -65,7 +65,7 @@ class AssetsPlatform extends Component
 
         $credentials = [];
         $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
-        if (Craft::$app->cache->exists($tokenKey)) {
+        if (Craft::$app->cache->exists($tokenKey) && !$skipCache) {
             $credentials = Craft::$app->cache->get($tokenKey);
         } else {
             //Grab tokens from token service
@@ -100,7 +100,6 @@ class AssetsPlatform extends Component
             ],
         ]);
         $res = json_decode($response->getBody(), true);
-
         return $res['credentials'];
     }
 
