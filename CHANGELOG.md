@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.14 - 2021-03-02
+
+### Added
+
+- Allow Servd's warning banners in the Craft control panel to be suppressed
+
 ## 2.1.13 - 2021-02-10
 
 ### Updated
