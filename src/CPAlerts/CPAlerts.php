@@ -20,6 +20,11 @@ class CPAlerts extends Component
 
     public function init()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->suppressWarnings == '1') {
+            return;
+        }
+
         $this->registerEventHandlers();
     }
 

@@ -21,7 +21,6 @@
 }) }}
 
 {{ forms.lightswitchField({
-    first: true,
     label: "Inject CSRF tokens using AJAX",
     instructions: "Allows CSRF tokens to be used on statically cached pages. This can collide with similar functionality in other plugins.",
     id: 'injectCors',
@@ -63,4 +62,13 @@
     instructions: 'Overwrite the automatically detected assets environment to force a specific folder to be used within the Servd Assets Platform. ' ~
     'Defaults to the value of $SERVD_ASSETS_ENVIRONMENT if not defined and finally falls back to an auto-detected environment.',
     placeholder: "$SERVD_ASSETS_ENVIRONMENT"
+}) }}
+
+
+{{ forms.lightswitchField({
+    label: "Suppress Servd Warnings",
+    instructions: 'Prevent the Servd plugin from showing warnings and hints within the Craft Control Panel',
+    id: 'suppressWarnings',
+    name: 'suppressWarnings',
+    on: settings.suppressWarnings,
 }) }}

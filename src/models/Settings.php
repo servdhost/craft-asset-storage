@@ -15,6 +15,7 @@ class Settings extends Model
     public $assetsEnvironment = '';
     public $projectSlug = '';
     public $securityKey = '';
+    public $suppressWarnings = false;
 
     public function rules()
     {
