@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.1.15 - 2021-03-05
+
+## Updated
+
+- Improved warnings and error messages for problems with Servd's asset platform
+
 ## 2.1.14 - 2021-03-02
 
 ### Added
