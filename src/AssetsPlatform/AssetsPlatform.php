@@ -65,12 +65,16 @@ class AssetsPlatform extends Component
 
         $credentials = [];
         $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
+        $usageKey = static::CACHE_KEY_PREFIX . 'usage.' . md5($projectSlug);
         if (Craft::$app->cache->exists($tokenKey)) {
             $credentials = Craft::$app->cache->get($tokenKey);
         } else {
             //Grab tokens from token service
-            $credentials = $this->getSecurityToken($projectSlug, $securityKey);
+            $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
+            $credentials = $credentialsResponse['credentials'];
+            $usage = $credentialsResponse['usage'] ?? 0;
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
         }
 
         $config['credentials'] = $credentials;
@@ -82,6 +86,14 @@ class AssetsPlatform extends Component
         return $config;
     }
 
+    public function getCurrentUsagePercent()
+    {
+        $settings = Plugin::$plugin->getSettings();
+        $projectSlug = $settings->getProjectSlug();
+        $usageKey = static::CACHE_KEY_PREFIX . 'usage.' . md5($projectSlug);
+        return Craft::$app->cache->get($usageKey) ?? 0;
+    }
+
     private function getSecurityToken($projectSlug, $securityKey)
     {
         $securityTokenUrl = getenv('SECURITY_TOKEN_URL');
@@ -89,19 +101,40 @@ class AssetsPlatform extends Component
             $securityTokenUrl = static::DEFAULT_SECURITY_TOKEN_URL;
         }
 
-        $client = Craft::createGuzzleClient();
-        $response = $client->post($securityTokenUrl, [
-            'headers' => [
-                'Accept' => 'application/json',
-            ],
-            'form_params' => [
-                'slug' => $projectSlug,
-                'key' => $securityKey,
-            ],
-        ]);
-        $res = json_decode($response->getBody(), true);
+        try {
+            $client = Craft::createGuzzleClient();
+            $response = $client->post($securityTokenUrl, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                ],
+                'form_params' => [
+                    'slug' => $projectSlug,
+                    'key' => $securityKey,
+                ],
+            ]);
+            $res = json_decode($response->getBody(), true);
+        } catch (\Exception $e) {
+            throw new Exception("Failed to obtain an Assets Platform security token: " . $e->getMessage());
+        }
 
-        return $res['credentials'];
+        if (!isset($res['status'])) {
+            throw new Exception("Failed to obtain an Assets Platform security token: Invalid response from server.");
+        }
+
+        if ($res['status'] != 'success') {
+            $msg = $res['message'] ?? '';
+            if (isset($res['errors'])) {
+                $msgs = array_map(function ($el) {
+                    return is_array($el) ? implode(' ', $el) : $el;
+                }, $res['errors']);
+                $msg .= implode(' ', $msgs);
+            }
+            $msg = empty($msg) ? 'An unknown error occured' : $msg;
+
+            throw new Exception("Failed to obtain an Assets Platform security token: " . $msg);
+        }
+
+        return $res;
     }
 
     public function registerEventHandlers()
