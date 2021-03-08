@@ -156,6 +156,12 @@ class AssetsPlatform extends Component
             Assets::class,
             Assets::EVENT_GET_ASSET_URL,
             function (GetAssetUrlEvent $event) {
+
+                // If another plugin set the url, we'll just use that.
+                if ($event->url !== null) {
+                    return;
+                }
+
                 $asset = $event->asset;
                 $volume = $asset->getVolume();
                 if ($volume instanceof AssetStorageVolume) {
@@ -170,6 +176,12 @@ class AssetsPlatform extends Component
             Assets::class,
             Assets::EVENT_GET_ASSET_THUMB_URL,
             function (GetAssetThumbUrlEvent $event) {
+
+                // If another plugin set the url, we'll just use that.
+                if ($event->url !== null) {
+                    return;
+                }
+
                 $asset = $event->asset;
                 $volume = $asset->getVolume();
                 if ($volume instanceof AssetStorageVolume) {
