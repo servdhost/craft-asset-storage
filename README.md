@@ -66,6 +66,46 @@ If you would like to use Servd Asset Storage volumes during local development yo
 
 The plugin will automatically try to load these values from the environment variables `SERVD_PROJECT_SLUG` and `SERVD_SECURITY_KEY`, so you can simply add these two environment variables to your local dev environment to get things working. Alternatively you can add them directly to the plugin's settings in which case they will be added to your Craft Project Config files (so make sure they are kept secret!).
 
+### Force Local Volumes for Assets
+
+You can force the use of local volumes when working outside of Servd to make development work a little quicker. To do so, just flip the 'Use Local Volumes During Dev' switch in the plugin settings. This will convert all Servd Asset Volumes into Local Volumes during local dev, but keep them unchanged when running inside Servd itself. This setting also ensures that the Local Volume overide does not leak into any Project Config files or database data which might inadvertantly break the staging or production environment.
+
+This setting is very useful if you have multiple developers working on a single project and they all need to keep track of their own sets of assets. It also ensures that assets used during local development do not count towards your Servd Asset Platform usage total.
+
+**This setting ignores the Assets Volume Environment setting (see below) and will be applied regardless of any value added there**
+
+### Sync Assets
+
+You can sync your assets from local to staging/production, or from staging/production to local. If you are using remote storage during local development (the default) this will simply trigger a clone task to copy the asset files between directories in the Servd Asset Platform. If you have 'Use Local Volumes During Dev' enabled this will sync assets between your local filesystem and the specified remote storage directory.
+
+You can trigger asset syncs using the following commands:
+
+`./craft servd-asset-storage/local/pull-assets`
+
+`./craft servd-asset-storage/local/push-assets`
+
+These commands will try their best to auto-detect all of the settings they need, even before Craft has been installed. If it cannot identify specific settings it will prompt you for them, or you can supply them via CLI flags:
+
+`./craft servd-asset-storage/local/pull-assets --from=staging --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
+
+`./craft servd-asset-storage/local/push-assets --to=production --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
+
+### Pull/Push Local Database
+
+You can pull down a database from Servd or push up your local database at any time using the commands:
+
+`./craft servd-asset-storage/local/pull-database`
+
+`./craft servd-asset-storage/local/push-database`
+
+These commands will try their best to auto-detect all of the settings they need, even before Craft has been installed. If it cannot identify specific settings it will prompt you for them, or you can supply them via CLI flags:
+
+`./craft servd-asset-storage/local/pull-database --from=staging --servdSlug=my-project-slug --servdKey=my-servd-key --skipBackup=1 --interactive=0`
+
+`./craft servd-asset-storage/local/push-database --to=production --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
+
+*Please note that while a database is being pushed to a Servd, the target environment is likely to become unresponsive*
+
 ## Static Caching
 
 Servd has a static caching solution which is available for all projects to make use of. This plugin provides deep integration with your project's static cache by allowing brute force or intelligent cache invalidations to occur. You can select when the cache is purged and what mecahnism is used to perform the purge within the plugin settings.
@@ -99,52 +139,6 @@ I.E if you perform a full clone from staging -> production the platform will not
 ### Forcing a Specific Environment 
 
 If you wish to prevent the plugin from auto-detecting the current environment (so that you can E.G. interact with production assets whilst working locally) you can override the environment detection using the **Assets Volume Environment** setting in the main plugin settings. You should probably set this to an environment variable so that you can tweak it dynamically as required.
-
-## Local Development
-
-The plugin contains several helper functions and settings which try to make local develoment as painless as possible.
-
-### Force Local Volumes for Assets
-
-If you would like to force the use of local volumes when working outside of Servd, you can flip the 'Use Local Volumes During Dev' switch in the plugin settings. This will convert all Servd Asset Volumes into Local Volumes during local dev, but keep them unchanged when running inside Servd itself. This setting also ensures that the Local Volume overide does not leak into any Project Config files or database data which might inadvertantly break the staging or production environment.
-
-This setting is very useful if you have multiple developers working on a single project and they all need to keep track of their own sets of assets. It also ensures that assets used during local development do not count towards your Servd Asset Platform usage total.
-
-**This setting ignores the Assets Volume Environment setting and will be applied regarless of any value added there**
-
-### Sync Assets
-
-You can sync your assets from local to remote, or from remote to local. If you are using remote storage for local development (the default) this will simply trigger a clone task to copy the asset files between directories in the Servd Asset Platform. If you have 'Use Local Volumes During Dev' enabled this will sync assets between your local filesystem and the specified remote storage directory.
-
-You can trigger asset syncs using the following commands:
-
-`./craft servd-asset-storage/local/pull-assets`
-
-`./craft servd-asset-storage/local/push-assets`
-
-These commands will try their best to auto-detect all of the settings they need, even before Craft has been installed. If it cannot identify specific settings it will prompt you for them, or you can supply them via CLI flags:
-
-`./craft servd-asset-storage/local/pull-assets --from=staging --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
-
-`./craft servd-asset-storage/local/push-assets --to=production --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
-
-### Pull/Push Local Database
-
-You can pull down a database from Servd or push up your local database at any time using the commands:
-
-`./craft servd-asset-storage/local/pull-database`
-
-`./craft servd-asset-storage/local/push-database`
-
-These commands will try their best to auto-detect all of the settings they need, even before Craft has been installed. If it cannot identify specific settings it will prompt you for them, or you can supply them via CLI flags:
-
-`./craft servd-asset-storage/local/pull-database --from=staging --servdSlug=my-project-slug --servdKey=my-servd-key --skipBackup=1 --interactive=0`
-
-`./craft servd-asset-storage/local/push-database --to=production --servdSlug=my-project-slug --servdKey=my-servd-key --interactive=0`
-
-### Push/Pull Assets
-
-You can sync your assets between your local and remote environment
 
 ## Use With Craft Asset Transforms
 
