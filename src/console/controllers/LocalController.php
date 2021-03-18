@@ -35,14 +35,10 @@ class LocalController extends Controller
     public $skipBackup = false;
 
     private $leaveOpen = true;
-    private $baseServdDomain = 'http://172.29.0.1'; //'https://app.servd.host';
-    private $baseRunnerDomain = 'http://172.29.0.1:8081';
+    private $baseServdDomain = 'https://app.servd.host';
+    private $baseRunnerDomain = 'https://runner.servd.host';
 
     const S3_BUCKET = 'cdn-assets-servd-host';
-    const S3_REGION = 'eu-west-1';
-    const CACHE_KEY_PREFIX = 'servdassets.';
-    const CACHE_DURATION_SECONDS = 3600 * 24;
-    const DEFAULT_SECURITY_TOKEN_URL = 'https://app.servd.host/create-assets-token';
 
     public function options($actionID)
     {
