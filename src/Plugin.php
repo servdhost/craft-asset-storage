@@ -9,6 +9,7 @@ use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
+use servd\AssetStorage\LocalDev\LocalDev;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
@@ -27,6 +28,13 @@ class Plugin extends \craft\base\Plugin
 
         $settings = $this->getSettings();
 
+        // Set the controllerNamespace based on whether this is a console or web request
+        if (Craft::$app->getRequest()->getIsConsoleRequest()) {
+            $this->controllerNamespace = 'servd\\AssetStorage\\console\\controllers';
+        } else {
+            $this->controllerNamespace = 'servd\\AssetStorage\\controllers';
+        }
+
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
     }
@@ -39,7 +47,8 @@ class Plugin extends \craft\base\Plugin
     protected function settingsHtml()
     {
         return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [
-            'settings' => $this->getSettings()
+            'settings' => $this->getSettings(),
+            'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>=')
         ]);
     }
 
@@ -54,6 +63,7 @@ class Plugin extends \craft\base\Plugin
             'csrfInjection' => CsrfInjection::class,
             'cpAlerts' => CPAlerts::class,
             'redisDebug' => RedisDebug::class,
+            'localDev' => LocalDev::class,
         ]);
     }
 
@@ -67,5 +77,6 @@ class Plugin extends \craft\base\Plugin
         $this->assetsPlatform;
         $this->cpAlerts;
         $this->redisDebug;
+        $this->localDev;
     }
 }
