@@ -574,7 +574,13 @@ class LocalController extends Controller
 
     private function syncS3Down($source, $dest, $fullS3Prefix)
     {
-        $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
+        try {
+            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
+        } catch (\Exception $e) {
+            $this->stderr('Failed to fetch Servd Asset Platform credentials: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return;
+        }
+
         //$config['debug'] = true;
         $client = new \Aws\S3\S3Client($config);
 
@@ -631,7 +637,12 @@ class LocalController extends Controller
 
     private function syncS3Up($source, $dest, $fullS3Prefix)
     {
-        $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
+        try {
+            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
+        } catch (\Exception $e) {
+            $this->stderr('Failed to fetch Servd Asset Platform credentials: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
+            return;
+        }
         //$config['debug'] = true;
         $client = new \Aws\S3\S3Client($config);
 
