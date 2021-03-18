@@ -1,14 +1,20 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.0 - Unrelased
+
+### Added
+
+- Added local development tooling
+
 ## 2.1.16 - 2021-03-08
 
-## Updated
+### Updated
 
 - If another plugin sets the URL for an image or thumbnail stored on the Servd asset platform, don't replace it with a CDN link. (Fixes an issue when using the plugin alongside https://github.com/spicywebau/craft-embedded-assets)
 
 ## 2.1.15 - 2021-03-05
 
-## Updated
+### Updated
 
 - Improved warnings and error messages for problems with Servd's asset platform
 
