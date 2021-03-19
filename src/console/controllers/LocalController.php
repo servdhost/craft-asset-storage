@@ -79,6 +79,10 @@ class LocalController extends Controller
      */
     public function actionPullDatabase()
     {
+        if (!$this->checkOnlyLocal()) {
+            return ExitCode::USAGE;
+        }
+
         $exit = $this->requireFrom();
         if ($exit != 0) {
             return $exit;
@@ -124,6 +128,10 @@ class LocalController extends Controller
      */
     public function actionPushDatabase()
     {
+        if (!$this->checkOnlyLocal()) {
+            return ExitCode::USAGE;
+        }
+
         $exit = $this->requireTo();
         if ($exit != 0) {
             return $exit;
@@ -164,6 +172,10 @@ class LocalController extends Controller
      */
     public function actionPullAssets()
     {
+        if (!$this->checkOnlyLocal()) {
+            return ExitCode::USAGE;
+        }
+
         $exit = $this->requireFrom();
         if ($exit != 0) {
             return $exit;
@@ -218,6 +230,10 @@ class LocalController extends Controller
      */
     public function actionPushAssets()
     {
+        if (!$this->checkOnlyLocal()) {
+            return ExitCode::USAGE;
+        }
+
         $exit = $this->requireTo();
         if ($exit != 0) {
             return $exit;
@@ -271,6 +287,15 @@ class LocalController extends Controller
     /******************
      * Private Functions
      *****************/
+
+    private function checkOnlyLocal()
+    {
+        $ok = !in_array(getenv('ENVIRONMENT'), ['staging', 'production']);
+        if (!$ok) {
+            $this->stderr("You should only run local dev commands in a local dev environment." . PHP_EOL, Console::FG_RED);
+        }
+        return $ok;
+    }
 
     private function requireTo()
     {
