@@ -28,8 +28,22 @@ class LocalDev extends Component
             return;
         }
 
-        //If this is a project config related action, do nothing so that we don't mess up the PC
         $request = Craft::$app->request;
+
+        if ($request->isConsoleRequest) {
+            $isPC = false;
+            foreach ($request->params as $p) {
+                if (substr_count($p, 'project-config') > 0) {
+                    $isPC = true;
+                    break;
+                }
+            }
+            if ($isPC) {
+                return;
+            }
+        }
+
+        //If this is a project config related action, do nothing so that we don't mess up the PC
         if ($request->isActionRequest) {
             if (in_array('project-config', $request->actionSegments)) {
                 return;
