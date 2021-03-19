@@ -47,12 +47,12 @@ class AssetsPlatform extends Component
         return $fullPath;
     }
 
-    public function getS3ConfigArray()
+    public function getS3ConfigArray($forceSlug = null, $forceKey = null)
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $projectSlug = $settings->getProjectSlug();
-        $securityKey = $settings->getSecurityKey();
+        $projectSlug = $forceSlug ?? $settings->getProjectSlug();
+        $securityKey = $forceKey ?? $settings->getSecurityKey();
 
         $config = [
             'region' => static::S3_REGION,

@@ -64,6 +64,15 @@
     placeholder: "$SERVD_ASSETS_ENVIRONMENT"
 }) }}
 
+{% if craft35 %}
+	{{ forms.lightswitchField({
+        label: "Use Local Volumes During Dev",
+        instructions: 'Force the use of local filesystem volumes when working outside of Servd.',
+        id: 'useLocalVolumes',
+        name: 'useLocalVolumes',
+        on: settings.useLocalVolumes,
+    }) }}
+{% endif %}
 
 {{ forms.lightswitchField({
     label: "Suppress Servd Warnings",
