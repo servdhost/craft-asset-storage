@@ -210,6 +210,9 @@ class LocalController extends Controller
                 $s = json_decode($v['settings'], true);
                 $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->from/" . $s['customSubfolder'];
                 $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                if (!is_dir($localPath)) {
+                    mkdir($localPath, 0775, true);
+                }
                 $this->syncS3Down($remotePath, $localPath, "$this->servdSlug/$this->from/" . $s['customSubfolder']);
             }
             $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
@@ -268,6 +271,9 @@ class LocalController extends Controller
                 $s = json_decode($v['settings'], true);
                 $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->to/" . $s['customSubfolder'];
                 $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                if (!is_dir($localPath)) {
+                    mkdir($localPath, 0775, true);
+                }
                 $this->syncS3Up($localPath, $remotePath, "$this->servdSlug/$this->to/" . $s['customSubfolder']);
                 $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
             }
