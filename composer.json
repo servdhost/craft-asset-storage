@@ -24,7 +24,7 @@
         "craftcms/cms": "^3.1.5",
         "league/flysystem-aws-s3-v3": "^1.0.28",
         "yiisoft/yii2-redis": "^2.0.0",
-        "aws/aws-sdk-php": "~3.174.0"
+        "aws/aws-sdk-php": "3.0 - 3.174.3"
     },
     "autoload": {
         "psr-4": {
