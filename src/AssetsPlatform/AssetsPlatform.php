@@ -78,8 +78,10 @@ class AssetsPlatform extends Component
         }
 
         $config['credentials'] = $credentials;
-        $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com/';
+        $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
         $config['use_path_style_endpoint'] = true;
+        $config['dual_stack'] = false;
+        $config['accelerate'] = false;
         $client = Craft::createGuzzleClient();
         $config['http_handler'] = new GuzzleHandler($client);
 
