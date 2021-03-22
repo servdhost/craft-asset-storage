@@ -1,10 +1,14 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.2.0 - Unrelased
+## 2.2.0 - 2021-03-22
 
 ### Added
 
 - Added local development tooling
+
+### Fixed
+
+- Constrained AWS SDK version to prevent the bugged 3.175 update from being used
 
 ## 2.1.16 - 2021-03-08
 
