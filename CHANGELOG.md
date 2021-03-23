@@ -1,5 +1,10 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.1 - 2021-03-23
+
+### Updated
+- Remove composer.json version constraint which was added to prevent an AWS SDK bug from being downloaded (which is now fixed)
+
 ## 2.2.0 - 2021-03-22
 
 ### Added
