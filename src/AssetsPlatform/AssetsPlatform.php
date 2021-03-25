@@ -275,14 +275,6 @@ class AssetsPlatform extends Component
         $request = Craft::$app->getRequest();
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
 
-            Event::on(
-                UrlManager::class,
-                UrlManager::EVENT_REGISTER_CP_URL_RULES,
-                function (RegisterUrlRulesEvent $event) {
-                    $event->rules['servd-asset-storage/assets-platform/clear-cache'] = 'servd-asset-storage/assets-platform/clear-cache';
-                }
-            );
-
             Craft::$app->view->hook('cp.assets.edit.details', function (array &$context) {
                 $html = '';
                 $element = $context['element'];

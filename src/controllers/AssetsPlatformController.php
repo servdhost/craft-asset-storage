@@ -12,6 +12,7 @@ class AssetsPlatformController extends Controller
 
     public function actionClearCache()
     {
+        $this->requireCpRequest();
         $req = Craft::$app->getRequest();
 
         $elements = Craft::$app->elements;
@@ -30,6 +31,6 @@ class AssetsPlatformController extends Controller
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
-        $this->redirect($req->getReferrer());
+        return $this->redirect($req->getReferrer());
     }
 }

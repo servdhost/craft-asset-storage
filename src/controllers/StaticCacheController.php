@@ -15,6 +15,7 @@ class StaticCacheController extends Controller
 
     public function actionPurgeCache()
     {
+        $this->requireCpRequest();
         $req = Craft::$app->getRequest();
 
         $entries = Craft::$app->entries;
@@ -32,11 +33,12 @@ class StaticCacheController extends Controller
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
-        $this->redirect($req->getReferrer());
+        return $this->redirect($req->getReferrer());
     }
 
     public function actionPurgeTag()
     {
+        $this->requireCpRequest();
         $req = Craft::$app->getRequest();
 
         $entries = Craft::$app->entries;
@@ -57,6 +59,6 @@ class StaticCacheController extends Controller
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
-        $this->redirect($req->getReferrer());
+        return $this->redirect($req->getReferrer());
     }
 }
