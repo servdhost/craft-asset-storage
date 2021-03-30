@@ -4,6 +4,7 @@ namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
 use Aws\S3\S3Client;
+use Composer\Util\Platform;
 use Craft;
 use craft\console\Controller;
 use craft\db\Query;
@@ -114,8 +115,33 @@ class LocalController extends Controller
 
         $this->stdout('Starting streaming database import' . PHP_EOL);
 
+        $skipColStat = '';
+
+        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
+            // Find out if the db supports column-statistics
+            $shellCommand = new ShellCommand();
+
+            if (Platform::isWindows()) {
+                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+            } else {
+                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+            }
+
+            // If we don't have proc_open, maybe we've got exec
+            if (!function_exists('proc_open') && function_exists('exec')) {
+                $shellCommand->useExec = true;
+            }
+
+            $success = $shellCommand->execute();
+
+            // if there was output, then they're running mysqldump 8.x against a 5.x database.
+            if ($success && $shellCommand->getOutput()) {
+                $skipColStat .= ' --skip-column-statistics';
+            }
+        }
+
         //Perform a direct stream from the remote db into the local
-        $command = "mysqldump --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase";
+        $command = "mysqldump $skipColStat --no-tablespaces --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase";
         $this->runCommand($command);
 
         //Close external database access on Servd
@@ -159,7 +185,7 @@ class LocalController extends Controller
         $this->stdout('Starting streaming database export' . PHP_EOL);
 
         //Perform a direct stream from the remote db into the local
-        $command = "mysqldump --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
+        $command = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
         $this->runCommand($command);
 
         //Close external database access on Servd
@@ -525,6 +551,8 @@ class LocalController extends Controller
         $success = $shellCommand->execute();
         if (!$success) {
             $this->stderr($shellCommand->getStdErr() . PHP_EOL, Console::FG_RED);
+        } else {
+            $this->stdout($shellCommand->getOutput() . PHP_EOL);
         }
 
         return $success;

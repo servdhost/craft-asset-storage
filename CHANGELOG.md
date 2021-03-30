@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.3 - 2021-03-30
+
+### Fixed
+
+- Fixed a bug when using a mysql 8 client to locally to pull database dumps from Servd
+
 ## 2.2.2 - 2021-03-25
 
 ### Fixed
