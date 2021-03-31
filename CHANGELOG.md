@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.4 - 2021-03-31
+
+### Fixed
+
+- Fixed the 2.2.3 fix which didn't fix the thing it was supposed to fix
+
 ## 2.2.3 - 2021-03-30
 
 ### Fixed

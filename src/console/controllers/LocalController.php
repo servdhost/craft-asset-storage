@@ -117,27 +117,24 @@ class LocalController extends Controller
 
         $skipColStat = '';
 
-        if (version_compare(App::normalizeVersion(Craft::$app->getDb()->getSchema()->getServerVersion()), "8", "<")) {
-            // Find out if the db supports column-statistics
-            $shellCommand = new ShellCommand();
+        // Find out if mysqldump supports column-statistics
+        $shellCommand = new ShellCommand();
 
-            if (Platform::isWindows()) {
-                $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-            } else {
-                $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-            }
+        if (Platform::isWindows()) {
+            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
+        } else {
+            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
+        }
 
-            // If we don't have proc_open, maybe we've got exec
-            if (!function_exists('proc_open') && function_exists('exec')) {
-                $shellCommand->useExec = true;
-            }
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
 
-            $success = $shellCommand->execute();
+        $success = $shellCommand->execute();
 
-            // if there was output, then they're running mysqldump 8.x against a 5.x database.
-            if ($success && $shellCommand->getOutput()) {
-                $skipColStat .= ' --skip-column-statistics';
-            }
+        // if there was output, then they're running mysqldump 8.x against a 5.x database.
+        if ($success && $shellCommand->getOutput()) {
+            $skipColStat .= ' --skip-column-statistics';
         }
 
         //Perform a direct stream from the remote db into the local
