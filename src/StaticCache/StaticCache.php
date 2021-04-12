@@ -28,6 +28,7 @@ use craft\services\Sections;
 use craft\services\Structures;
 use craft\services\TemplateCaches;
 use craft\utilities\ClearCaches;
+use craft\web\Application;
 use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
@@ -56,6 +57,7 @@ class StaticCache extends Component
             return;
         }
 
+        $this->registerLoggedInHandlers();
         $this->registerEventHandlers();
         $this->registerFrontendEventHandlers();
         $this->registerElementUpdateHandlers();
@@ -149,6 +151,31 @@ class StaticCache extends Component
                 __METHOD__
             );
             Craft::endProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
+        });
+    }
+
+    private function registerLoggedInHandlers()
+    {
+        Event::on(Application::class, Application::EVENT_INIT, function () {
+            if (Craft::$app->getUser()->isGuest) {
+                Craft::$app->response->cookies->remove('SERVD_LOGGED_IN_STATUS');
+            } else {
+                $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;
+                $expire = (int) time() + (3600 * 24 * 300);
+                if (PHP_VERSION_ID >= 70300) {
+                    setcookie('SERVD_LOGGED_IN_STATUS', '1', [
+                        'expires' => $expire,
+                        'path' => '/',
+                        'domain' => $domain,
+                        'secure' => false,
+                        'httponly' => false,
+                        'samesite' => null
+                    ]);
+                } else {
+                    setcookie('SERVD_LOGGED_IN_STATUS', '1', $expire, '/', $domain, false, false);
+                }
+                $_COOKIE['SERVD_LOGGED_IN_STATUS'] = 1;
+            }
         });
     }
 

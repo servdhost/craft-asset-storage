@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.5 - 2021-04-12
+
+### Updated
+
+- Altered the method used to detect whether users are logged in when deciding whether or not to skip the static cache for those users
+
 ## 2.2.4 - 2021-03-31
 
 ### Fixed
