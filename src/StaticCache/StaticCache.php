@@ -31,12 +31,14 @@ use craft\utilities\ClearCaches;
 use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
+use servd\AssetStorage\StaticCache\Twig\Extension;
 
 class StaticCache extends Component
 {
 
     public function init()
     {
+        $this->registerTwigExtension();
 
         // If we aren't running on Servd, this component does nothing
         if (!extension_loaded('redis')) {
@@ -60,6 +62,40 @@ class StaticCache extends Component
         $this->registerFrontendEventHandlers();
         $this->registerElementUpdateHandlers();
         $this->hookCPSidebarTemplate();
+    }
+
+    private function registerTwigExtension()
+    {
+        if (Craft::$app->request->getIsSiteRequest()) {
+            // Add in our Twig extension
+            $extension = new Extension();
+            Craft::$app->view->registerTwigExtension($extension);
+
+            $view = Craft::$app->getView();
+
+            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content?key=';
+            $view->registerJs('
+                function pullDynamic() {
+                    var dynamicBlocks = document.getElementsByClassName("servd-dynamic-content");
+                    var len = dynamicBlocks.length;
+                    for (var i=0; i<len; i++) {
+                        var block = dynamicBlocks[i];
+                        var key = block.getAttribute("data-key");
+                        var xhr = new XMLHttpRequest();
+                        xhr.onload = function () {
+                            if (xhr.status >= 200 && xhr.status <= 299) {
+                                var mySpan = document.createElement("span");
+                                mySpan.innerHTML = "replaced anchor!";
+                                block.parentNode.replaceChild(mySpan, block);
+                            }
+                        }
+                        xhr.open("GET", "' . $url . '" + key);
+                        xhr.send();
+                    }
+                }
+                setTimeout(pullDynamic, 50);
+            ', View::POS_END);
+        }
     }
 
     private function registerEventHandlers()

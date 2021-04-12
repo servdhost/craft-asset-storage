@@ -28,7 +28,7 @@ cd /path/to/my-project.test
 composer require servd/craft-asset-storage
 
 # tell Craft to install the plugin
-./craft install/plugin servd-asset-storage
+./craft plugin/install servd-asset-storage
 ```
 
 ## Features
