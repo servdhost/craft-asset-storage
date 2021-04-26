@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.2.6 - 2021-04-26
+
+### Updated
+
+- Updated the static cache clear button to purge all URLs associated with an entry, rather than just the one for the default site
+
 ## 2.2.5 - 2021-04-12
 
 ### Updated
