@@ -76,46 +76,57 @@ class IncludeNode extends Node implements NodeOutputInterface
 
     protected function ajaxInclude(Compiler $compiler)
     {
-
         $n = self::$_blockCount++;
-
         $namespace = $compiler->getVarName();
 
         $compiler->write('$' . $namespace . 'template = base64_encode(');
         $compiler->subcompile($this->getNode('expr'));
         $compiler->write(');' . "\n");
         $compiler->write('$' . $namespace . 'fullContext = ');
-        $this->addTemplateArguments($compiler);
+        $this->addTemplateArguments($compiler, true);
         $compiler->write(';' . "\n");
 
         $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
-        $compiler->write('$' . $namespace . 'finalArguments = base64_encode(serialize($' . $namespace . 'serializableContext));' . "\n");
+        $compiler->write('$' . $namespace . 'finalArguments = base64_encode(gzcompress(serialize($' . $namespace . 'serializableContext)));' . "\n");
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
 
-        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" class=\"dynamic-include\" data-site=\"$' . $namespace . 'siteId\" data-template=\"$' . $namespace . 'template\" data-args=\"$' . $namespace . 'finalArguments\" data-ignore-missing=\"$' . $namespace . 'ignoreMissing\"></div>";' . "\n");
+        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" class=\"dynamic-include\" ' .
+            'data-site=\"$' . $namespace . 'siteId\" ' .
+            'data-template=\"$' . $namespace . 'template\" ' .
+            'data-args=\"$' . $namespace . 'finalArguments\" ' .
+            'data-ignore-missing=\"$' . $namespace . 'ignoreMissing\"></div>";' . "\n");
     }
 
     protected function esiInclude(Compiler $compiler)
     {
-
+        $n = self::$_blockCount++;
         $namespace = $compiler->getVarName();
 
         $compiler->write('$headers = \Craft::$app->getResponse()->getHeaders();' . "\n");
         $compiler->write('if(!$headers->has(\'Surrogate-Control\')){$headers->add(\'Surrogate-Control\', \'content="ESI/1.0"\');}' . "\n");
-        $compiler->write('$' . $namespace . 'template = base64_encode(');
+        $compiler->write('$' . $namespace . 'template = ');
         $compiler->subcompile($this->getNode('expr'));
-        $compiler->write(');' . "\n");
+        $compiler->write(';' . "\n");
         $compiler->write('$' . $namespace . 'fullContext = ');
-        $this->addTemplateArguments($compiler);
+        $this->addTemplateArguments($compiler, false);
         $compiler->write(';' . "\n");
 
         $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
-        $compiler->write('$' . $namespace . 'finalArguments = base64_encode(serialize($' . $namespace . 'serializableContext));' . "\n");
+        $compiler->write('$' . $namespace . 'finalArguments = $' . $namespace . 'serializableContext;' . "\n");
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
 
-        $compiler->write('$' . $namespace . 'esiUrl = "/" . ' .
+        $compiler->write('\servd\AssetStorage\StaticCache\StaticCache::$esiBlocks[] = [' .
+            '"id" => "dynamic-block-' . $n . '", ' .
+            '"template" => $' . $namespace . 'template, ' .
+            '"args" =>  $' . $namespace . 'finalArguments, ' .
+            '"siteId" =>  $' . $namespace . 'siteId, ' .
+            '];');
+
+        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" /></div>";' . "\n");
+
+        /*$compiler->write('$' . $namespace . 'esiUrl = "/" . ' .
             'Craft::$app->getConfig()->getGeneral()->actionTrigger  . ' .
             '"/servd-asset-storage/dynamic-content/get-content' .
             '?template=$' . $namespace . 'template' .
@@ -123,7 +134,7 @@ class IncludeNode extends Node implements NodeOutputInterface
             '&siteId=$' . $namespace . 'siteId' .
             '";' . "\n");
 
-        $compiler->write('echo "<esi:include src=\"$' . $namespace . 'esiUrl\" />";' . "\n");
+        $compiler->write('echo "<esi:include src=\"$' . $namespace . 'esiUrl\" />";' . "\n");*/
     }
 
     protected function addGetTemplate(Compiler $compiler)
@@ -138,11 +149,12 @@ class IncludeNode extends Node implements NodeOutputInterface
             ->raw(')');
     }
 
-    protected function addTemplateArguments(Compiler $compiler)
+    protected function addTemplateArguments(Compiler $compiler, $allowFullContext = false)
     {
+
         if (!$this->hasNode('variables')) {
-            $compiler->raw(false === $this->getAttribute('only') ? '$context' : '[]');
-        } elseif (false === $this->getAttribute('only')) {
+            $compiler->raw((false === $this->getAttribute('only') && $allowFullContext) ? '$context' : '[]');
+        } elseif ($allowFullContext && false === $this->getAttribute('only')) {
             $compiler->raw('twig_array_merge($context, ');
             $compiler->subcompile($this->getNode('variables'));
             $compiler->raw(')');

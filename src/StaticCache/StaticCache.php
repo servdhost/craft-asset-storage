@@ -33,9 +33,13 @@ use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
+use yii\base\View as BaseView;
+use yii\web\View as WebView;
 
 class StaticCache extends Component
 {
+
+    public static $esiBlocks = [];
 
     public function init()
     {
@@ -68,6 +72,24 @@ class StaticCache extends Component
 
     private function registerTwigExtension()
     {
+
+        Event::on(WebView::class, WebView::EVENT_END_BODY, function () {
+            $view = Craft::$app->getView();
+
+            if (sizeof(static::$esiBlocks) == 0) {
+                return;
+            }
+
+            $allBlocks = serialize(static::$esiBlocks);
+            $compressedData = urlencode(base64_encode(gzcompress($allBlocks)));
+
+            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $url .= '?blocks=' . $compressedData;
+
+            //$view->registerJs('window.SERVD_DYNAMIC_BLOCKS="<esi:include src="' . $url . '" />"', View::POS_END);
+            $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $url . '" /></script>');
+        });
+
         if (Craft::$app->request->getIsSiteRequest()) {
             // Add in our Twig extension
             $extension = new Extension();
@@ -76,8 +98,28 @@ class StaticCache extends Component
             $view = Craft::$app->getView();
 
             $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+
             $view->registerJs('
+                function insertBlocks(blocks)
+                {
+                    for(var i = 0; i < blocks.length; i++){
+                        var rBlock = blocks[i];
+                        var dBlock = document.getElementById(rBlock.id);
+                        var placeholder = document.createElement("div");
+                        placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
+                        var newNodes = placeholder.firstElementChild; 
+                        dBlock.parentNode.replaceChild(newNodes, dBlock);    
+                    }
+                }
                 function pullDynamic() {
+                    var injectedContent = document.getElementById("SERVD_DYNAMIC_BLOCKS");
+                    if(injectedContent){
+                        var parsedContent = JSON.parse(injectedContent.innerHTML);
+                        insertBlocks(parsedContent.blocks);
+                        window.dispatchEvent( new Event("servd.dynamicloaded") );
+                        return;
+                    }
+
                     var dynamicBlocks = document.getElementsByClassName("dynamic-include");
                     var len = dynamicBlocks.length;
                     var allBlocks = [];
@@ -100,14 +142,7 @@ class StaticCache extends Component
                         xhr.onload = function () {
                             if (xhr.status >= 200 && xhr.status <= 299) {
                                 var responseContent = JSON.parse(xhr.response);
-                                for(var i = 0; i < responseContent.blocks.length; i++){
-                                    var rBlock = responseContent.blocks[i];
-                                    var dBlock = document.getElementById(rBlock.id);
-                                    var placeholder = document.createElement("div");
-                                    placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
-                                    var newNodes = placeholder.firstElementChild; 
-                                    dBlock.parentNode.replaceChild(newNodes, dBlock);    
-                                }
+                                insertBlocks(responseContent.blocks);
                                 window.dispatchEvent( new Event("servd.dynamicloaded") );
                             }
                         }

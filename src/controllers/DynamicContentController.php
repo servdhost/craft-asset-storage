@@ -24,7 +24,7 @@ class DynamicContentController extends Controller
                 $id = $block['id'];
                 $siteId = $block['siteId'];
                 $template = base64_decode($block['template']);
-                $args = unserialize(base64_decode($block['args']));
+                $args = unserialize(gzuncompress(base64_decode($block['args'])));
                 $args = $this->rehydrateArgs($args);
 
                 Craft::$app->getSites()->setCurrentSite($siteId);
@@ -38,14 +38,35 @@ class DynamicContentController extends Controller
             return $this->asJson($response);
         } else {
             //ESI can only use get requests and only contain a single block
-            $template = base64_decode($req->getQueryParam('template'));
-            $args = unserialize(base64_decode($req->getQueryParam('args')));
-            $args = $this->rehydrateArgs($args);
-            $siteId = $req->getQueryParam('siteId');
+            $blocks = unserialize(gzuncompress(base64_decode($req->getQueryParam('blocks'))));
 
-            Craft::$app->getSites()->setCurrentSite($siteId);
-            $output = Craft::$app->getView()->renderPageTemplate($template, $args);
-            return $output;
+            $response = ['blocks' => []];
+            foreach ($blocks as $block) {
+                $id = $block['id'];
+                $siteId = $block['siteId'];
+                $template = $block['template'];
+                $args = $block['args'];
+                $args = $this->rehydrateArgs($args);
+
+                Craft::$app->getSites()->setCurrentSite($siteId);
+                $output = Craft::$app->getView()->renderPageTemplate($template, $args);
+                $response['blocks'][] = [
+                    'id' => $id,
+                    'html' => $output
+                ];
+            }
+
+            return $this->asJson($response);
+
+
+            // $template = base64_decode($req->getQueryParam('template'));
+            // $args = unserialize(gzuncompress(base64_decode($req->getQueryParam('args'))));
+            // $args = $this->rehydrateArgs($args);
+            // $siteId = $req->getQueryParam('siteId');
+
+            // Craft::$app->getSites()->setCurrentSite($siteId);
+            // $output = Craft::$app->getView()->renderPageTemplate($template, $args);
+            // return $output;
         }
     }
 
