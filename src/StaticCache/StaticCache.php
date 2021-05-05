@@ -97,11 +97,14 @@ class StaticCache extends Component
                         var dBlock = document.getElementById(rBlock.id);
                         var placeholder = document.createElement("div");
                         placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
-                        var newNodes = placeholder.firstElementChild; 
-                        if(!newNodes){
-                            newNodes = placeholder;
+                        var allChildren = [];
+                        for (var i = 0; i < placeholder.childNodes.length; i++) {
+                            allChildren.push(placeholder.childNodes[i]);
                         }
-                        dBlock.parentNode.replaceChild(newNodes, dBlock);    
+                        for(var node of allChildren){
+                            dBlock.parentNode.insertBefore(node, dBlock);
+                        }
+                        dBlock.parentNode.removeChild(dBlock);    
                     }
                 }
                 function pullDynamic() {
