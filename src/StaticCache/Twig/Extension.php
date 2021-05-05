@@ -4,7 +4,7 @@ namespace servd\AssetStorage\StaticCache\Twig;
 
 use Twig\Extension\AbstractExtension;
 
-class Extension extends AbstractExtension //implements GlobalsInterface
+class Extension extends AbstractExtension
 {
     /**
      * @inheritdoc

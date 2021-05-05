@@ -9,9 +9,7 @@ use Twig\TokenParser\AbstractTokenParser;
 /**
  * Includes a template dynamically.
  *
- *   {% include 'header.html' %}
- *     Body
- *   {% include 'footer.html' %}
+ *   {% dynamicInclude 'loginState.html' %}
  *
  */
 class IncludeTokenParser extends AbstractTokenParser

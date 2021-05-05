@@ -2,6 +2,7 @@
 
 namespace servd\AssetStorage\StaticCache\Twig;
 
+use Craft;
 use Twig\Compiler;
 use Twig\Node\Expression\AbstractExpression;
 use Twig\Node\Node;
@@ -109,7 +110,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $compiler->subcompile($this->getNode('expr'));
         $compiler->write(';' . "\n");
         $compiler->write('$' . $namespace . 'fullContext = ');
-        $this->addTemplateArguments($compiler, false);
+        $this->addTemplateArguments($compiler, true);
         $compiler->write(';' . "\n");
 
         $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
@@ -125,16 +126,6 @@ class IncludeNode extends Node implements NodeOutputInterface
             '];');
 
         $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" /></div>";' . "\n");
-
-        /*$compiler->write('$' . $namespace . 'esiUrl = "/" . ' .
-            'Craft::$app->getConfig()->getGeneral()->actionTrigger  . ' .
-            '"/servd-asset-storage/dynamic-content/get-content' .
-            '?template=$' . $namespace . 'template' .
-            '&args=$' . $namespace . 'finalArguments' .
-            '&siteId=$' . $namespace . 'siteId' .
-            '";' . "\n");
-
-        $compiler->write('echo "<esi:include src=\"$' . $namespace . 'esiUrl\" />";' . "\n");*/
     }
 
     protected function addGetTemplate(Compiler $compiler)
@@ -167,16 +158,25 @@ class IncludeNode extends Node implements NodeOutputInterface
 
     public static function cleanContextArray($a)
     {
+        $twigGlobals = array_keys(Craft::$app->getView()->getTwig()->getGlobals());
         $cleaned = [];
         foreach ($a as $key => $el) {
+            //Don't include Craft Globals
+            if (in_array($key, $twigGlobals)) {
+                continue;
+            }
+            //Scalars are ok
             if (is_scalar($el) || is_bool($el) || is_null($el)) {
                 $cleaned[$key] = $el;
                 continue;
             }
+            //Arrays need to be recursed into
             if (is_array($el)) {
                 $cleaned[$key] = static::cleanContextArray($el);
                 continue;
             }
+            //The only objects we want are subclasses of Craft's Element
+            //We only store a reference to these. Also works with custom element types
             if (is_object($el) && is_subclass_of($el, \craft\base\Element::class)) {
                 $cleaned[$key] = [
                     'type' => get_class($el),

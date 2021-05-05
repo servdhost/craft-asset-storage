@@ -57,16 +57,6 @@ class DynamicContentController extends Controller
             }
 
             return $this->asJson($response);
-
-
-            // $template = base64_decode($req->getQueryParam('template'));
-            // $args = unserialize(gzuncompress(base64_decode($req->getQueryParam('args'))));
-            // $args = $this->rehydrateArgs($args);
-            // $siteId = $req->getQueryParam('siteId');
-
-            // Craft::$app->getSites()->setCurrentSite($siteId);
-            // $output = Craft::$app->getView()->renderPageTemplate($template, $args);
-            // return $output;
         }
     }
 
