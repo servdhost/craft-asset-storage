@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.3.0 - 2021-05-06
+
+### Added
+
+- Support for super simple dynamic content in combination with static caching. Also supports zero-config ESI dynamic content if avaialble on Servd
+
 ## 2.2.6 - 2021-04-26
 
 ### Updated
