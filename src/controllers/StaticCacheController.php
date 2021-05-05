@@ -19,16 +19,23 @@ class StaticCacheController extends Controller
         $req = Craft::$app->getRequest();
 
         $entries = Craft::$app->entries;
-        $entry = $entries->getEntryById($req->get('entryId'));
-        if (is_null($entry)) {
-            $this->redirect($req->getReferrer());
+        $sites = Craft::$app->sites;
+        $urls = [];
+
+        foreach ($sites->allSiteIds as $siteId) {
+            $siteEntry = $entries->getEntryById($req->get('entryId'), $siteId);
+            if (!is_null($siteEntry)) {
+                $urls[] = $siteEntry->getUrl();
+            }
         }
 
-        $entryUrl = $entry->getUrl();
+        if (sizeof($urls) == 0) {
+            return $this->redirect($req->getReferrer());
+        }
 
         Craft::$app->queue->push(new PurgeUrlsJob([
             'description' => 'Purge static cache',
-            'urls' => [$entryUrl],
+            'urls' => $urls,
         ]));
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
@@ -44,7 +51,7 @@ class StaticCacheController extends Controller
         $entries = Craft::$app->entries;
         $entry = $entries->getEntryById($req->get('entryId'));
         if (is_null($entry)) {
-            $this->redirect($req->getReferrer());
+            return $this->redirect($req->getReferrer());
         }
 
         $tags = Plugin::$plugin->get('tags');
