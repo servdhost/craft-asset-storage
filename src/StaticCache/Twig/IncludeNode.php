@@ -92,6 +92,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
 
+        $compiler->write('\servd\AssetStorage\StaticCache\StaticCache::$dynamicBlocksAdded[] = true;');
         $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" class=\"dynamic-include\" ' .
             'data-site=\"$' . $namespace . 'siteId\" ' .
             'data-template=\"$' . $namespace . 'template\" ' .
@@ -104,8 +105,6 @@ class IncludeNode extends Node implements NodeOutputInterface
         $n = self::$_blockCount++;
         $namespace = $compiler->getVarName();
 
-        $compiler->write('$headers = \Craft::$app->getResponse()->getHeaders();' . "\n");
-        $compiler->write('if(!$headers->has(\'Surrogate-Control\')){$headers->add(\'Surrogate-Control\', \'content="ESI/1.0"\');}' . "\n");
         $compiler->write('$' . $namespace . 'template = ');
         $compiler->subcompile($this->getNode('expr'));
         $compiler->write(';' . "\n");
@@ -118,6 +117,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
 
+        $compiler->write('\servd\AssetStorage\StaticCache\StaticCache::$dynamicBlocksAdded[] = true;');
         $compiler->write('\servd\AssetStorage\StaticCache\StaticCache::$esiBlocks[] = [' .
             '"id" => "dynamic-block-' . $n . '", ' .
             '"template" => $' . $namespace . 'template, ' .

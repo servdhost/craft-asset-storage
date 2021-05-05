@@ -40,6 +40,7 @@ class StaticCache extends Component
 {
 
     public static $esiBlocks = [];
+    public static $dynamicBlocksAdded = false;
 
     public function init()
     {
@@ -76,28 +77,12 @@ class StaticCache extends Component
         Event::on(WebView::class, WebView::EVENT_END_BODY, function () {
             $view = Craft::$app->getView();
 
-            if (sizeof(static::$esiBlocks) == 0) {
+            if (!static::$dynamicBlocksAdded) {
                 return;
             }
 
-            $allBlocks = serialize(static::$esiBlocks);
-            $compressedData = urlencode(base64_encode(gzcompress($allBlocks)));
-
-            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
-            $url .= '?blocks=' . $compressedData;
-
-            //$view->registerJs('window.SERVD_DYNAMIC_BLOCKS="<esi:include src="' . $url . '" />"', View::POS_END);
-            $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $url . '" /></script>');
-        });
-
-        if (Craft::$app->request->getIsSiteRequest()) {
-            // Add in our Twig extension
-            $extension = new Extension();
-            Craft::$app->view->registerTwigExtension($extension);
-
             $view = Craft::$app->getView();
-
-            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $ajaxUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
 
             $view->registerJs('
                 function insertBlocks(blocks)
@@ -108,6 +93,9 @@ class StaticCache extends Component
                         var placeholder = document.createElement("div");
                         placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
                         var newNodes = placeholder.firstElementChild; 
+                        if(!newNodes){
+                            newNodes = placeholder;
+                        }
                         dBlock.parentNode.replaceChild(newNodes, dBlock);    
                     }
                 }
@@ -146,7 +134,7 @@ class StaticCache extends Component
                                 window.dispatchEvent( new Event("servd.dynamicloaded") );
                             }
                         }
-                        xhr.open("POST", "' . $url . '", );
+                        xhr.open("POST", "' . $ajaxUrl . '", );
                         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                         xhr.send(JSON.stringify(allBlocks));
                     } else {
@@ -155,6 +143,29 @@ class StaticCache extends Component
                 }
                 setTimeout(pullDynamic, 50);
             ', View::POS_END);
+
+            if (sizeof(static::$esiBlocks) == 0) {
+                return;
+            }
+
+            $allBlocks = serialize(static::$esiBlocks);
+            $compressedData = urlencode(base64_encode(gzcompress($allBlocks)));
+
+            $esiUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $esiUrl .= '?blocks=' . $compressedData;
+
+            $headers = \Craft::$app->getResponse()->getHeaders();
+            if (!$headers->has('Surrogate-Control')) {
+                $headers->add('Surrogate-Control', 'content="ESI/1.0"');
+            }
+
+            $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $esiUrl . '" /></script>');
+        });
+
+        if (Craft::$app->request->getIsSiteRequest()) {
+            // Add in our Twig extension
+            $extension = new Extension();
+            Craft::$app->view->registerTwigExtension($extension);
         }
     }
 
