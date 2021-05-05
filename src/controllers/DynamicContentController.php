@@ -4,48 +4,69 @@ namespace servd\AssetStorage\controllers;
 
 use Craft;
 use craft\web\Controller;
-use Twig\Compiler;
-use Twig\Environment;
-use Twig\Node\BodyNode;
-use Twig\Node\ModuleNode;
-use Twig\Node\Node;
-use Twig\TokenStream;
 
 class DynamicContentController extends Controller
 {
     protected $allowAnonymous = true;
+    public $enableCsrfValidation = false;
 
     public function actionGetContent()
     {
         $req = Craft::$app->getRequest();
 
-        $key = $req->getQueryParam('key');
+        if ($req->isPost) {
+            //Ajax requests arrive via POST and contain multiple blocks
+            $blocks = json_decode($req->getRawBody(), true);
 
-        $cacheKeyForBodyNode = 'servd-dy-' . $key;
+            $response = ['blocks' => []];
 
-        $cacheService = Craft::$app->getCache();
-        $cached = $cacheService->get($cacheKeyForBodyNode);
-        $nodeTree = unserialize($cached);
+            foreach ($blocks as $block) {
+                $id = $block['id'];
+                $siteId = $block['siteId'];
+                $template = base64_decode($block['template']);
+                $args = unserialize(base64_decode($block['args']));
+                $args = $this->rehydrateArgs($args);
 
-        $source = $nodeTree->getSourceContext();
-        $node = new ModuleNode(new BodyNode([$nodeTree]), null, new Node([]), new Node([]), new Node([]), [], $source);
+                Craft::$app->getSites()->setCurrentSite($siteId);
+                $output = Craft::$app->getView()->renderPageTemplate($template, $args);
+                $response['blocks'][] = [
+                    'id' => $id,
+                    'html' => $output
+                ];
+            }
 
-        $twig = Craft::$app->getView()->getTwig();
-        $compiled = $twig->compile($node);
+            return $this->asJson($response);
+        } else {
+            //ESI can only use get requests and only contain a single block
+            $template = base64_decode($req->getQueryParam('template'));
+            $args = unserialize(base64_decode($req->getQueryParam('args')));
+            $args = $this->rehydrateArgs($args);
+            $siteId = $req->getQueryParam('siteId');
 
+            Craft::$app->getSites()->setCurrentSite($siteId);
+            $output = Craft::$app->getView()->renderPageTemplate($template, $args);
+            return $output;
+        }
+    }
 
-        $twig->getCache(false)->write('atest', $compiled);
-        $twig->getCache(false)->load('atest');
-
-
-        $html = $twig->render('atest');
-
-        return $html;
-        // var_dump($compiled);
-        // exit;
-        // ob_start();
-        // eval($compiled);
-        // $content = ob_get_clean();
-        //return $content;
+    private function rehydrateArgs($a)
+    {
+        $hydrated = [];
+        $elements = \Craft::$app->getElements();
+        foreach ($a as $key => $el) {
+            if (is_scalar($el) || is_bool($el) || is_null($el)) {
+                $hydrated[$key] = $el;
+                continue;
+            }
+            if (is_array($el)) {
+                if (isset($el['type']) && isset($el['id'])) {
+                    $hydrated[$key] = $elements->getElementById($el['id'], $el['type']);
+                } else {
+                    $hydrated[$key] = $this->rehydrateArgs($el);
+                }
+                continue;
+            }
+        }
+        return $hydrated;
     }
 }

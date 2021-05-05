@@ -75,24 +75,47 @@ class StaticCache extends Component
 
             $view = Craft::$app->getView();
 
-            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content?key=';
+            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
             $view->registerJs('
                 function pullDynamic() {
-                    var dynamicBlocks = document.getElementsByClassName("servd-dynamic-content");
+                    var dynamicBlocks = document.getElementsByClassName("dynamic-include");
                     var len = dynamicBlocks.length;
+                    var allBlocks = [];
                     for (var i=0; i<len; i++) {
                         var block = dynamicBlocks[i];
-                        var key = block.getAttribute("data-key");
+                        var blockId = block.id;
+                        var template = block.getAttribute("data-template");
+                        var args = block.getAttribute("data-args");
+                        var siteId = block.getAttribute("data-site");
+                        allBlocks.push({
+                            id: blockId,
+                            template: template,
+                            args: args,
+                            siteId: siteId
+                        });
+                    }
+
+                    if(allBlocks.length > 0){
                         var xhr = new XMLHttpRequest();
                         xhr.onload = function () {
                             if (xhr.status >= 200 && xhr.status <= 299) {
-                                var mySpan = document.createElement("span");
-                                mySpan.innerHTML = "replaced anchor!";
-                                block.parentNode.replaceChild(mySpan, block);
+                                var responseContent = JSON.parse(xhr.response);
+                                for(var i = 0; i < responseContent.blocks.length; i++){
+                                    var rBlock = responseContent.blocks[i];
+                                    var dBlock = document.getElementById(rBlock.id);
+                                    var placeholder = document.createElement("div");
+                                    placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
+                                    var newNodes = placeholder.firstElementChild; 
+                                    dBlock.parentNode.replaceChild(newNodes, dBlock);    
+                                }
+                                window.dispatchEvent( new Event("servd.dynamicloaded") );
                             }
                         }
-                        xhr.open("GET", "' . $url . '" + key);
-                        xhr.send();
+                        xhr.open("POST", "' . $url . '", );
+                        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                        xhr.send(JSON.stringify(allBlocks));
+                    } else {
+                        window.dispatchEvent( new Event("servd.dynamicloaded") );
                     }
                 }
                 setTimeout(pullDynamic, 50);

@@ -1,0 +1,176 @@
+<?php
+
+namespace servd\AssetStorage\StaticCache\Twig;
+
+use Twig\Compiler;
+use Twig\Node\Expression\AbstractExpression;
+use Twig\Node\Node;
+use Twig\Node\NodeOutputInterface;
+
+class IncludeNode extends Node implements NodeOutputInterface
+{
+
+    private static $_blockCount = 1;
+
+    public function __construct(AbstractExpression $expr, ?AbstractExpression $variables, bool $only, bool $ignoreMissing, int $lineno, string $tag = null)
+    {
+        $nodes = ['expr' => $expr];
+        if (null !== $variables) {
+            $nodes['variables'] = $variables;
+        }
+
+        parent::__construct($nodes, ['only' => (bool) $only, 'ignore_missing' => (bool) $ignoreMissing], $lineno, $tag);
+    }
+
+    public function compile(Compiler $compiler): void
+    {
+        $compiler->addDebugInfo($this);
+
+        $performStandardInclude = false;
+        if ($performStandardInclude) {
+            $this->standardInclude($compiler);
+        } else {
+            $this->ajaxInclude($compiler);
+            //$this->esiInclude($compiler);
+        }
+    }
+
+    protected function standardInclude(Compiler $compiler)
+    {
+        if ($this->getAttribute('ignore_missing')) {
+            $template = $compiler->getVarName();
+
+            $compiler
+                ->write(sprintf("$%s = null;\n", $template))
+                ->write("try {\n")
+                ->indent()
+                ->write(sprintf('$%s = ', $template));
+
+            $this->addGetTemplate($compiler);
+
+            $compiler
+                ->raw(";\n")
+                ->outdent()
+                ->write("} catch (LoaderError \$e) {\n")
+                ->indent()
+                ->write("// ignore missing template\n")
+                ->outdent()
+                ->write("}\n")
+                ->write(sprintf("if ($%s) {\n", $template))
+                ->indent()
+                ->write(sprintf('$%s->display(', $template));
+            $this->addTemplateArguments($compiler);
+            $compiler
+                ->raw(");\n")
+                ->outdent()
+                ->write("}\n");
+        } else {
+            $this->addGetTemplate($compiler);
+            $compiler->raw('->display(');
+            $this->addTemplateArguments($compiler);
+            $compiler->raw(");\n");
+        }
+    }
+
+    protected function ajaxInclude(Compiler $compiler)
+    {
+
+        $n = self::$_blockCount++;
+
+        $namespace = $compiler->getVarName();
+
+        $compiler->write('$' . $namespace . 'template = base64_encode(');
+        $compiler->subcompile($this->getNode('expr'));
+        $compiler->write(');' . "\n");
+        $compiler->write('$' . $namespace . 'fullContext = ');
+        $this->addTemplateArguments($compiler);
+        $compiler->write(';' . "\n");
+
+        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
+        $compiler->write('$' . $namespace . 'finalArguments = base64_encode(serialize($' . $namespace . 'serializableContext));' . "\n");
+        $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
+        $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
+
+        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" class=\"dynamic-include\" data-site=\"$' . $namespace . 'siteId\" data-template=\"$' . $namespace . 'template\" data-args=\"$' . $namespace . 'finalArguments\" data-ignore-missing=\"$' . $namespace . 'ignoreMissing\"></div>";' . "\n");
+    }
+
+    protected function esiInclude(Compiler $compiler)
+    {
+
+        $namespace = $compiler->getVarName();
+
+        $compiler->write('$headers = \Craft::$app->getResponse()->getHeaders();' . "\n");
+        $compiler->write('if(!$headers->has(\'Surrogate-Control\')){$headers->add(\'Surrogate-Control\', \'content="ESI/1.0"\');}' . "\n");
+        $compiler->write('$' . $namespace . 'template = base64_encode(');
+        $compiler->subcompile($this->getNode('expr'));
+        $compiler->write(');' . "\n");
+        $compiler->write('$' . $namespace . 'fullContext = ');
+        $this->addTemplateArguments($compiler);
+        $compiler->write(';' . "\n");
+
+        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
+        $compiler->write('$' . $namespace . 'finalArguments = base64_encode(serialize($' . $namespace . 'serializableContext));' . "\n");
+        $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
+        $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
+
+        $compiler->write('$' . $namespace . 'esiUrl = "/" . ' .
+            'Craft::$app->getConfig()->getGeneral()->actionTrigger  . ' .
+            '"/servd-asset-storage/dynamic-content/get-content' .
+            '?template=$' . $namespace . 'template' .
+            '&args=$' . $namespace . 'finalArguments' .
+            '&siteId=$' . $namespace . 'siteId' .
+            '";' . "\n");
+
+        $compiler->write('echo "<esi:include src=\"$' . $namespace . 'esiUrl\" />";' . "\n");
+    }
+
+    protected function addGetTemplate(Compiler $compiler)
+    {
+        $compiler
+            ->write('$this->loadTemplate(')
+            ->subcompile($this->getNode('expr'))
+            ->raw(', ')
+            ->repr($this->getTemplateName())
+            ->raw(', ')
+            ->repr($this->getTemplateLine())
+            ->raw(')');
+    }
+
+    protected function addTemplateArguments(Compiler $compiler)
+    {
+        if (!$this->hasNode('variables')) {
+            $compiler->raw(false === $this->getAttribute('only') ? '$context' : '[]');
+        } elseif (false === $this->getAttribute('only')) {
+            $compiler->raw('twig_array_merge($context, ');
+            $compiler->subcompile($this->getNode('variables'));
+            $compiler->raw(')');
+        } else {
+            $compiler->raw('twig_to_array(');
+            $compiler->subcompile($this->getNode('variables'));
+            $compiler->raw(')');
+        }
+    }
+
+    public static function cleanContextArray($a)
+    {
+        $cleaned = [];
+        foreach ($a as $key => $el) {
+            if (is_scalar($el) || is_bool($el) || is_null($el)) {
+                $cleaned[$key] = $el;
+                continue;
+            }
+            if (is_array($el)) {
+                $cleaned[$key] = static::cleanContextArray($el);
+                continue;
+            }
+            if (is_object($el) && is_subclass_of($el, \craft\base\Element::class)) {
+                $cleaned[$key] = [
+                    'type' => get_class($el),
+                    'id' => $el->id,
+                ];
+                continue;
+            }
+        }
+        return $cleaned;
+    }
+}
