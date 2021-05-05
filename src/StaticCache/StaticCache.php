@@ -74,6 +74,11 @@ class StaticCache extends Component
     private function registerTwigExtension()
     {
 
+        //Don't mess with CP requests
+        if (!Craft::$app->request->getIsSiteRequest()) {
+            return;
+        }
+
         Event::on(WebView::class, WebView::EVENT_END_BODY, function () {
             $view = Craft::$app->getView();
 
@@ -162,11 +167,9 @@ class StaticCache extends Component
             $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $esiUrl . '" /></script>');
         });
 
-        if (Craft::$app->request->getIsSiteRequest()) {
-            // Add in our Twig extension
-            $extension = new Extension();
-            Craft::$app->view->registerTwigExtension($extension);
-        }
+        // Add in our Twig extension
+        $extension = new Extension();
+        Craft::$app->view->registerTwigExtension($extension);
     }
 
     private function registerEventHandlers()
