@@ -113,7 +113,7 @@ class StaticCache extends Component
                         return;
                     }
 
-                    var dynamicBlocks = document.getElementsByClassName("dynamic-include");
+                    var dynamicBlocks = document.getElementsByClassName("dynamic-block");
                     var len = dynamicBlocks.length;
                     var allBlocks = [];
                     for (var i=0; i<len; i++) {
@@ -163,8 +163,11 @@ class StaticCache extends Component
             if (!$headers->has('Surrogate-Control')) {
                 $headers->add('Surrogate-Control', 'content="ESI/1.0"');
             }
-
-            $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $esiUrl . '" /></script>');
+            if (version_compare(Craft::$app->getVersion(), '3.5', '>=')) { //registerHtml only available in 3.5+
+                $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $esiUrl . '" /></script>');
+            } else {
+                // ???
+            }
         });
 
         // Add in our Twig extension
