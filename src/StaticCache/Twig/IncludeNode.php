@@ -26,13 +26,15 @@ class IncludeNode extends Node implements NodeOutputInterface
     {
         $compiler->addDebugInfo($this);
 
-        $performStandardInclude = false;
-        if ($performStandardInclude) {
-            $this->standardInclude($compiler);
-        } else {
-            $this->ajaxInclude($compiler);
-            //$this->esiInclude($compiler);
-        }
+        $compiler->write('if(\servd\AssetStorage\Plugin::$plugin->getSettings()->disableDynamic){' . "\n")->indent();
+        $this->standardInclude($compiler);
+        $compiler->outdent()->write('} else {' . "\n")->indent();
+        $compiler->write('if(getenv("SERVD_ESI_ENABLED") === "true"){' . "\n")->indent();
+        $this->esiInclude($compiler);
+        $compiler->outdent()->write('} else {' . "\n")->indent();
+        $this->ajaxInclude($compiler);
+        $compiler->outdent()->write('}' . "\n");
+        $compiler->outdent()->write('}' . "\n");
     }
 
     protected function standardInclude(Compiler $compiler)
