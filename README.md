@@ -143,7 +143,7 @@ As with the normal `{{ include }}` tag, the vast majority of the parent template
 
 #### Dynamic Content ESI
 
-If you have ESI enabled on Servd, the plugin will automatically detect this and switch `{{ dynamicInclude }}`s to use ESI instead of ajax requests, resulting in extremely quick page load times. No changes are required to your codebase. The implementation of ESI inclusion using this tag is... interesting, and relies on javascript being enabled on the client. If you're interested in why that's the case, we're always happy to talk tech.
+If you have ESI enabled on Servd, the plugin will automatically detect this and switch `{{ dynamicInclude }}`s to use ESI instead of ajax requests, resulting in extremely quick page load times even with dynamic content included. No changes are required to your codebase. The implementation of ESI inclusion using this tag is... interesting, and relies on javascript being enabled on the client. If you're interested in why that's the case, we're always happy to talk tech.
 
 ## Environment Detection
 

@@ -56,7 +56,12 @@ class DynamicContentController extends Controller
                 ];
             }
 
-            return $this->asJson($response);
+            $resp = $this->asJson($response);
+            $resp->formatters[\yii\web\Response::FORMAT_JSON] = [
+                'class' => 'yii\web\JsonResponseFormatter',
+                'encodeOptions' => JSON_UNESCAPED_UNICODE
+            ];
+            return $resp;
         }
     }
 
