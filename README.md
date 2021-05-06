@@ -43,6 +43,7 @@ composer require servd/craft-asset-storage
 * CSRF token injection to help with static caching
 * Automatic static cache busting upon entry save events
 * Support for using the debug bar in a load balanced environment (like Servd)
+* Easy dynamic content includes when static caching is enabled
 
 ## Setup
 
@@ -123,6 +124,26 @@ When any 'live' Craft Element is updated, the plugin is able to determine which 
 ### CSRF Token Injection
 
 By default Craft uses CSRF tokens within &lt;form&gt; elements. Static caching breaks this functionality by serving incorrect tokens to the majority of users. In order to prevent this you can enable CSRF token injection in the plugin settings. This will inject a small piece of javascript into all of your templated pages which checks for and CSRF tokens and replaces them with an uncached value.
+
+### Dynamic Content
+
+Sometimes it's useful to be able to specify specific sections of a page to be loaded dynamically whilst keeping the majority of the page cached. The plugin contains a twig tag which can do this on your behalf:
+
+```
+{{ dynamicInclude 'snippets/login' with {key: 'val'} only }}
+```
+
+The tag matches the syntax of the standard twig `{{ include }}` tag exactly, so you can easily switch between standard and dynamic template includes.
+
+#### Dynamic Content Context
+
+As with the normal `{{ include }}` tag, the vast majority of the parent template's context will be made available to the dynamically loaded template by default. You can prevent the full context from being used by specifying the `only` flag.
+
+**Due to the way the dynamic loading works, any simple data types (strings, numbers, arrays etc) in the parent context will be exposed publicly. This does not include any of Craft's global twig variables however. If you have sensitive content in your template context, always use the `only` flag and define your child template's context explicitly.**
+
+#### Dynamic Content ESI
+
+If you have ESI enabled on Servd, the plugin will automatically detect this and switch `{{ dynamicInclude }}`s to use ESI instead of ajax requests, resulting in extremely quick page load times. No changes are required to your codebase. The implementation of ESI inclusion using this tag is... interesting, and relies on javascript being enabled on the client. If you're interested in why that's the case, we're always happy to talk tech.
 
 ## Environment Detection
 
