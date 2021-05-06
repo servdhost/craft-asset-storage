@@ -3,6 +3,7 @@
 namespace servd\AssetStorage;
 
 use Craft;
+use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\CPAlerts\CPAlerts;
@@ -13,6 +14,7 @@ use servd\AssetStorage\LocalDev\LocalDev;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
+use servd\AssetStorage\variables\ServdVariable;
 use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
@@ -35,6 +37,7 @@ class Plugin extends \craft\base\Plugin
             $this->controllerNamespace = 'servd\\AssetStorage\\controllers';
         }
 
+        $this->registerVariables();
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
     }
@@ -50,6 +53,19 @@ class Plugin extends \craft\base\Plugin
             'settings' => $this->getSettings(),
             'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>=')
         ]);
+    }
+
+    private function registerVariables()
+    {
+        Event::on(
+            CraftVariable::class,
+            CraftVariable::EVENT_INIT,
+            function (Event $event) {
+                /** @var CraftVariable $variable */
+                $variable = $event->sender;
+                $variable->set('servd', ServdVariable::class);
+            }
+        );
     }
 
     public function registerComponentsAndServices()

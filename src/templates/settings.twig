@@ -28,6 +28,14 @@
     on: settings.injectCors
 }) }}
 
+{{ forms.lightswitchField({
+    label: "Disable dynamic content includes",
+    instructions: "Disabled all dynamic content includes which can be useful for testing.",
+    id: 'disableDynamic',
+    name: 'disableDynamic',
+    on: settings.disableDynamic
+}) }}
+
 {{ forms.selectField({
     label: "Cache Clear Trigger",
     instructions: "Determine when to trigger a static cache clear",

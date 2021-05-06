@@ -17,6 +17,7 @@ class Settings extends Model
     public $securityKey = '';
     public $suppressWarnings = false;
     public $useLocalVolumes = false;
+    public $disableDynamic = false;
 
     public function rules()
     {

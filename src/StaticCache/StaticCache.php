@@ -32,12 +32,19 @@ use craft\web\Application;
 use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
+use servd\AssetStorage\StaticCache\Twig\Extension;
+use yii\base\View as BaseView;
+use yii\web\View as WebView;
 
 class StaticCache extends Component
 {
 
+    public static $esiBlocks = [];
+    public static $dynamicBlocksAdded = false;
+
     public function init()
     {
+        $this->registerTwigExtension();
 
         // If we aren't running on Servd, this component does nothing
         if (!extension_loaded('redis')) {
@@ -62,6 +69,113 @@ class StaticCache extends Component
         $this->registerFrontendEventHandlers();
         $this->registerElementUpdateHandlers();
         $this->hookCPSidebarTemplate();
+    }
+
+    private function registerTwigExtension()
+    {
+
+        //Don't mess with CP requests
+        if (!Craft::$app->request->getIsSiteRequest()) {
+            return;
+        }
+
+        Event::on(WebView::class, WebView::EVENT_END_BODY, function () {
+            $view = Craft::$app->getView();
+
+            if (!static::$dynamicBlocksAdded) {
+                return;
+            }
+
+            $view = Craft::$app->getView();
+            $ajaxUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+
+            $view->registerJs('
+                function insertBlocks(blocks)
+                {
+                    for(var i = 0; i < blocks.length; i++){
+                        var rBlock = blocks[i];
+                        var dBlock = document.getElementById(rBlock.id);
+                        var placeholder = document.createElement("div");
+                        placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
+                        var allChildren = [];
+                        for (var i = 0; i < placeholder.childNodes.length; i++) {
+                            allChildren.push(placeholder.childNodes[i]);
+                        }
+                        for(var node of allChildren){
+                            dBlock.parentNode.insertBefore(node, dBlock);
+                        }
+                        dBlock.parentNode.removeChild(dBlock);    
+                    }
+                }
+                function pullDynamic() {
+                    var injectedContent = document.getElementById("SERVD_DYNAMIC_BLOCKS");
+                    if(injectedContent){
+                        var parsedContent = JSON.parse(injectedContent.innerHTML);
+                        insertBlocks(parsedContent.blocks);
+                        window.dispatchEvent( new Event("servd.dynamicloaded") );
+                        return;
+                    }
+
+                    var dynamicBlocks = document.getElementsByClassName("dynamic-block");
+                    var len = dynamicBlocks.length;
+                    var allBlocks = [];
+                    for (var i=0; i<len; i++) {
+                        var block = dynamicBlocks[i];
+                        var blockId = block.id;
+                        var template = block.getAttribute("data-template");
+                        var args = block.getAttribute("data-args");
+                        var siteId = block.getAttribute("data-site");
+                        allBlocks.push({
+                            id: blockId,
+                            template: template,
+                            args: args,
+                            siteId: siteId
+                        });
+                    }
+
+                    if(allBlocks.length > 0){
+                        var xhr = new XMLHttpRequest();
+                        xhr.onload = function () {
+                            if (xhr.status >= 200 && xhr.status <= 299) {
+                                var responseContent = JSON.parse(xhr.response);
+                                insertBlocks(responseContent.blocks);
+                                window.dispatchEvent( new Event("servd.dynamicloaded") );
+                            }
+                        }
+                        xhr.open("POST", "' . $ajaxUrl . '", );
+                        xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+                        xhr.send(JSON.stringify(allBlocks));
+                    } else {
+                        window.dispatchEvent( new Event("servd.dynamicloaded") );
+                    }
+                }
+                setTimeout(pullDynamic, 50);
+            ', View::POS_END);
+
+            if (sizeof(static::$esiBlocks) == 0) {
+                return;
+            }
+
+            $allBlocks = serialize(static::$esiBlocks);
+            $compressedData = urlencode(base64_encode(gzcompress($allBlocks)));
+
+            $esiUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $esiUrl .= '?blocks=' . $compressedData;
+
+            $headers = \Craft::$app->getResponse()->getHeaders();
+            if (!$headers->has('Surrogate-Control')) {
+                $headers->add('Surrogate-Control', 'content="ESI/1.0"');
+            }
+            if (version_compare(Craft::$app->getVersion(), '3.5', '>=')) { //registerHtml only available in 3.5+
+                $view->registerHtml('<script id="SERVD_DYNAMIC_BLOCKS" type="application/json"><esi:include src="' . $esiUrl . '" /></script>');
+            } else {
+                // ???
+            }
+        });
+
+        // Add in our Twig extension
+        $extension = new Extension();
+        Craft::$app->view->registerTwigExtension($extension);
     }
 
     private function registerEventHandlers()
