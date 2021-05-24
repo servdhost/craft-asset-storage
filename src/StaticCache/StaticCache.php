@@ -198,7 +198,7 @@ class StaticCache extends Component
                  */
                 $event->options[] = [
                     'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', '(Deprecated)'),
+                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache (Deprecated)'),
                     'action' => function () {
                         $this->clearStaticCache();
                     },
