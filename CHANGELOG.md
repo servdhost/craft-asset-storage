@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.3.1 - 2021-06-11
+
+### Fixed
+
+- When the static cache is cleared, also clear all associated metadata. This ensures any cached 301/302 redirects are purged.
+- dynamicInclude blocks whose responses contain multiple top level nodes no longer break things.
+
 ## 2.3.0 - 2021-05-06
 
 ### Added

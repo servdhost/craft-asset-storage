@@ -98,8 +98,8 @@ class StaticCache extends Component
                         var placeholder = document.createElement("div");
                         placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
                         var allChildren = [];
-                        for (var i = 0; i < placeholder.childNodes.length; i++) {
-                            allChildren.push(placeholder.childNodes[i]);
+                        for (var j = 0; j < placeholder.childNodes.length; j++) {
+                            allChildren.push(placeholder.childNodes[j]);
                         }
                         for(var node of allChildren){
                             dBlock.parentNode.insertBefore(node, dBlock);
@@ -462,7 +462,16 @@ class StaticCache extends Component
         try {
             $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
             $redis = new Redis();
+
+            //Clear out content
             $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+            $redis->select($redisDb);
+            $redis->flushDb(true);
+            $redis->close();
+
+            //Clear out metadata - ledge stores cached redirects here
+            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
+            $redis->connect($qlessHost, getenv('REDIS_PORT'));
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
