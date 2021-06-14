@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.3.2 - 2021-06-14
+
+### Fixed
+
+- Fixed a bug with dynamicIncludes which would strip certain values from context arrays if their keys matched values from Craft's global context
+
 ## 2.3.1 - 2021-06-11
 
 ### Fixed
