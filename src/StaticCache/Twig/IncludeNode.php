@@ -87,7 +87,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $this->addTemplateArguments($compiler, true);
         $compiler->write(';' . "\n");
 
-        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
+        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext, true);' . "\n");
         $compiler->write('$' . $namespace . 'finalArguments = base64_encode(gzcompress(serialize($' . $namespace . 'serializableContext)));' . "\n");
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
@@ -114,7 +114,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $this->addTemplateArguments($compiler, true);
         $compiler->write(';' . "\n");
 
-        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext);' . "\n");
+        $compiler->write('$' . $namespace . 'serializableContext = \servd\AssetStorage\StaticCache\Twig\IncludeNode::cleanContextArray($' . $namespace . 'fullContext, true);' . "\n");
         $compiler->write('$' . $namespace . 'finalArguments = $' . $namespace . 'serializableContext;' . "\n");
         $compiler->write('$' . $namespace . 'ignoreMissing = "' . ($this->getAttribute('ignore_missing') ? 'true' : 'false') . '";' . "\n");
         $compiler->write('$' . $namespace . 'siteId = \Craft::$app->getSites()->getCurrentSite()->id;' . "\n");
@@ -158,13 +158,13 @@ class IncludeNode extends Node implements NodeOutputInterface
         }
     }
 
-    public static function cleanContextArray($a)
+    public static function cleanContextArray($a, $isRoot)
     {
         $twigGlobals = array_keys(Craft::$app->getView()->getTwig()->getGlobals());
         $cleaned = [];
         foreach ($a as $key => $el) {
-            //Don't include Craft Globals
-            if (in_array($key, $twigGlobals)) {
+            //Don't include Craft Globals if we're workign on the root context array
+            if ($isRoot && in_array($key, $twigGlobals)) {
                 continue;
             }
             //Scalars are ok
@@ -174,7 +174,7 @@ class IncludeNode extends Node implements NodeOutputInterface
             }
             //Arrays need to be recursed into
             if (is_array($el)) {
-                $cleaned[$key] = static::cleanContextArray($el);
+                $cleaned[$key] = static::cleanContextArray($el, false);
                 continue;
             }
             //The only objects we want are subclasses of Craft's Element
