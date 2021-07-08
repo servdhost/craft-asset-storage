@@ -30,7 +30,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $compiler->write('if(\servd\AssetStorage\Plugin::$plugin->getSettings()->disableDynamic){' . "\n")->indent();
         $this->standardInclude($compiler);
         $compiler->outdent()->write('} else {' . "\n")->indent();
-        $compiler->write('if(getenv("SERVD_ESI_ENABLED") === "true" && getenv("X-Servd-Cache") === "1"){' . "\n")->indent();
+        $compiler->write('if(getenv("SERVD_ESI_ENABLED") === "true" && ($_SERVER["HTTP_X_SERVD_CACHE"] ?? "0") === "1"){' . "\n")->indent();
         $this->esiInclude($compiler);
         $compiler->outdent()->write('} else {' . "\n")->indent();
         $this->ajaxInclude($compiler);
