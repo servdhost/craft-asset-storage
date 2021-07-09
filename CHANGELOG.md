@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.3.3 - 2021-07-09
+
+### Fixed
+
+- Fixed a bug with dynamicIncludes which prevented the plugin from automatically detecting the availability of ESI
+
 ## 2.3.2 - 2021-06-14
 
 ### Fixed
