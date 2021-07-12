@@ -4,7 +4,7 @@
 
 ### Added
 
-- You can now specify 'withDefault' on the 'dynamicInclude' tag, and combine with the 'endDynamicInclude' tag, in order to display default content which is visible during dynamic content loading.
+- You can now specify 'placeholder' on the 'dynamicInclude' tag, and combine with the 'endDynamicInclude' tag, in order to display placeholder content which is visible during dynamic content loading.
 
 ## 2.3.3 - 2021-07-09
 

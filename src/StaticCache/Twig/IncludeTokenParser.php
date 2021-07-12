@@ -47,8 +47,8 @@ class IncludeTokenParser extends AbstractTokenParser
         }
 
         $defaultBody = null;
-        // Check if the next token is 'withDefault'
-        if ($stream->nextIf(/* Token::NAME_TYPE */5, 'withDefault')) {
+        // Check if the next token is 'placeholder'
+        if ($stream->nextIf(/* Token::NAME_TYPE */5, 'placeholder')) {
             //If so we want to subparse the remaining temaplate to find an end tag and capture
             //everything inbetween
 
@@ -56,7 +56,7 @@ class IncludeTokenParser extends AbstractTokenParser
             $defaultBody = $this->parser->subparse([$this, 'decideDynamicEnd'], true);
             $stream->expect(/* Token::BLOCK_END_TYPE */3);
         } else {
-            // No 'withDefault' so we just expect the tag to be closed
+            // No 'placeholder' so we just expect the tag to be closed
             $stream->expect(/* Token::BLOCK_END_TYPE */3);
         }
 
