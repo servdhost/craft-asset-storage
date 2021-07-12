@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.0 - 2021-07-12
+
+### Added
+
+- You can now specify 'withDefault' on the 'dynamicInclude' tag, and combine with the 'endDynamicInclude' tag, in order to display default content which is visible during dynamic content loading.
+
 ## 2.3.3 - 2021-07-09
 
 ### Fixed

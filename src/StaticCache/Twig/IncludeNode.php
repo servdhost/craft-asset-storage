@@ -13,9 +13,12 @@ class IncludeNode extends Node implements NodeOutputInterface
 
     private static $_blockCount = 1;
 
-    public function __construct(AbstractExpression $expr, ?AbstractExpression $variables, bool $only, bool $ignoreMissing, int $lineno, string $tag = null)
+    public function __construct(AbstractExpression $expr, ?AbstractExpression $variables, bool $only, bool $ignoreMissing, $defaultBody, int $lineno, string $tag = null)
     {
         $nodes = ['expr' => $expr];
+        if (null !== $defaultBody) {
+            $nodes['defaultBody'] = $defaultBody;
+        }
         if (null !== $variables) {
             $nodes['variables'] = $variables;
         }
@@ -31,6 +34,8 @@ class IncludeNode extends Node implements NodeOutputInterface
         $this->standardInclude($compiler);
         $compiler->outdent()->write('} else {' . "\n")->indent();
         $compiler->write('if(getenv("SERVD_ESI_ENABLED") === "true" && ($_SERVER["HTTP_X_SERVD_CACHE"] ?? "0") === "1"){' . "\n")->indent();
+        //NOTE: Use the below line to test ESI output when working locally
+        //$compiler->write('if(true){' . "\n")->indent();
         $this->esiInclude($compiler);
         $compiler->outdent()->write('} else {' . "\n")->indent();
         $this->ajaxInclude($compiler);
@@ -99,7 +104,11 @@ class IncludeNode extends Node implements NodeOutputInterface
             'data-site=\"$' . $namespace . 'siteId\" ' .
             'data-template=\"$' . $namespace . 'template\" ' .
             'data-args=\"$' . $namespace . 'finalArguments\" ' .
-            'data-ignore-missing=\"$' . $namespace . 'ignoreMissing\"></div>";' . "\n");
+            'data-ignore-missing=\"$' . $namespace . 'ignoreMissing\">";' . "\n");
+        if ($this->hasNode('defaultBody')) {
+            $compiler->subcompile($this->getNode('defaultBody'));
+        }
+        $compiler->write('echo "</div>";' . "\n");
     }
 
     protected function esiInclude(Compiler $compiler)
@@ -127,7 +136,12 @@ class IncludeNode extends Node implements NodeOutputInterface
             '"siteId" =>  $' . $namespace . 'siteId, ' .
             '];');
 
-        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" /></div>";' . "\n");
+        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" />";' . "\n");
+
+        if ($this->hasNode('defaultBody')) {
+            $compiler->subcompile($this->getNode('defaultBody'));
+        }
+        $compiler->write('echo "</div>";' . "\n");
     }
 
     protected function addGetTemplate(Compiler $compiler)

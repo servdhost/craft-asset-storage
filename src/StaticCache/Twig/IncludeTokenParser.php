@@ -3,6 +3,7 @@
 namespace servd\AssetStorage\StaticCache\Twig;
 
 use Twig\Node\Node;
+use Twig\Node\PrintNode;
 use Twig\Token;
 use Twig\TokenParser\AbstractTokenParser;
 
@@ -19,12 +20,12 @@ class IncludeTokenParser extends AbstractTokenParser
     {
         $expr = $this->parser->getExpressionParser()->parseExpression();
 
-        list($variables, $only, $ignoreMissing) = $this->parseArguments();
+        list($variables, $only, $ignoreMissing, $defaultBody) = $this->parseArguments($token);
 
-        return new IncludeNode($expr, $variables, $only, $ignoreMissing, $token->getLine(), $this->getTag());
+        return new IncludeNode($expr, $variables, $only, $ignoreMissing, $defaultBody, $token->getLine(), $this->getTag());
     }
 
-    protected function parseArguments()
+    protected function parseArguments($token)
     {
         $stream = $this->parser->getStream();
 
@@ -45,13 +46,30 @@ class IncludeTokenParser extends AbstractTokenParser
             $only = true;
         }
 
-        $stream->expect(/* Token::BLOCK_END_TYPE */3);
+        $defaultBody = null;
+        // Check if the next token is 'withDefault'
+        if ($stream->nextIf(/* Token::NAME_TYPE */5, 'withDefault')) {
+            //If so we want to subparse the remaining temaplate to find an end tag and capture
+            //everything inbetween
 
-        return [$variables, $only, $ignoreMissing];
+            $stream->expect(/* Token::BLOCK_END_TYPE */3);
+            $defaultBody = $this->parser->subparse([$this, 'decideDynamicEnd'], true);
+            $stream->expect(/* Token::BLOCK_END_TYPE */3);
+        } else {
+            // No 'withDefault' so we just expect the tag to be closed
+            $stream->expect(/* Token::BLOCK_END_TYPE */3);
+        }
+
+        return [$variables, $only, $ignoreMissing, $defaultBody];
     }
 
     public function getTag(): string
     {
         return 'dynamicInclude';
+    }
+
+    public function decideDynamicEnd(Token $token): bool
+    {
+        return $token->test('endDynamicInclude');
     }
 }
