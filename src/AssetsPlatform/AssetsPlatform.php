@@ -154,53 +154,56 @@ class AssetsPlatform extends Component
             }
         });
 
-        Event::on(
-            Assets::class,
-            Assets::EVENT_GET_ASSET_URL,
-            function (GetAssetUrlEvent $event) {
+        $settings = Plugin::$plugin->getSettings();
+        if (!$settings->disableTransforms) {
+            Event::on(
+                Assets::class,
+                Assets::EVENT_GET_ASSET_URL,
+                function (GetAssetUrlEvent $event) {
 
-                // If another plugin set the url, we'll just use that.
-                if ($event->url !== null) {
-                    return;
-                }
+                    // If another plugin set the url, we'll just use that.
+                    if ($event->url !== null) {
+                        return;
+                    }
 
-                $asset = $event->asset;
-                $volume = $asset->getVolume();
-                if ($volume instanceof AssetStorageVolume) {
                     $asset = $event->asset;
-                    $transform = $event->transform;
-                    $event->url = $this->handleAssetTransform($asset, $transform);
+                    $volume = $asset->getVolume();
+                    if ($volume instanceof AssetStorageVolume) {
+                        $asset = $event->asset;
+                        $transform = $event->transform;
+                        $event->url = $this->handleAssetTransform($asset, $transform);
+                    }
                 }
-            }
-        );
+            );
 
-        Event::on(
-            Assets::class,
-            Assets::EVENT_GET_ASSET_THUMB_URL,
-            function (GetAssetThumbUrlEvent $event) {
+            Event::on(
+                Assets::class,
+                Assets::EVENT_GET_ASSET_THUMB_URL,
+                function (GetAssetThumbUrlEvent $event) {
 
-                // If another plugin set the url, we'll just use that.
-                if ($event->url !== null) {
-                    return;
-                }
+                    // If another plugin set the url, we'll just use that.
+                    if ($event->url !== null) {
+                        return;
+                    }
 
-                $asset = $event->asset;
-                $volume = $asset->getVolume();
-                if ($volume instanceof AssetStorageVolume) {
                     $asset = $event->asset;
-                    $width = $event->width;
-                    $height = $event->height;
+                    $volume = $asset->getVolume();
+                    if ($volume instanceof AssetStorageVolume) {
+                        $asset = $event->asset;
+                        $width = $event->width;
+                        $height = $event->height;
 
-                    $transform = new AssetTransform([
-                        'height' => $height,
-                        'width' => $width,
-                        'interlace' => 'line',
-                    ]);
+                        $transform = new AssetTransform([
+                            'height' => $height,
+                            'width' => $width,
+                            'interlace' => 'line',
+                        ]);
 
-                    $event->url = $this->handleAssetTransform($asset, $transform);
+                        $event->url = $this->handleAssetTransform($asset, $transform);
+                    }
                 }
-            }
-        );
+            );
+        }
     }
 
     public function getFileUrl(Asset $asset)

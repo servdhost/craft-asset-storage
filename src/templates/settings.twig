@@ -72,6 +72,15 @@
     placeholder: "$SERVD_ASSETS_ENVIRONMENT"
 }) }}
 
+{{ forms.lightswitchField({
+    label: "Disable Asset Platform image transforms / optimisations",
+    instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
+    "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
+    id: 'disableTransforms',
+    name: 'disableTransforms',
+    on: settings.disableTransforms
+}) }}
+
 {% if craft35 %}
 	{{ forms.lightswitchField({
         label: "Use Local Volumes During Dev",

@@ -18,6 +18,7 @@ class Settings extends Model
     public $suppressWarnings = false;
     public $useLocalVolumes = false;
     public $disableDynamic = false;
+    public $disableTransforms = false;
 
     public function rules()
     {
