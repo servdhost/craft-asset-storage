@@ -167,6 +167,8 @@ The plugin will automatically intercept any `getUrl()` calls on assets which are
 
 The returned URL will point towards the Servd Asset Platform. This also supports Craft Asset Transforms, both pre-defined and dynamically generated:
 
+*You can disable this behaviour using the 'Disable Asset Platform image transforms / optimisations' switch in the plugin settings.*
+
 In your twig template:
 
 ```twig
