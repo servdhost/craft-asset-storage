@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.1 - 2021-08-27
+
+### Added
+
+- You can now disable image asset transforms and optimisations with a plugin setting. This can be useful if you're using another plugin or service to perform the necessary transforms and you only require the original image's URL.
+
 ## 2.4.0 - 2021-07-12
 
 ### Added
