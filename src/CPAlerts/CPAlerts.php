@@ -102,8 +102,9 @@ class CPAlerts extends Component
 
         $settings = App::mailSettings();
         if ($settings['transportType'] == Sendmail::class) {
-            $messages[] = 'Your mail settings are currently configured to use sendmail which is not available on Servd' .
-                ' ' . '<a class="go" href="' . UrlHelper::url('settings/email') . '">Update</a>';
+            $messages[] = 'Sending email over sendmail is <a href="https://servd.host/docs/outbound-email" target="_blank">disabled on Servd</a>' .
+                ' <a class="go" href="' . UrlHelper::url('settings/email') . '">Update</a>' .
+                ' <a class="go" href="https://servd.host/docs/smtp">Use Servd SMTP</a>';
         }
 
         return $messages;
