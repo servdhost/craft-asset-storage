@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.2 - 2021-09-03
+
+### Updated
+
+- Added a link to the Servd SMTP docs when the sendmail CP alert is shown. This provides information on why sendmail is disabled and also actionable alternative.
+
 ## 2.4.1 - 2021-08-27
 
 ### Added
