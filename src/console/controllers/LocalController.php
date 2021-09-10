@@ -34,6 +34,7 @@ class LocalController extends Controller
     public $servdSlug;
     public $servdKey;
     public $skipBackup = false;
+    public $skipDelete = false;
 
     private $leaveOpen = true;
     private $baseServdDomain = 'https://app.servd.host';
@@ -50,6 +51,7 @@ class LocalController extends Controller
             'servdSlug',
             'servdKey',
             'skipBackup',
+            'skipDelete',
         ]);
     }
 
@@ -62,6 +64,7 @@ class LocalController extends Controller
             'sk' => 'servdSlug',
             'ss' => 'servdKey',
             'sb' => 'skipBackup',
+            'sd' => 'skipDelete',
         ]);
     }
 
@@ -685,9 +688,11 @@ class LocalController extends Controller
         $manager->transfer();
 
         //Delete anything that wasn't included in the S3 file list
-        foreach (array_keys($existingFiles) as $file) {
-            $this->stdout("Deleting " . $file . PHP_EOL, Console::FG_YELLOW);
-            unlink($file);
+        if (!$this->skipDelete) {
+            foreach (array_keys($existingFiles) as $file) {
+                $this->stdout("Deleting " . $file . PHP_EOL, Console::FG_YELLOW);
+                unlink($file);
+            }
         }
     }
 
@@ -724,13 +729,22 @@ class LocalController extends Controller
             return !file_exists($localPath);
         });
         $toDelete = \Aws\map($toDelete, function ($obj) {
-            $this->stdout("Deleting " . $obj['Key'] . PHP_EOL, Console::FG_YELLOW);
+            if (!$this->skipDelete) {
+                $this->stdout("Deleting " . $obj['Key'] . PHP_EOL, Console::FG_YELLOW);
+            }
             return $obj;
         });
 
         //Delete anything on the remote which is not present on the local
-        $batchDelete = BatchDelete::fromIterator($client, static::S3_BUCKET, $toDelete);
-        $batchDelete->delete();
+        if (!$this->skipDelete) {
+            $batchDelete = BatchDelete::fromIterator($client, static::S3_BUCKET, $toDelete);
+            $batchDelete->delete();
+        } else {
+            //Just run the ListObjects iterator to get a list of remote files
+            foreach ($toDelete as $r) {
+                //Do nothing - this is just populating an array using the \AWS\map hijack above
+            }
+        }
 
         $localFileIterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($source));
 
