@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.3 - 2021-09-10
+
+### Added
+
+- Added a `--skipDelete` flag for preventing deletion of assets when cloning up or down from the local filesystem.
+
 ## 2.4.2 - 2021-09-03
 
 ### Updated
