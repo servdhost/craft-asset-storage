@@ -46,23 +46,23 @@ class StaticCache extends Component
     {
         $this->registerTwigExtension();
 
-        // If we aren't running on Servd, this component does nothing
-        if (!extension_loaded('redis')) {
-            return;
-        }
+        // // If we aren't running on Servd, this component does nothing
+        // if (!extension_loaded('redis')) {
+        //     return;
+        // }
 
-        // If static caching is disabled, this component does nothing
-        if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
-            return;
-        }
+        // // If static caching is disabled, this component does nothing
+        // if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
+        //     return;
+        // }
 
-        if (
-            empty(getenv('REDIS_STATIC_CACHE_DB'))
-            || empty(getenv('REDIS_HOST'))
-            || empty(getenv('REDIS_PORT'))
-        ) {
-            return;
-        }
+        // if (
+        //     empty(getenv('REDIS_STATIC_CACHE_DB'))
+        //     || empty(getenv('REDIS_HOST'))
+        //     || empty(getenv('REDIS_PORT'))
+        // ) {
+        //     return;
+        // }
 
         $this->registerLoggedInHandlers();
         $this->registerEventHandlers();
@@ -492,6 +492,19 @@ class StaticCache extends Component
                 if (!empty($url)) {
                     return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
                         'entryId' => $entry->id,
+                        'showTagPurge' => $settings->cacheClearMode == 'tags'
+                    ]);
+                }
+                return '';
+            });
+
+            Craft::$app->view->hook('cp.commerce.product.edit.details', function (array &$context) {
+                $settings = Plugin::$plugin->getSettings();
+                $product = $context['product'];
+                $url = $product->getUrl();
+                if (!empty($url)) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        'productId' => $product->id,
                         'showTagPurge' => $settings->cacheClearMode == 'tags'
                     ]);
                 }
