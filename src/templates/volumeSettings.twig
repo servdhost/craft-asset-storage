@@ -2,7 +2,7 @@
 
 {{ forms.autosuggestField({
     label: "Subfolder"|t('servd-asset-storage'),
-    instructions: "The plugin will automatically differentiate between local, staging and production data, but if you want to use a further subfolder, specify the path to use here."|t('servd-asset-storage'),
+    instructions: "The plugin will automatically differentiate between local, staging and production data, but if you want to use a further subfolder, specify the path to use here.<br><strong>⚠ Required when using multiple Servd asset volumes in a single project ⚠</strong>"|t('servd-asset-storage'),
     id: 'customSubfolder',
     class: 'ltr',
     name: 'customSubfolder',
