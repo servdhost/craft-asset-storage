@@ -497,6 +497,19 @@ class StaticCache extends Component
                 }
                 return '';
             });
+
+            Craft::$app->view->hook('cp.commerce.product.edit.details', function (array &$context) {
+                $settings = Plugin::$plugin->getSettings();
+                $product = $context['product'];
+                $url = $product->getUrl();
+                if (!empty($url)) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        'productId' => $product->id,
+                        'showTagPurge' => $settings->cacheClearMode == 'tags'
+                    ]);
+                }
+                return '';
+            });
         }
     }
 }

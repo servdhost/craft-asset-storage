@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.4 - 2021-09-15
+
+### Updated
+
+- Added the Servd Static Cache clear button to commerce product pages
+
 ## 2.4.3 - 2021-09-10
 
 ### Added
