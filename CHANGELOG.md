@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.5 - 2021-09-15
+
+### Fixed
+
+- A variable check error introduced in 2.4.4 #28
+
 ## 2.4.4 - 2021-09-15
 
 ### Updated
