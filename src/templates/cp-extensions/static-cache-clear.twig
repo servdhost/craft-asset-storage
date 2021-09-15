@@ -1,11 +1,21 @@
+{% if productId %}
+	{% set objectName = 'Product' %}
+{% else %}
+	{% set objectName = 'Entry' %}
+{% endif %}
+{% set urlParams = {'entryId': entryId|default(''), 'productId':productId|default('')} %}
+
 <div id="settings" class="meta" style="padding: 24px">
 	<h2 class="heading">Servd Static Cache</h2>
 	<div {{ showTagPurge ? 'style="margin-bottom: 10px;"' : '' }}>
-		<a href="{{ actionUrl('servd-asset-storage/static-cache/purge-cache', {'entryId': entryId|default(''), 'productId':productId|default('')}) }}" class="btn submit">Purge Entry URL(s)</a>
+		<a href="{{ actionUrl('servd-asset-storage/static-cache/purge-cache', urlParams) }}" class="btn submit">Purge
+			{{ objectName }}
+			URL(s)</a>
 	</div>
 	{% if showTagPurge %}
 		<div>
-			<a href="{{ actionUrl('servd-asset-storage/static-cache/purge-tag', {'entryId': entryId|default(''), 'productId':productId|default('')}) }}" class="btn submit">Purge All URLs Tagged With This Entry</a>
+			<a href="{{ actionUrl('servd-asset-storage/static-cache/purge-tag', urlParams) }}" class="btn submit">Purge All URLs Tagged With This
+				{{ objectName }}</a>
 		</div>
 	{% endif %}
 </div>
