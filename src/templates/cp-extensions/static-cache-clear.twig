@@ -1,4 +1,4 @@
-{% if productId %}
+{% if productId is defined %}
 	{% set objectName = 'Product' %}
 {% else %}
 	{% set objectName = 'Entry' %}
