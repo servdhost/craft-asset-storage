@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.6 - 2021-09-17
+
+### Fixed
+
+- Bug fix for projects which don't have commerce installed
+
 ## 2.4.5 - 2021-09-15
 
 ### Fixed
