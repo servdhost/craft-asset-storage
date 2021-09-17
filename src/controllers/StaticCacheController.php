@@ -19,12 +19,12 @@ class StaticCacheController extends Controller
         $req = Craft::$app->getRequest();
 
         $entries = Craft::$app->entries;
-        $products = Craft::$app->plugins->getPlugin('commerce')->products;
         $sites = Craft::$app->sites;
         $urls = [];
 
         foreach ($sites->allSiteIds as $siteId) {
             if (!empty($req->get('productId'))) {
+                $products = Craft::$app->plugins->getPlugin('commerce')->products;
                 $siteProduct = $products->getProductById($req->get('productId'), $siteId);
                 if (!is_null($siteProduct)) {
                     $urls[] = $siteProduct->getUrl();
