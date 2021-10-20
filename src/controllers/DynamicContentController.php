@@ -14,6 +14,11 @@ class DynamicContentController extends Controller
     {
         $req = Craft::$app->getRequest();
 
+        $seomatic = Craft::$app->plugins->getPlugin('seomatic');
+        if (!empty($seomatic)) {
+            $seomatic::$plugin->settings->renderEnabled = false;
+        }
+
         if ($req->isPost) {
             //Ajax requests arrive via POST and contain multiple blocks
             $blocks = json_decode($req->getRawBody(), true);
