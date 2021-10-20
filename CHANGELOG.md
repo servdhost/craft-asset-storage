@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.7 - 2021-10-20
+
+### Fixed
+
+- Fixed an issue with dynamicInclude blocks which are placed within a loop
+
 ## 2.4.6 - 2021-09-17
 
 ### Fixed

@@ -100,7 +100,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         //Dynamically generated PHP setting static properties on arbitrary classes to track state across the request lifecycle.
         //Some developers might get  angry about that.
         $compiler->write('\servd\AssetStorage\StaticCache\StaticCache::$dynamicBlocksAdded[] = true;');
-        $compiler->write('echo "<div id=\"dynamic-block-' . $n . '\" class=\"dynamic-block\" ' .
+        $compiler->write('echo "<div id=\"dynamic-block-" . mt_rand() . "\" class=\"dynamic-block\" ' .
             'data-site=\"$' . $namespace . 'siteId\" ' .
             'data-template=\"$' . $namespace . 'template\" ' .
             'data-args=\"$' . $namespace . 'finalArguments\" ' .
