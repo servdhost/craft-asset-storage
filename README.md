@@ -130,14 +130,14 @@ By default Craft uses CSRF tokens within &lt;form&gt; elements. Static caching b
 Sometimes it's useful to be able to specify specific sections of a page to be loaded dynamically whilst keeping the majority of the page cached. The plugin contains a twig tag which can do this on your behalf:
 
 ```
-{{ dynamicInclude 'snippets/login' with {key: 'val'} only }}
+{% dynamicInclude 'snippets/login' with {key: 'val'} only %}
 ```
 
-The tag matches the syntax of the standard twig `{{ include }}` tag exactly, so you can easily switch between standard and dynamic template includes.
+The tag matches the syntax of the standard twig `{% include %}` tag exactly, so you can easily switch between standard and dynamic template includes.
 
 #### Dynamic Content Context
 
-As with the normal `{{ include }}` tag, the vast majority of the parent template's context will be made available to the dynamically loaded template by default. You can prevent the full context from being used by specifying the `only` flag.
+As with the normal `{% include %}` tag, the vast majority of the parent template's context will be made available to the dynamically loaded template by default. You can prevent the full context from being used by specifying the `only` flag.
 
 **Due to the way the dynamic loading works, any simple data types (strings, numbers, arrays etc) in the parent context will be exposed publicly. This does not include any of Craft's global twig variables however. If you have sensitive content in your template context, always use the `only` flag and define your child template's context explicitly.**
 
