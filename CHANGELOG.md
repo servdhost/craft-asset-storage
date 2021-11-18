@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.9 - 2021-11-18
+
+### Updated
+
+- Added a timeout to the redis connection which clears Servd's static cache. There are now some legitimate situations in which these components might not exist all of the time, but PHP doesn't necesserily know about it. 
+
 ## 2.4.8 - 2021-10-20
 
 ### Updated

@@ -464,19 +464,23 @@ class StaticCache extends Component
             $redis = new Redis();
 
             //Clear out content
-            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
-            $redis->select($redisDb);
-            $redis->flushDb(true);
-            $redis->close();
-
-            //Clear out metadata - ledge stores cached redirects here
-            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
-            $redis->connect($qlessHost, getenv('REDIS_PORT'));
+            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'), 5);
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
+        }
+
+        try {
+            //Clear out metadata - ledge stores cached redirects here
+            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
+            $redis->connect($qlessHost, getenv('REDIS_PORT'), 5);
+            $redis->select($redisDb);
+            $redis->flushDb(true);
+            $redis->close();
+        } catch (Exception $e) {
+            //Do nothing - this is expected most of the time
         }
     }
 
