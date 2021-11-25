@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.10 - 2021-11-25
+
+### Updated
+
+- Allowed Servd powered ImagerX transforms to work when passed an existing ImagerX model instead of an Asset. Not sure why you'd do it, but folk do, and now they can.
+
 ## 2.4.9 - 2021-11-18
 
 ### Updated

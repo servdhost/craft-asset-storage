@@ -45,6 +45,11 @@ class ImagerTransformer extends Component implements TransformerInterface
             return null;
         }
 
+        //If the user passes in an existing ImagerTransform we pull out the original asset object
+        if (get_class($image) == ImagerTransformedImageModel::class) {
+            $image = $image->source;
+        }
+
         $volume = $image->getVolume();
 
         if (get_class($volume) !== Volume::class) {
