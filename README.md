@@ -172,7 +172,7 @@ The returned URL will point towards the Servd Asset Platform. This also supports
 In your twig template:
 
 ```twig
-{{ asset->getUrl('large') }}
+{{ asset.getUrl('large') }}
 
 OR
 
@@ -184,7 +184,7 @@ OR
     position: 'top-center'
 } %}
 
-{{ asset->getUrl(thumb) }}
+{{ asset.getUrl(thumb) }}
 ```
 
 ## Use with Imager-X
