@@ -106,13 +106,14 @@ class StaticCache extends Component
                         }
                         dBlock.parentNode.removeChild(dBlock);    
                     }
+                    return allChildren;
                 }
                 function pullDynamic() {
                     var injectedContent = document.getElementById("SERVD_DYNAMIC_BLOCKS");
                     if(injectedContent){
                         var parsedContent = JSON.parse(injectedContent.innerHTML);
-                        insertBlocks(parsedContent.blocks);
-                        window.dispatchEvent( new Event("servd.dynamicloaded") );
+                        let insertedBlocks = insertBlocks(parsedContent.blocks);
+                        window.dispatchEvent( new CustomEvent("servd.dynamicloaded", {detail: {blocks: insertedBlocks}}) );
                         return;
                     }
 
@@ -138,15 +139,15 @@ class StaticCache extends Component
                         xhr.onload = function () {
                             if (xhr.status >= 200 && xhr.status <= 299) {
                                 var responseContent = JSON.parse(xhr.response);
-                                insertBlocks(responseContent.blocks);
-                                window.dispatchEvent( new Event("servd.dynamicloaded") );
+                                let insertedBlocks = insertBlocks(responseContent.blocks);
+                                window.dispatchEvent( new CustomEvent("servd.dynamicloaded", {detail: {blocks: insertedBlocks}}) );
                             }
                         }
                         xhr.open("POST", "' . $ajaxUrl . '", );
                         xhr.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
                         xhr.send(JSON.stringify(allBlocks));
                     } else {
-                        window.dispatchEvent( new Event("servd.dynamicloaded") );
+                        window.dispatchEvent( new CustomEvent("servd.dynamicloaded", {detail: {blocks: []}}) );
                     }
                 }
                 setTimeout(pullDynamic, 50);

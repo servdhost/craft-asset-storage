@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.11 - 2021-12-15
+
+### Updated
+
+- The event which fires when the plugin has loaded in any `{% dynamicInclude %}` content now includes a list of all the blocks which have been added to the DOM, allowing you to target them in JS and do things with them (like init alpine JS objects etc).
+
 ## 2.4.10 - 2021-11-25
 
 ### Updated
