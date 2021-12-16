@@ -272,13 +272,15 @@ class StaticCache extends Component
     private function registerLoggedInHandlers()
     {
         Event::on(Application::class, Application::EVENT_INIT, function () {
-            if (!Craft::$app->getUser()->checkPermission('accessCp')) {
+            $user = Craft::$app->getUser();
+            if ($user->isGuest) {
                 Craft::$app->response->cookies->remove('SERVD_LOGGED_IN_STATUS');
             } else {
+                $cookieValue = $user->checkPermission('accessCp') ? '1' : '2';
                 $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;
                 $expire = (int) time() + (3600 * 24 * 300);
                 if (PHP_VERSION_ID >= 70300) {
-                    setcookie('SERVD_LOGGED_IN_STATUS', '1', [
+                    setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, [
                         'expires' => $expire,
                         'path' => '/',
                         'domain' => $domain,
@@ -287,9 +289,9 @@ class StaticCache extends Component
                         'samesite' => null
                     ]);
                 } else {
-                    setcookie('SERVD_LOGGED_IN_STATUS', '1', $expire, '/', $domain, false, false);
+                    setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
                 }
-                $_COOKIE['SERVD_LOGGED_IN_STATUS'] = 1;
+                $_COOKIE['SERVD_LOGGED_IN_STATUS'] = $cookieValue;
             }
         });
     }
