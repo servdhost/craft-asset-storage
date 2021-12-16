@@ -272,7 +272,7 @@ class StaticCache extends Component
     private function registerLoggedInHandlers()
     {
         Event::on(Application::class, Application::EVENT_INIT, function () {
-            if (Craft::$app->getUser()->isGuest) {
+            if (!Craft::$app->getUser()->checkPermission('accessCp')) {
                 Craft::$app->response->cookies->remove('SERVD_LOGGED_IN_STATUS');
             } else {
                 $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;

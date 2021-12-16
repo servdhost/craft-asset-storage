@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.0 - 2021-12-16
+
+### Changed
+
+- The option to skip the cache for logged in users has been restricted to users with control panel access - so front-end-only users don't have all static caching disabled when they log in.
+
 ## 2.4.11 - 2021-12-15
 
 ### Updated
