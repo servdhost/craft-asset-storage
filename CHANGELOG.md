@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.12 - 2021-12-28
+
+### Fixed
+
+- Twig extensions were only being registered for 'site' requests which caused problems when rendering templates from a CLI command. This is now fixed.
+
 ## 2.4.11 - 2021-12-15
 
 ### Updated
