@@ -128,12 +128,15 @@ class ImageTransforms
             $params['fit'] = 'clip';
         }
 
-        if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
-            $params['fp-x'] = $transform->fpx;
-        }
+        $params['crop'] = $transform->crop;
+        if ($transform->crop == 'focalpoint') {
+            if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
+                $params['fp-x'] = $transform->fpx;
+            }
 
-        if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
-            $params['fp-y'] = $transform->fpy;
+            if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
+                $params['fp-y'] = $transform->fpy;
+            }
         }
 
         if (!empty($transform->fillColor)) {
