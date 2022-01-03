@@ -58,19 +58,16 @@ class TransformOptions
                 $cropParams = [];
                 // Handle the focal point
                 $focalPoint = $asset->getFocalPoint();
-                if (!empty($focalPoint)) {
+                if (!empty($focalPoint) && ($focalPoint['x'] != 0.5 || $focalPoint['y'] != 0.5)) {
                     $this->fpx = $focalPoint['x'];
                     $this->fpy = $focalPoint['y'];
-                    $cropParams[] = 'focalpoint';
-                    $this->crop = implode(',', $cropParams);
+                    $this->crop = 'focalpoint';
                 } elseif (preg_match('/(top|center|bottom)-(left|center|right)/', $transform->position)) {
-                    // Imgix defaults to 'center' if no param is present
                     $filteredCropParams = explode('-', $transform->position);
                     $filteredCropParams = array_diff($filteredCropParams, ['center']);
-                    $cropParams[] = $filteredCropParams;
-                    // Imgix
+                    $cropParams = implode(',', $filteredCropParams);
                     if (!empty($cropParams) && $transform->position !== 'center-center') {
-                        $this->crop = implode(',', $cropParams);
+                        $this->crop = $cropParams;
                     }
                 }
                 break;

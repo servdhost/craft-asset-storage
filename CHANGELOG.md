@@ -6,6 +6,18 @@
 
 - The option to skip the cache for logged in users has been restricted to users with control panel access - so front-end-only users don't have all static caching disabled when they log in.
 
+## 2.4.13 - 2022-01-03
+
+### Fixed
+
+- Image transforms alignments using the (e.g.) 'top-left' syntax were being ignored in Servd asset transform URLs. Now they are not.
+
+## 2.4.12 - 2021-12-28
+
+### Fixed
+
+- Twig extensions were only being registered for 'site' requests which caused problems when rendering templates from a CLI command. This is now fixed.
+
 ## 2.4.11 - 2021-12-15
 
 ### Updated

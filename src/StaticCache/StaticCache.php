@@ -74,7 +74,11 @@ class StaticCache extends Component
     private function registerTwigExtension()
     {
 
-        //Don't mess with CP requests
+        // Add in our Twig extension
+        $extension = new Extension();
+        Craft::$app->view->registerTwigExtension($extension);
+
+        //Don't add JS to CP requests or CLI commands
         if (!Craft::$app->request->getIsSiteRequest()) {
             return;
         }
@@ -173,10 +177,6 @@ class StaticCache extends Component
                 // ???
             }
         });
-
-        // Add in our Twig extension
-        $extension = new Extension();
-        Craft::$app->view->registerTwigExtension($extension);
     }
 
     private function registerEventHandlers()
