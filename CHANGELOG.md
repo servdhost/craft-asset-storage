@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.13 - 2022-01-03
+
+### Fixed
+
+- Image transforms alignments using the (e.g.) 'top-left' syntax were being ignored in Servd asset transform URLs. Now they are not.
+
 ## 2.4.12 - 2021-12-28
 
 ### Fixed
