@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.14 - 2022-01-06
+
+### Updated
+
+- Changed the download timeout when syncing assets to/from local volumes to 300 seconds instead of the previous 30 seconds.
+
 ## 2.4.13 - 2022-01-03
 
 ### Fixed

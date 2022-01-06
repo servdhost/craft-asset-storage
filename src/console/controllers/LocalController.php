@@ -635,6 +635,7 @@ class LocalController extends Controller
     {
         try {
             $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
+            $config['http']['timeout'] = 300; //Make sure we don't timeout during file downloads
         } catch (\Exception $e) {
             $this->stderr('Failed to fetch Servd Asset Platform credentials: ' . $e->getMessage() . PHP_EOL, Console::FG_RED);
             return;
