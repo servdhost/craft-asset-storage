@@ -66,7 +66,8 @@ class Ledge
             if (!isset($hosts[$urlHost])) {
                 $hosts[$urlHost] = [];
             }
-            $hosts[$urlHost][] = str_ireplace('https://', 'http://', $url);
+            $withPort = str_ireplace($urlHost, $urlHost . ':8080', $url);
+            $hosts[$urlHost][] = str_ireplace('https://', 'http://', $withPort);
         }
 
         foreach ($hosts as $host => $hostUrls) {

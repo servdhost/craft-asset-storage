@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.15 - 2022-01-07
+
+### Fixed
+
+- Fixed a bug (recently introduced by changes to users and permissions in Servd's nginx processes) which prevented static cache purges from working as expected in some circumstances.
+
 ## 2.4.14 - 2022-01-06
 
 ### Updated
