@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.16 - 2022-01-18
+
+### Fixed
+
+- Fixed a bug which caused only a subset of `dynamicInclude` blocks to be included in the `dynamicLoaded` JS event.
+
 ## 2.4.15 - 2022-01-07
 
 ### Fixed
