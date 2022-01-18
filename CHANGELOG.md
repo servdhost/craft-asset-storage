@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.17 - 2022-01-18
+
+### Fixed
+
+- 2.4.16 caused another bug when multiple blocks were loaded onto the same page. Now fixed.
+
 ## 2.4.16 - 2022-01-18
 
 ### Fixed

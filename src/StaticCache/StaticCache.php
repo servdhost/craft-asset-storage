@@ -96,21 +96,24 @@ class StaticCache extends Component
             $view->registerJs('
                 function insertBlocks(blocks)
                 {
-                    var allChildren = [];
+                    var allChildrenOnPage = [];
                     for(var i = 0; i < blocks.length; i++){
                         var rBlock = blocks[i];
                         var dBlock = document.getElementById(rBlock.id);
                         var placeholder = document.createElement("div");
                         placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
+                        var allChildren = [];
                         for (var j = 0; j < placeholder.childNodes.length; j++) {
                             allChildren.push(placeholder.childNodes[j]);
+                            allChildrenOnPage.push(placeholder.childNodes[j]);
                         }
                         for(var node of allChildren){
                             dBlock.parentNode.insertBefore(node, dBlock);
                         }
                         dBlock.parentNode.removeChild(dBlock);    
                     }
-                    return allChildren;
+                    
+                    return allChildrenOnPage;
                 }
                 function pullDynamic() {
                     var injectedContent = document.getElementById("SERVD_DYNAMIC_BLOCKS");
