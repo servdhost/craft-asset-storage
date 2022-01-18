@@ -96,12 +96,12 @@ class StaticCache extends Component
             $view->registerJs('
                 function insertBlocks(blocks)
                 {
+                    var allChildren = [];
                     for(var i = 0; i < blocks.length; i++){
                         var rBlock = blocks[i];
                         var dBlock = document.getElementById(rBlock.id);
                         var placeholder = document.createElement("div");
                         placeholder.insertAdjacentHTML("afterbegin", rBlock.html);
-                        var allChildren = [];
                         for (var j = 0; j < placeholder.childNodes.length; j++) {
                             allChildren.push(placeholder.childNodes[j]);
                         }
