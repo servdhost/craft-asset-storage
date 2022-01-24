@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.18 - 2022-01-24
+
+### Updated
+
+- Ensure objects passed into {% dynamicInclude %} contexts, that do not have an id set, are removed (because they can't be rehydrated later)
+
 ## 2.4.17 - 2022-01-18
 
 ### Fixed

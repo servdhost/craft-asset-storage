@@ -193,7 +193,8 @@ class IncludeNode extends Node implements NodeOutputInterface
             }
             //The only objects we want are subclasses of Craft's Element
             //We only store a reference to these. Also works with custom element types
-            if (is_object($el) && is_subclass_of($el, \craft\base\Element::class)) {
+            //Exclude any objects which have no id set (not yet saved to the database) - these can't be rehydrated
+            if (is_object($el) && is_subclass_of($el, \craft\base\Element::class) && !is_null($el->id)) {
                 $cleaned[$key] = [
                     'type' => get_class($el),
                     'id' => $el->id,
