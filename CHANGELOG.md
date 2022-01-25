@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.19 - 2022-01-25
+
+### Updated
+
+- Fire an event in JS when CSRF tokens have been loaded into the DOM if using static caching
+
 ## 2.4.18 - 2022-01-24
 
 ### Updated
