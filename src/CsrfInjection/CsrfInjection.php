@@ -41,7 +41,11 @@ class CsrfInjection extends Component
                                 for (var i=0; i<len; i++) {
                                     inputs[i].setAttribute("value", tokenInfo.token);
                                 }
+                                window.dispatchEvent( new CustomEvent("servd.csrfloaded", {detail: {token: tokenInfo.token}}) );
+                            } else {
+                                window.dispatchEvent( new CustomEvent("servd.csrffailed") );
                             }
+
                         };
                         xhr.open("GET", "' . $url . '");
                         xhr.send();
