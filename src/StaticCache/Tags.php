@@ -83,6 +83,20 @@ class Tags extends Component
         }
     }
 
+    public function iterateUrlsForTag($tag, $callback)
+    {
+        try {
+            $redis = $this->getRedisConnection();
+            $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY); /* don't return empty results until we're done */
+            $it = NULL;
+            while ($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) {
+                $callback($arr_mems);
+            }
+        } catch (Exception $e) {
+            Craft::error($e->getMessage(), __METHOD__);
+        }
+    }
+
     public function clearTagsForUrl($url)
     {
         $url = $this->normaliseUrl($url);
