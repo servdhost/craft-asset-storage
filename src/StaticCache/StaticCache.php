@@ -32,6 +32,7 @@ use craft\web\Application;
 use craft\web\UrlManager;
 use craft\web\View;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\View as BaseView;
 use yii\web\View as WebView;
@@ -385,27 +386,12 @@ class StaticCache extends Component
             __METHOD__
         );
 
-        // 2. Trigger a purge for all URLs which are linked to the tag
-
-        $allUrlsToPurge = [];
-        foreach ($updatedTags as $updatedTag) {
-            $allUrlsToPurge = array_merge($tags->getUrlsForTag($updatedTag), $allUrlsToPurge);
+        foreach ($updatedTags as $tag) {
+            Craft::$app->queue->push(new PurgeTagJob([
+                'description' => 'Purge static cache by tag',
+                'tag' => $tag
+            ]));
         }
-        $allUrlsToPurge = array_unique($allUrlsToPurge);
-        if (sizeof($allUrlsToPurge) == 0) {
-            return;
-        }
-
-        Craft::info(
-            'Purging static cache for ' . sizeof($allUrlsToPurge) . ' urls.',
-            __METHOD__
-        );
-
-        Craft::$app->queue->push(new PurgeUrlsJob([
-            'description' => 'Purge static cache',
-            'urls' => $allUrlsToPurge,
-            'triggers' => $updatedTags,
-        ]));
     }
 
     private function getTagsFromElementUpdateEvent($event)

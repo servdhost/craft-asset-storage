@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.4.20 - 2022-01-27
+
+### Updated
+
+- Significantly improve the performance of tag-based static cache clearing for sites with a very large number of unique URLs
+
 ## 2.4.19 - 2022-01-25
 
 ### Updated
