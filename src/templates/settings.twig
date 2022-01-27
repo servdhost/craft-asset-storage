@@ -98,3 +98,10 @@
     name: 'suppressWarnings',
     on: settings.suppressWarnings,
 }) }}
+
+{{ forms.lightswitchField({
+    label: "Send feedme logs to standard log output so that they can be collected and displayed by Servd",
+    id: 'adjustFeedme',
+    name: 'adjustFeedme',
+    on: settings.adjustFeedme
+}) }}

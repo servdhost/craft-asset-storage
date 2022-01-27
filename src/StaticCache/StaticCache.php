@@ -397,7 +397,7 @@ class StaticCache extends Component
         }
 
         Craft::info(
-            'Purging static cache for urls: ' .  implode(', ', $allUrlsToPurge),
+            'Purging static cache for ' . sizeof($allUrlsToPurge) . ' urls.',
             __METHOD__
         );
 
