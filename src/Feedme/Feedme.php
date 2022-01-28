@@ -13,7 +13,7 @@ class Feedme extends Component
     public function init()
     {
         $settings = Plugin::$plugin->getSettings();
-        if ($settings->adjustFeedme) {
+        if ($settings->adjustFeedmeLogs) {
             $this->registerListeners();
         }
     }
