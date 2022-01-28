@@ -1,5 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.0 - 2022-01-28
+
+### Added
+
+- Added an optional integration with the feed-me plugin to allow feed logs to be pushed to standard log output. This allows Servd to collect and display them using its normal log aggregation services
+
+### Updated
+
+- Rearranged the plugin settings page so that it's a little more organised
+- Removed README content and added a link to the relevant Servd docs page
+
 ## 2.4.20 - 2022-01-27
 
 ### Updated
