@@ -24,7 +24,7 @@ class Feedme extends Component
             BaseApplication::class,
             BaseApplication::EVENT_BEFORE_REQUEST,
             function ($event) {
-                /** @var \craft\debug\Module $debugModule */
+                /** @var \craft\feedme\Plugin $feedmePlugin */
                 $feedmePlugin = Craft::$app->plugins->getPlugin('feed-me');
 
                 if (empty($feedmePlugin)) {

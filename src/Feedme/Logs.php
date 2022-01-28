@@ -20,7 +20,6 @@ class Logs extends \craft\feedme\services\Logs
 
         parent::log($method, $message, $params, $options);
 
-        $dateTime = new \DateTime();
         $message = Craft::t('feed-me', $message, $params);
 
         if (Plugin::$feedName) {
