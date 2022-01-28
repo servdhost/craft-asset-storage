@@ -19,6 +19,7 @@ class Settings extends Model
     public $useLocalVolumes = false;
     public $disableDynamic = false;
     public $disableTransforms = false;
+    public $adjustFeedmeLogs = false;
 
     public function rules()
     {

@@ -98,3 +98,10 @@
     name: 'suppressWarnings',
     on: settings.suppressWarnings,
 }) }}
+
+{{ forms.lightswitchField({
+    label: "Send feedme logs to Craft's standard log output so that they can be collected and displayed by Servd",
+    id: 'adjustFeedmeLogs',
+    name: 'adjustFeedmeLogs',
+    on: settings.adjustFeedmeLogs
+}) }}
