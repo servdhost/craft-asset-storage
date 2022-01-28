@@ -8,6 +8,7 @@ use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
+use servd\AssetStorage\Feedme\Feedme;
 use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
 use servd\AssetStorage\LocalDev\LocalDev;
@@ -80,6 +81,7 @@ class Plugin extends \craft\base\Plugin
             'cpAlerts' => CPAlerts::class,
             'redisDebug' => RedisDebug::class,
             'localDev' => LocalDev::class,
+            'feedMe' => Feedme::class,
         ]);
     }
 
@@ -94,5 +96,6 @@ class Plugin extends \craft\base\Plugin
         $this->cpAlerts;
         $this->redisDebug;
         $this->localDev;
+        $this->feedMe;
     }
 }

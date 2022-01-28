@@ -12,7 +12,6 @@ class Feedme extends Component
 {
     public function init()
     {
-
         $settings = Plugin::$plugin->getSettings();
         if ($settings->adjustFeedme) {
             $this->registerListeners();
@@ -26,17 +25,18 @@ class Feedme extends Component
             BaseApplication::EVENT_BEFORE_REQUEST,
             function ($event) {
                 /** @var \craft\debug\Module $debugModule */
-                $feedmePlugin = Craft::$app->getPlugin('feed-me');
+                $feedmePlugin = Craft::$app->plugins->getPlugin('feed-me');
+
                 if (empty($feedmePlugin)) {
                     return;
                 }
 
-                var_dump('loaded');
-                exit;
-                // Replace the default debug bar implementation's log storage
-                //$debugModule->logTarget = Craft::$app->getLog()->targets['debug'] = new RedisLogTarget($debugModule);
-                // Shim the controllers with custom ones (because the log target's implementation has leaked into them)
-                //$debugModule->controllerNamespace = 'servd\AssetStorage\RedisDebug\Controllers';
+                //Replace the feedme log component
+
+                $newLog = new Logs();
+                $feedmePlugin->setComponents([
+                    'logs' => $newLog
+                ]);
             }
         );
     }
