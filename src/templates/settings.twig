@@ -1,107 +1,131 @@
 {% import "_includes/forms" as forms %}
 
-{{ forms.autosuggestField({
-    label: "Servd Project Slug",
-    id: 'projectSlug',
-    name: 'projectSlug',
-    suggestEnvVars: true,
-    value: settings.projectSlug,
-    instructions: 'The primary identifier for your project. Defaults to the value of $SERVD_PROJECT_SLUG if not defined. This value can be found on the Assets page in the Servd dashboard.',
-    placeholder: "$SERVD_PROJECT_SLUG"
-}) }}
 
-{{ forms.autosuggestField({
-    label: "Servd Security Key",
-    id: 'securityKey',
-    name: 'securityKey',
-    suggestEnvVars: true,
-    value: settings.securityKey,
-    instructions: 'The security key used to interact with your project on Servd. Defaults to the value of $SERVD_SECURITY_KEY if not defined. This value can be found on the Assets page in the Servd dashboard.',
-    placeholder: "$SERVD_SECURITY_KEY"
-}) }}
+<fieldset>
+	<h2>General Plugin Settings</h2>
 
-{{ forms.lightswitchField({
-    label: "Inject CSRF tokens using AJAX",
-    instructions: "Allows CSRF tokens to be used on statically cached pages. This can collide with similar functionality in other plugins.",
-    id: 'injectCors',
-    name: 'injectCors',
-    on: settings.injectCors
-}) }}
-
-{{ forms.lightswitchField({
-    label: "Disable dynamic content includes",
-    instructions: "Disabled all dynamic content includes which can be useful for testing.",
-    id: 'disableDynamic',
-    name: 'disableDynamic',
-    on: settings.disableDynamic
-}) }}
-
-{{ forms.selectField({
-    label: "Cache Clear Trigger",
-    instructions: "Determine when to trigger a static cache clear",
-    options: {
-        'never' : 'Never',
-        'control-panel' : 'Only when entries are updated via the Control Panel',
-        'always' : 'When entries are updated in any way'
-    },
-    id: 'clearCachesOnSave',
-    name: 'clearCachesOnSave',
-    value: settings.clearCachesOnSave
-}) }}
-
-{{ forms.selectField({
-    label: "Cache Clear Strategy",
-    instructions: "Determine how Servd static cache entries are invalidated when changes are made to Craft Elements",
-    options: {
-        'full' : 'Full Purge',
-        'tags' : 'Automated Tag Based Purge'
-    },
-    id: 'cacheClearMode',
-    name: 'cacheClearMode',
-    value: settings.cacheClearMode
-}) }}
-
-{{ forms.autosuggestField({
-    label: "Assets Volume Environment",
-    id: 'assetsEnvironment',
-    name: 'assetsEnvironment',
-    suggestEnvVars: true,
-    value: settings.assetsEnvironment,
-    instructions: 'Overwrite the automatically detected assets environment to force a specific folder to be used within the Servd Assets Platform. ' ~
-    'Defaults to the value of $SERVD_ASSETS_ENVIRONMENT if not defined and finally falls back to an auto-detected environment.',
-    placeholder: "$SERVD_ASSETS_ENVIRONMENT"
-}) }}
-
-{{ forms.lightswitchField({
-    label: "Disable Asset Platform image transforms / optimisations",
-    instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
-    "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
-    id: 'disableTransforms',
-    name: 'disableTransforms',
-    on: settings.disableTransforms
-}) }}
-
-{% if craft35 %}
-	{{ forms.lightswitchField({
-        label: "Use Local Volumes During Dev",
-        instructions: 'Force the use of local filesystem volumes when working outside of Servd.',
-        id: 'useLocalVolumes',
-        name: 'useLocalVolumes',
-        on: settings.useLocalVolumes,
+	{{ forms.autosuggestField({
+        label: "Servd Project Slug",
+        id: 'projectSlug',
+        name: 'projectSlug',
+        suggestEnvVars: true,
+        value: settings.projectSlug,
+        instructions: 'The primary identifier for your project. Defaults to the value of $SERVD_PROJECT_SLUG if not defined. This value can be found on the Assets page in the Servd dashboard.',
+        placeholder: "$SERVD_PROJECT_SLUG"
     }) }}
-{% endif %}
 
-{{ forms.lightswitchField({
-    label: "Suppress Servd Warnings",
-    instructions: 'Prevent the Servd plugin from showing warnings and hints within the Craft Control Panel',
-    id: 'suppressWarnings',
-    name: 'suppressWarnings',
-    on: settings.suppressWarnings,
-}) }}
+	{{ forms.autosuggestField({
+        label: "Servd Security Key",
+        id: 'securityKey',
+        name: 'securityKey',
+        suggestEnvVars: true,
+        value: settings.securityKey,
+        instructions: 'The security key used to interact with your project on Servd. Defaults to the value of $SERVD_SECURITY_KEY if not defined. This value can be found on the Assets page in the Servd dashboard.',
+        placeholder: "$SERVD_SECURITY_KEY"
+    }) }}
 
-{{ forms.lightswitchField({
-    label: "Send feedme logs to Craft's standard log output so that they can be collected and displayed by Servd",
-    id: 'adjustFeedmeLogs',
-    name: 'adjustFeedmeLogs',
-    on: settings.adjustFeedmeLogs
-}) }}
+	{{ forms.lightswitchField({
+        label: "Suppress Servd Warnings",
+        instructions: 'Prevent the Servd plugin from showing warnings and hints within the Craft Control Panel.',
+        id: 'suppressWarnings',
+        name: 'suppressWarnings',
+        on: settings.suppressWarnings,
+    }) }}
+</fieldset>
+
+<hr>
+
+<fieldset>
+	<h2>Static Caching</h2>
+
+	{{ forms.lightswitchField({
+        label: "Inject CSRF tokens using AJAX",
+        instructions: "Allows CSRF tokens to be used on statically cached pages. This can collide with similar functionality in other plugins.",
+        id: 'injectCors',
+        name: 'injectCors',
+        on: settings.injectCors
+    }) }}
+
+	{{ forms.selectField({
+        label: "Cache Clear Trigger",
+        instructions: "Determine when to trigger a static cache clear.",
+        options: {
+            'never' : 'Never',
+            'control-panel' : 'Only when entries are updated via the Control Panel',
+            'always' : 'When entries are updated in any way'
+        },
+        id: 'clearCachesOnSave',
+        name: 'clearCachesOnSave',
+        value: settings.clearCachesOnSave
+    }) }}
+
+	{{ forms.selectField({
+        label: "Cache Clear Strategy",
+        instructions: "Determine how Servd static cache entries are invalidated when changes are made to Craft Elements.",
+        options: {
+            'full' : 'Full Purge',
+            'tags' : 'Automated Tag Based Purge'
+        },
+        id: 'cacheClearMode',
+        name: 'cacheClearMode',
+        value: settings.cacheClearMode
+    }) }}
+
+	{{ forms.lightswitchField({
+        label: "Disable dynamic content includes",
+        instructions: "Render all {% dynamicInclude %} tags as normal {% include %} tags. This can be useful for testing.",
+        id: 'disableDynamic',
+        name: 'disableDynamic',
+        on: settings.disableDynamic
+    }) }}
+</fieldset>
+
+<hr>
+
+<fieldset>
+	<h2>Asset Platform</h2>
+	{{ forms.autosuggestField({
+        label: "Assets Volume Environment",
+        id: 'assetsEnvironment',
+        name: 'assetsEnvironment',
+        suggestEnvVars: true,
+        value: settings.assetsEnvironment,
+        instructions: 'Overwrite the automatically detected assets environment to force a specific folder to be used within the Servd Assets Platform. ' ~
+        'If not set, defaults to the value of $SERVD_ASSETS_ENVIRONMENT before finally falling back to an auto-detected environment.',
+        placeholder: "$SERVD_ASSETS_ENVIRONMENT"
+    }) }}
+
+	{{ forms.lightswitchField({
+        label: "Disable Asset Platform image transforms / optimisations",
+        instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
+        "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
+        id: 'disableTransforms',
+        name: 'disableTransforms',
+        on: settings.disableTransforms
+    }) }}
+
+	{% if craft35 %}
+		{{ forms.lightswitchField({
+            label: "Use Local Volumes During Dev",
+            instructions: 'Force the use of local filesystem volumes when working outside of Servd.',
+            id: 'useLocalVolumes',
+            name: 'useLocalVolumes',
+            on: settings.useLocalVolumes,
+        }) }}
+	{% endif %}
+
+</fieldset>
+
+<hr>
+
+<fieldset>
+	<h2>Interaction with other plugins</h2>
+
+	{{ forms.lightswitchField({
+        label: "Send feedme logs to Craft's standard log output so that they can be collected and displayed by Servd.",
+        id: 'adjustFeedmeLogs',
+        name: 'adjustFeedmeLogs',
+        on: settings.adjustFeedmeLogs
+    }) }}
+
+</fieldset>
