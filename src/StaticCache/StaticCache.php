@@ -390,7 +390,7 @@ class StaticCache extends Component
             Craft::$app->queue->push(new PurgeTagJob([
                 'description' => 'Purge static cache by tag',
                 'tag' => $tag
-            ]));
+            ]), 1025);
         }
     }
 
