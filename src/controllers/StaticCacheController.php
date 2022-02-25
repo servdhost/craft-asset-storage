@@ -42,7 +42,7 @@ class StaticCacheController extends Controller
             return $this->redirect($req->getReferrer());
         }
 
-        Craft::$app->queue->push(new PurgeUrlsJob([
+        \craft\helpers\Queue::push(new PurgeUrlsJob([
             'description' => 'Purge static cache by url',
             'urls' => $urls,
         ]), 1025);
@@ -65,7 +65,7 @@ class StaticCacheController extends Controller
 
         $tag = Tags::ELEMENT_ID_PREFIX . $entry->getId();
 
-        Craft::$app->queue->push(new PurgeTagJob([
+        \craft\helpers\Queue::push(new PurgeTagJob([
             'description' => 'Purge static cache by tag',
             'tag' => $tag
         ]), 1025);

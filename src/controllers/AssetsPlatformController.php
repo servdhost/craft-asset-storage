@@ -24,7 +24,7 @@ class AssetsPlatformController extends Controller
         $element->markAsDirty();
         $elements->saveElement($element);
 
-        Craft::$app->queue->push(new AssetCacheClearJob([
+        \craft\helpers\Queue::push(new AssetCacheClearJob([
             'description' => 'Clear cache for asset',
             'elementUid' => $req->get('elementUid'),
         ]));
