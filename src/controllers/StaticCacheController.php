@@ -45,7 +45,7 @@ class StaticCacheController extends Controller
         Craft::$app->queue->push(new PurgeUrlsJob([
             'description' => 'Purge static cache by url',
             'urls' => $urls,
-        ]));
+        ]), 1025);
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
@@ -68,7 +68,7 @@ class StaticCacheController extends Controller
         Craft::$app->queue->push(new PurgeTagJob([
             'description' => 'Purge static cache by tag',
             'tag' => $tag
-        ]));
+        ]), 1025);
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 

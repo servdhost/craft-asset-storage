@@ -18,6 +18,11 @@ class AssetCacheClearJob extends BaseJob
         $elements = Craft::$app->elements;
         $element = $elements->getElementById($this->elementUid);
 
+        //Check that the element is an asset
+        if(empty($element->path)){
+            return;
+        }
+
         $settings = Plugin::$plugin->getSettings();
         $slug = $settings->getProjectSlug();
         $environment = $settings->getAssetsEnvironment();
