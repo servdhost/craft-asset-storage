@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.1 - 2022-02-25
+
+### Changed
+
+- The option to skip the cache for logged in users now differentiates between users who have cp access and not - so front-end-only users don't have to have all static caching disabled when they log in.
+- Background tasks for static cache purges now have a priority of 1025 in order to try to get them to run after more important things as they sometimes can take quite a while.
+
 ## 2.5.0 - 2022-01-28
 
 ### Added
