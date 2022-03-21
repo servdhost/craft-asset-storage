@@ -6,21 +6,17 @@ use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Craft;
 use craft\base\Component;
 use craft\elements\Asset;
-use craft\events\GetAssetThumbUrlEvent;
-use craft\events\GetAssetUrlEvent;
+use craft\events\DefineAssetThumbUrlEvent;
+use craft\events\DefineAssetUrlEvent;
 use craft\events\RegisterComponentTypesEvent;
-use craft\events\RegisterUrlRulesEvent;
-use craft\events\VolumeEvent;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
-use craft\models\AssetTransform;
+use craft\models\ImageTransform;
 use craft\services\Assets;
-use craft\services\Volumes;
-use craft\web\UrlManager;
 use Exception;
 use servd\AssetStorage\Plugin;
-use servd\AssetStorage\Volume as AssetStorageVolume;
 use yii\base\Event;
+use craft\services\Fs as FsService;
 
 class AssetsPlatform extends Component
 {
@@ -33,7 +29,7 @@ class AssetsPlatform extends Component
 
     public $imageTransforms;
 
-    public function init()
+    public function init(): void
     {
         $this->imageTransforms = new ImageTransforms();
         $this->registerEventHandlers();
@@ -141,25 +137,16 @@ class AssetsPlatform extends Component
 
     public function registerEventHandlers()
     {
-        Event::on(Volumes::class, Volumes::EVENT_REGISTER_VOLUME_TYPES, function (RegisterComponentTypesEvent $event) {
-            $event->types[] = AssetStorageVolume::class;
-        });
-
-        // Force Servd asset volumes to use the correct public root URL
-        Event::on(Volumes::class, Volumes::EVENT_BEFORE_SAVE_VOLUME, function (VolumeEvent $event) {
-            $volume = $event->volume;
-            if ($volume instanceof AssetStorageVolume) {
-                $volume->hasUrls = true;
-                $volume->url = 'https://cdn2.assets-servd.host/';
-            }
+        Event::on(FsService::class, FsService::EVENT_REGISTER_FILESYSTEM_TYPES, function (RegisterComponentTypesEvent $event) {
+            $event->types[] = Fs::class;
         });
 
         $settings = Plugin::$plugin->getSettings();
         if (!$settings->disableTransforms) {
             Event::on(
-                Assets::class,
-                Assets::EVENT_GET_ASSET_URL,
-                function (GetAssetUrlEvent $event) {
+                Asset::class,
+                Asset::EVENT_DEFINE_URL,
+                function (DefineAssetUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
                     if ($event->url !== null) {
@@ -167,8 +154,8 @@ class AssetsPlatform extends Component
                     }
 
                     $asset = $event->asset;
-                    $volume = $asset->getVolume();
-                    if ($volume instanceof AssetStorageVolume) {
+                    $fs = $asset->getVolume()->getFs();
+                    if ($fs instanceof Fs) {
                         $asset = $event->asset;
                         $transform = $event->transform;
                         $event->url = $this->handleAssetTransform($asset, $transform);
@@ -178,8 +165,8 @@ class AssetsPlatform extends Component
 
             Event::on(
                 Assets::class,
-                Assets::EVENT_GET_ASSET_THUMB_URL,
-                function (GetAssetThumbUrlEvent $event) {
+                Assets::EVENT_DEFINE_THUMB_URL,
+                function (DefineAssetThumbUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
                     if ($event->url !== null) {
@@ -187,19 +174,20 @@ class AssetsPlatform extends Component
                     }
 
                     $asset = $event->asset;
-                    $volume = $asset->getVolume();
-                    if ($volume instanceof AssetStorageVolume) {
+                    $fs = $asset->getVolume()->getFs();
+
+                    if ($fs instanceof Fs) {
                         $asset = $event->asset;
                         $width = $event->width;
                         $height = $event->height;
 
-                        $transform = new AssetTransform([
+                        $transform = new ImageTransform([
                             'height' => $height,
                             'width' => $width,
                             'interlace' => 'line',
                         ]);
 
-                        $event->url = $this->handleAssetTransform($asset, $transform);
+                        $event->url = $this->handleAssetTransform($asset, null);
                     }
                 }
             );
@@ -210,15 +198,15 @@ class AssetsPlatform extends Component
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $volume = $asset->getVolume();
+        $fs = $asset->getVolume()->getFs();
 
         //If a custom pattern is set, use that
-        $customPattern = Craft::parseEnv($volume->cdnUrlPattern);
+        $customPattern = Craft::parseEnv($fs->cdnUrlPattern);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($volume->customSubfolder, "/"),
+                "subfolder" => trim($fs->customSubfolder, "/"),
                 "filePath" => $asset->getPath(),
             ];
             $finalUrl = $customPattern;
@@ -228,7 +216,7 @@ class AssetsPlatform extends Component
             return $finalUrl;
         }
 
-        return AssetsHelper::generateUrl($volume, $asset);
+        return AssetsHelper::generateUrl($fs, $asset);
     }
 
     public function handleAssetTransform(Asset $asset, $transform)
@@ -245,19 +233,19 @@ class AssetsPlatform extends Component
         }
 
         if (empty($transform)) {
-            $transform = new AssetTransform([
-                //'height' => $asset->height,
+            $transform = new ImageTransform([
+                'height' => $asset->height,
                 'width' => $asset->width,
                 'interlace' => 'line',
             ]);
         }
 
         if (\is_array($transform)) {
-            $transform = new AssetTransform($transform);
+            $transform = new ImageTransform($transform);
         }
 
         if (\is_string($transform)) {
-            $assetTransforms = Craft::$app->getAssetTransforms();
+            $assetTransforms = Craft::$app->getImageTransforms();
             $transform = $assetTransforms->getTransformByHandle($transform);
             //TODO: Check if the transform is null. If so throw a nice error to let the user know what happened
         }
@@ -282,7 +270,8 @@ class AssetsPlatform extends Component
                 $html = '';
                 $element = $context['element'];
                 $volume = $context['volume'];
-                if ($volume instanceof AssetStorageVolume) {
+                $fs = $volume->getFs();
+                if ($fs instanceof Fs) {
                     return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $element->id]);
                 }
                 return '';

@@ -18,7 +18,7 @@ use yii\base\Event;
 class CPAlerts extends Component
 {
 
-    public function init()
+    public function init(): void
     {
         $this->registerEventHandlers();
     }
@@ -52,7 +52,8 @@ class CPAlerts extends Component
         //If the project has a Local Folder volume in use
 
         //Query the DB directly so that we aren't hydrating models that we don't need
-        $query = (new Query())
+        //FIXME
+        /*$query = (new Query())
             ->select(['id', 'type'])
             ->from([Table::VOLUMES])
             ->where(['type' => Local::class, 'dateDeleted' => null]);
@@ -63,7 +64,8 @@ class CPAlerts extends Component
                 ' ' . '<a class="go" href="' . UrlHelper::url('settings/assets') . '">Update</a>';
         }
 
-        return $messages;
+        return $messages;*/
+        return [];
     }
 
     private function checkForSettingsErrors()

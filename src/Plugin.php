@@ -3,6 +3,7 @@
 namespace servd\AssetStorage;
 
 use Craft;
+use craft\base\Model;
 use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
@@ -20,11 +21,11 @@ use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
 {
-    public $schemaVersion = '2.0.5';
+    public string $schemaVersion = '3.0.0';
     public static $plugin;
-    public $hasCpSettings = true;
+    public bool $hasCpSettings = true;
 
-    public function init()
+    public function init():void
     {
         parent::init();
         self::$plugin = $this;
@@ -43,12 +44,12 @@ class Plugin extends \craft\base\Plugin
         $this->initialiseComponentsAndServices();
     }
 
-    protected function createSettingsModel()
+    protected function createSettingsModel() : ?Model
     {
         return new \servd\AssetStorage\models\Settings();
     }
 
-    protected function settingsHtml()
+    protected function settingsHtml() : ?string
     {
         return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [
             'settings' => $this->getSettings(),

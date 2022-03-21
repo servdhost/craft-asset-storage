@@ -21,7 +21,7 @@ class Settings extends Model
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
 
-    public function rules()
+    public function rules(): array
     {
         return [
             //[['injectCors'], 'required'],

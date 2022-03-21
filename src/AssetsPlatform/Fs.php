@@ -7,18 +7,23 @@
  * @license MIT
  */
 
-namespace servd\AssetStorage;
+namespace servd\AssetStorage\AssetsPlatform;
 
 use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
-use craft\base\FlysystemVolume;
+use craft\flysystem\base\FlysystemFs;
 use craft\behaviors\EnvAttributeParserBehavior;
 use League\Flysystem\AdapterInterface;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use servd\AssetStorage\assetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\AwsS3Adapter;
+use servd\AssetStorage\Plugin;
+use League\Flysystem\FilesystemAdapter;
+use League\Flysystem\AwsS3V3\PortableVisibilityConverter;
+use League\Flysystem\Visibility;
 
-class Volume extends FlysystemVolume
+class Fs extends FlysystemFs
 {
     const S3_BUCKET = 'cdn-assets-servd-host';
     public $customSubfolder = '';
@@ -31,40 +36,23 @@ class Volume extends FlysystemVolume
 
     protected $isVolumeLocal = false;
 
-    public function __construct(array $config = [])
-    {
-        parent::__construct($config);
-    }
 
     public static function displayName(): string
     {
         return 'Servd Asset Storage';
     }
 
-    public function behaviors()
-    {
-        return parent::behaviors();
-    }
-
-    public function rules()
-    {
-        return parent::rules();
-    }
-
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('servd-asset-storage/volumeSettings', [
             'volume' => $this,
         ]);
     }
 
-    public function getRootUrl()
+    public function getRootUrl(): ?string
     {
-        if (false !== ($rootUrl = parent::getRootUrl())) {
-            $rootUrl .= $this->_subfolder();
-        }
-
-        return $rootUrl;
+        $base = 'https://cdn2.assets-servd.host/';
+        return $base . $this->_subfolder();
     }
 
     public function _subfolder(): string
@@ -75,7 +63,7 @@ class Volume extends FlysystemVolume
         $fullPath = Plugin::$plugin->assetsPlatform->getStorageBaseDirectory();
         $fullPath .= trim($environment, '/') . '/';
 
-        $trimmedSubfolder = trim(Craft::parseEnv($this->customSubfolder), '/');
+        $trimmedSubfolder = trim(\Craft::parseEnv($this->customSubfolder), '/');
         if (!empty($trimmedSubfolder)) {
             $fullPath .= $trimmedSubfolder . '/';
         }
@@ -83,11 +71,16 @@ class Volume extends FlysystemVolume
         return $fullPath;
     }
 
-    protected function createAdapter()
+    /**
+     * Creates a Flysystem adapter instance based on the stored settings.
+     *
+     * @return FilesystemAdapter The Flysystem adapter.
+     */
+    protected function createAdapter(): FilesystemAdapter
     {
         $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
         $client = static::client($config);
-        return new AwsS3Adapter($client, AssetsPlatform::S3_BUCKET, $this->_subfolder(), [], false);
+        return new AwsS3Adapter($client, AssetsPlatform::S3_BUCKET, $this->_subfolder());
     }
 
     protected static function client(array $config = []): S3Client
@@ -97,7 +90,7 @@ class Volume extends FlysystemVolume
 
     protected function visibility(): string
     {
-        return AdapterInterface::VISIBILITY_PUBLIC;
+        return Visibility::PUBLIC;
     }
 
     public function getSubfolder()
@@ -108,5 +101,10 @@ class Volume extends FlysystemVolume
     public function setSubfolder()
     {
         //Do nothing
+    }
+
+    protected function invalidateCdnPath(string $path): bool
+    {
+        return true;
     }
 }

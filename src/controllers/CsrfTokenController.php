@@ -7,7 +7,7 @@ use craft\web\Controller;
 
 class CsrfTokenController extends Controller
 {
-    protected $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = true;
 
     public function actionGetToken()
     {

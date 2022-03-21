@@ -42,7 +42,7 @@ class LocalController extends Controller
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
-    public function options($actionID)
+    public function options($actionID): array
     {
         $options = parent::options($actionID);
         return array_merge($options, [

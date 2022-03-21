@@ -9,7 +9,7 @@ use yii\base\Event;
 
 class RedisDebug extends Component
 {
-    public function init()
+    public function init(): void
     {
         if (!extension_loaded('redis')) {
             return;

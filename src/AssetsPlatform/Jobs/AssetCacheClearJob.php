@@ -13,7 +13,7 @@ class AssetCacheClearJob extends BaseJob
     public $elementUid;
     private $cacheClearUrl = 'https://app.servd.host/asset-platform-clear-cache';
 
-    public function execute($queue)
+    public function execute($queue): void
     {
         $elements = Craft::$app->elements;
         $element = $elements->getElementById($this->elementUid);
@@ -53,7 +53,7 @@ class AssetCacheClearJob extends BaseJob
         }
     }
 
-    protected function defaultDescription()
+    protected function defaultDescription(): ?string
     {
         return 'Clear Servd CDN Cache';
     }

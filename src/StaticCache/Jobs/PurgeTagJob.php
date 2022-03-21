@@ -14,7 +14,7 @@ class PurgeTagJob extends BaseJob
     public $tag;
     public $triggers;
 
-    public function execute($queue)
+    public function execute($queue): void
     {
         $tags = Plugin::$plugin->get('tags');
 
@@ -30,7 +30,7 @@ class PurgeTagJob extends BaseJob
         });
     }
 
-    protected function defaultDescription()
+    protected function defaultDescription(): ?string
     {
         return 'Purge static cache by tag';
     }

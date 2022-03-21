@@ -43,7 +43,7 @@ class StaticCache extends Component
     public static $esiBlocks = [];
     public static $dynamicBlocksAdded = false;
 
-    public function init()
+    public function init(): void
     {
         $this->registerTwigExtension();
 
