@@ -4,8 +4,8 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
+use craft\helpers\ImageTransforms as HelpersImageTransforms;
 use servd\AssetStorage\Plugin;
-use servd\AssetStorage\Volume;
 
 class ImageTransforms
 {
@@ -24,9 +24,9 @@ class ImageTransforms
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $volume = $asset->getVolume();
+        $fs = $asset->getVolume()->getFs();
 
-        if (get_class($volume) !== Volume::class) {
+        if (get_class($fs) !== Fs::class) {
             return null;
         }
 
@@ -46,12 +46,12 @@ class ImageTransforms
         $params['s'] = $signingKey;
 
         // Use a custom URL template if one has been provided
-        $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
+        $customPattern = Craft::parseEnv($fs->optimiseUrlPattern);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($volume->customSubfolder, "/"),
+                "subfolder" => trim($fs->customSubfolder, "/"),
                 "filePath" => $asset->getPath(),
                 "params" => '?' . http_build_query($params),
             ];
@@ -80,14 +80,14 @@ class ImageTransforms
             return;
         }
 
-        /** @var \servd\AssetStorage\Volume */
-        $volume = $asset->getVolume();
+        /** @var \servd\AssetStorage\AssetsPlatform\Fs */
+        $fs = $asset->getVolume()->getFs();
 
         $filePath = $asset->getPath();
         $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
             return rawurlencode($match[0]);
         }, $filePath);
-        $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
+        $base = rtrim($fs->_subfolder(), '/') . '/' . $filePath;
         $base = ltrim($base, '/');
 
         return $base . "?" . http_build_query($params);
@@ -153,8 +153,7 @@ class ImageTransforms
     public function outputWillBeSVG($asset, $transform)
     {
         if (empty($transform->format)) {
-            $assetTransforms = Craft::$app->getAssetTransforms();
-            $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
+            $autoFormat = HelpersImageTransforms::detectTransformFormat($asset);
             if ('svg' == $autoFormat) {
                 return true;
             }
@@ -167,8 +166,8 @@ class ImageTransforms
 
     public function inputIsGif($asset)
     {
-        $assetTransforms = Craft::$app->getAssetTransforms();
-        $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
+        $autoFormat = HelpersImageTransforms::detectTransformFormat($asset);
         return 'gif' == $autoFormat;
+        return false;
     }
 }

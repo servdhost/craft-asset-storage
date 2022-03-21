@@ -2,40 +2,77 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use League\Flysystem\AwsS3v3\AwsS3Adapter as OriginalAwsS3Adapter;
+use League\Flysystem\AwsS3V3\AwsS3V3Adapter as OriginalAwsS3Adapter;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 use League\Flysystem\Config;
+use Throwable;
+use League\Flysystem\UnableToCopyFile;
+use League\Flysystem\UnableToWriteFile;
 
 class AwsS3Adapter extends OriginalAwsS3Adapter
 {
 
-    public function copy($path, $newpath)
+    public function copy(string $source, string $destination, Config $config): void
     {
-        $command = $this->s3Client->getCommand(
-            'copyObject',
-            [
-                'Bucket'     => $this->bucket,
-                'Key'        => $this->applyPathPrefix($newpath),
-                'CopySource' => S3Client::encodeKey($this->bucket . '/' . $this->applyPathPrefix($path)),
-                //Ignore ACL because we don't use it and it breaks backblaze
-                //'ACL'        => $this->getRawVisibility($path) === AdapterInterface::VISIBILITY_PUBLIC
-                //    ? 'public-read' : 'private',
-            ] + $this->options
-        );
-
         try {
-            $this->s3Client->execute($command);
-        } catch (S3Exception $e) {
-            return false;
+            $this->client->copy(
+                $this->bucket,
+                $this->prefixer->prefixPath($source),
+                $this->bucket,
+                $this->prefixer->prefixPath($destination),
+                'public-read',
+                $this->createOptionsFromConfig($config)['params']
+            );
+        } catch (Throwable $exception) {
+            throw UnableToCopyFile::fromLocationTo($source, $destination, $exception);
         }
-
-        return true;
     }
 
-    protected function upload($path, $body, Config $config)
+    protected function upload(string $path, $body, Config $config): void
     {
-        $config->set('ACL', 'public-read');
-        return parent::upload($path, $body, $config);
+        $key = $this->prefixer->prefixPath($path);
+        $options = $this->createOptionsFromConfig($config);
+        $acl = 'public-read';
+        $shouldDetermineMimetype = $body !== '' && ! array_key_exists('ContentType', $options['params']);
+
+        if ($shouldDetermineMimetype && $mimeType = $this->mimeTypeDetector->detectMimeType($key, $body)) {
+            $options['params']['ContentType'] = $mimeType;
+        }
+
+        try {
+            $this->client->upload($this->bucket, $key, $body, $acl, $options);
+        } catch (Throwable $exception) {
+            throw UnableToWriteFile::atLocation($path, '', $exception);
+        }
+    }
+
+
+    private function createOptionsFromConfig(Config $config): array
+    {
+        $config = $config->withDefaults($this->options);
+        $options = ['params' => []];
+
+        if ($mimetype = $config->get('mimetype')) {
+            $options['params']['ContentType'] = $mimetype;
+        }
+
+        foreach (static::AVAILABLE_OPTIONS as $option) {
+            $value = $config->get($option, '__NOT_SET__');
+
+            if ($value !== '__NOT_SET__') {
+                $options['params'][$option] = $value;
+            }
+        }
+
+        foreach (static::MUP_AVAILABLE_OPTIONS as $option) {
+            $value = $config->get($option, '__NOT_SET__');
+
+            if ($value !== '__NOT_SET__') {
+                $options[$option] = $value;
+            }
+        }
+
+        return $options;
     }
 }
