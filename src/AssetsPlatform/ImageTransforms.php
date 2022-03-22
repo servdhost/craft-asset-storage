@@ -4,6 +4,7 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
+use craft\helpers\App;
 use craft\helpers\ImageTransforms as HelpersImageTransforms;
 use servd\AssetStorage\Plugin;
 
@@ -46,7 +47,7 @@ class ImageTransforms
         $params['s'] = $signingKey;
 
         // Use a custom URL template if one has been provided
-        $customPattern = Craft::parseEnv($fs->optimiseUrlPattern);
+        $customPattern = App::parseEnv($fs->optimiseUrlPattern);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),

@@ -9,6 +9,7 @@ use craft\elements\Asset;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
 use craft\models\ImageTransform;
@@ -201,7 +202,7 @@ class AssetsPlatform extends Component
         $fs = $asset->getVolume()->getFs();
 
         //If a custom pattern is set, use that
-        $customPattern = Craft::parseEnv($fs->cdnUrlPattern);
+        $customPattern = App::parseEnv($fs->cdnUrlPattern);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),

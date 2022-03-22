@@ -14,6 +14,7 @@ use Aws\S3\S3Client;
 use Craft;
 use craft\flysystem\base\FlysystemFs;
 use craft\behaviors\EnvAttributeParserBehavior;
+use craft\helpers\App;
 use League\Flysystem\AdapterInterface;
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
 use servd\AssetStorage\assetsPlatform\AssetsPlatform;
@@ -63,7 +64,7 @@ class Fs extends FlysystemFs
         $fullPath = Plugin::$plugin->assetsPlatform->getStorageBaseDirectory();
         $fullPath .= trim($environment, '/') . '/';
 
-        $trimmedSubfolder = trim(\Craft::parseEnv($this->customSubfolder), '/');
+        $trimmedSubfolder = trim(App::parseEnv($this->customSubfolder), '/');
         if (!empty($trimmedSubfolder)) {
             $fullPath .= $trimmedSubfolder . '/';
         }

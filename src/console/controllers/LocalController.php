@@ -235,7 +235,7 @@ class LocalController extends Controller
                 $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
                 $s = json_decode($v['settings'], true);
                 $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->from/" . $s['customSubfolder'];
-                $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                $localPath = FileHelper::normalizePath(App::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
                 if (!is_dir($localPath)) {
                     mkdir($localPath, 0775, true);
                 }
@@ -296,7 +296,7 @@ class LocalController extends Controller
                 $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
                 $s = json_decode($v['settings'], true);
                 $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->to/" . $s['customSubfolder'];
-                $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                $localPath = FileHelper::normalizePath(App::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
                 if (!is_dir($localPath)) {
                     mkdir($localPath, 0775, true);
                 }
