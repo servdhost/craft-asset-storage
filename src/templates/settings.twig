@@ -104,6 +104,41 @@
         on: settings.disableTransforms
     }) }}
 
+    <div class="field">
+        
+        {{ forms.lightswitchField({
+            label: "Enable Local Filesystem Links",
+            instructions: "Link your Servd FileSystem objects to Local Filesystem objects to enable local asset pull and push commands.<br>" ~ 
+            "To use this feature, <i>all</i> Servd filesystems must be mapped to different local filesystems.",
+            id: 'fsMapsEnabled',
+            name: 'fsMapsEnabled',
+            on: settings.fsMapsEnabled
+        }) }}
+
+
+        {% for servdFs in settings.getServdFilesystems() %}
+            <div style="display:flex; align-items: center; margin-left:-4px;margin-right:-4px;margin-bottom:4px;margin-top:4px;">
+                <div style="padding-left:4px;padding-right:4px;width:30%;font-weight:bold;">
+                    {{ servdFs.name }}
+                </div>
+                <div style="padding-left:4px;padding-right:4px;width:30%;">
+                    {{ forms.selectField({
+                        label: null,
+                        instructions: null,
+                        options: settings.getLocalFsAsOptions(),
+                        id: 'fsMaps['~servdFs.handle~']',
+                        name: 'fsMaps['~servdFs.handle~']',
+                        value: settings.fsMaps[servdFs.handle] ?? ''
+                    }) }}
+                </div>
+            </div>
+        {% endfor %}
+
+        <div>
+            {{ forms.errorList(settings.getErrors('fsMaps')) }}
+        </div>
+    </div>
+
 </fieldset>
 
 <hr>

@@ -51,9 +51,11 @@ class Plugin extends \craft\base\Plugin
 
     protected function settingsHtml() : ?string
     {
+        $settings = $this->getSettings();
         return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [
-            'settings' => $this->getSettings(),
-            'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>=')
+            'settings' => $settings,
+            'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>='),
+            
         ]);
     }
 
