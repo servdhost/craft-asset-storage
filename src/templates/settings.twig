@@ -85,7 +85,7 @@
 <fieldset>
 	<h2>Asset Platform</h2>
 	{{ forms.autosuggestField({
-        label: "Assets Volume Environment",
+        label: "Force Assets Environment",
         id: 'assetsEnvironment',
         name: 'assetsEnvironment',
         suggestEnvVars: true,
@@ -98,7 +98,7 @@
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
-        "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
+        "This makes the Servd asset platform act in the same way as a standard S3 storage filesystem.",
         id: 'disableTransforms',
         name: 'disableTransforms',
         on: settings.disableTransforms

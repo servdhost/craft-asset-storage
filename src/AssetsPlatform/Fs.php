@@ -35,9 +35,6 @@ class Fs extends FlysystemFs
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
 
-    protected $isVolumeLocal = false;
-
-
     public static function displayName(): string
     {
         return 'Servd Asset Storage';
@@ -45,8 +42,8 @@ class Fs extends FlysystemFs
 
     public function getSettingsHtml(): ?string
     {
-        return Craft::$app->getView()->renderTemplate('servd-asset-storage/volumeSettings', [
-            'volume' => $this,
+        return Craft::$app->getView()->renderTemplate('servd-asset-storage/fsSettings', [
+            'fs' => $this,
         ]);
     }
 

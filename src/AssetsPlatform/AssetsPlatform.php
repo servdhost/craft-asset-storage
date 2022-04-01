@@ -222,7 +222,6 @@ class AssetsPlatform extends Component
 
     public function handleAssetTransform(Asset $asset, $transform)
     {
-        $volume = $asset->getVolume();
 
         if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
             return $this->getFileUrl($asset);
