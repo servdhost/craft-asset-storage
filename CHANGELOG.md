@@ -41,6 +41,7 @@
 ### Updated
 
 - Ensure objects passed into {% dynamicInclude %} contexts, that do not have an id set, are removed (because they can't be rehydrated later)
+- [Craft CMS Hosting on Servd](https://servd.host)
 
 ## 2.4.17 - 2022-01-18
 
