@@ -6,7 +6,6 @@ use Yii;
 use yii\base\InvalidConfigException;
 use yii\helpers\FileHelper;
 use yii\log\Target;
-use Opis\Closure;
 use yii\debug\FlattenException;
 
 class RedisLogTarget extends Target
@@ -67,11 +66,8 @@ class RedisLogTarget extends Target
                     $summary['peakMemory'] = $panelData['memory'];
                     $summary['processingTime'] = $panelData['time'];
                 }
-                if(class_exists('\Opis\Closure')){
-                    $data[$id] = Closure\serialize($panelData);
-                } else {
-                    $data[$id] = serialize($panelData);
-                }
+
+                $data[$id] = $this->serialize($panelData);
             } catch (\Exception $exception) {
                 $exceptions[$id] = new FlattenException($exception);
             }
@@ -79,11 +75,7 @@ class RedisLogTarget extends Target
         $data['summary'] = $summary;
         $data['exceptions'] = $exceptions;
 
-        if(class_exists('\Opis\Closure')){
-            $this->redisCon->set($redisKey, Closure\serialize($data), static::REDIS_DATA_TTL);
-        } else {
-            $this->redisCon->set($redisKey, serialize($data), static::REDIS_DATA_TTL);
-        }
+        $this->redisCon->set($redisKey, $this->serialize($data), static::REDIS_DATA_TTL);
         $this->updateIndexFile($summary);
     }
 
@@ -101,21 +93,13 @@ class RedisLogTarget extends Target
         if ($content === false) {
             $manifest = [];
         } else {
-            if(class_exists('\Opis\Closure')){
-                $manifest = Closure\unserialize($content);
-            } else {
-                $manifest = unserialize($content);
-            }
+            $manifest = $this->unserialize($content);
         }
 
         $manifest[$this->tag] = $summary;
         $this->gc($manifest);
 
-        if(class_exists('\Opis\Closure')){
-            $this->redisCon->set($redisKey, Closure\serialize($manifest));
-        } else {
-            $this->redisCon->set($redisKey, serialize($manifest));
-        }
+        $this->redisCon->set($redisKey, $this->serialize($manifest));
     }
 
     /**
@@ -214,5 +198,21 @@ class RedisLogTarget extends Target
         # / 2 because messages are in couple (begin/end)
 
         return count($profileLogs) / 2;
+    }
+
+    private function unserialize($content)
+    {
+        if (class_exists('\Opis\Closure')) {
+            return \Opis\Closure\unserialize($content);
+        }
+        return unserialize($content);
+    }
+
+    private function serialize($content)
+    {
+        if (class_exists('\Opis\Closure')) {
+            return \Opis\Closure\serialize($content);
+        }
+        return serialize($content);
     }
 }

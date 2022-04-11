@@ -3,7 +3,6 @@
 namespace servd\AssetStorage\RedisDebug\Controllers;
 
 use yii\debug\controllers\DefaultController as ControllersDefaultController;
-use Opis\Closure;
 use yii\web\NotFoundHttpException;
 
 class DefaultController extends ControllersDefaultController
@@ -44,7 +43,8 @@ class DefaultController extends ControllersDefaultController
                 $this->_manifest = [];
             }
 
-            $this->_manifest = array_reverse(Closure\unserialize($content), true);
+            $this->_manifest = array_reverse($this->unserialize($content), true);
+
         }
 
         return $this->_manifest;
@@ -70,12 +70,12 @@ class DefaultController extends ControllersDefaultController
                     throw new NotFoundHttpException("Unable to find debug data tagged with '$tag'.");
                 }
 
-                $data = Closure\unserialize($d);
+                $data = $this->unserialize($d);
                 $exceptions = $data['exceptions'];
                 foreach ($this->module->panels as $id => $panel) {
                     if (isset($data[$id])) {
                         $panel->tag = $tag;
-                        $panel->load(Closure\unserialize($data[$id]));
+                        $panel->load($this->unserialize($data[$id]));
                     }
                     if (isset($exceptions[$id])) {
                         $panel->setError($exceptions[$id]);
@@ -88,5 +88,22 @@ class DefaultController extends ControllersDefaultController
         }
 
         throw new NotFoundHttpException("Unable to find debug data tagged with '$tag'.");
+    }
+
+    private function unserialize($content)
+    {
+        if(class_exists('\Opis\Closure')){
+            return \Opis\Closure\unserialize($content);
+        }
+        return unserialize($content);
+    }
+
+
+    private function serialize($content)
+    {
+        if(class_exists('\Opis\Closure')){
+            return \Opis\Closure\serialize($content);
+        }
+        return serialize($content);
     }
 }
