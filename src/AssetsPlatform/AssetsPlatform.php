@@ -171,7 +171,7 @@ class AssetsPlatform extends Component
                     if ($volume instanceof AssetStorageVolume) {
                         $asset = $event->asset;
                         $transform = $event->transform;
-                        $event->url = $this->handleAssetTransform($asset, $transform);
+                        $event->url = $this->handleAssetTransform($asset, $transform, true);
                     }
                 }
             );
@@ -199,7 +199,7 @@ class AssetsPlatform extends Component
                             'interlace' => 'line',
                         ]);
 
-                        $event->url = $this->handleAssetTransform($asset, $transform);
+                        $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
             );
@@ -211,6 +211,15 @@ class AssetsPlatform extends Component
 
         $settings = Plugin::$plugin->getSettings();
         $volume = $asset->getVolume();
+
+        //Special handling for videos
+        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO;
+        if ($assetIsVideo) {
+            return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
+                $settings->getAssetsEnvironment() . '/' .
+                (strlen(trim($volume->customSubfolder, "/")) > 0 ? (trim($volume->customSubfolder, "/") . '/') : '') .
+                $asset->getPath();
+        }
 
         //If a custom pattern is set, use that
         $customPattern = Craft::parseEnv($volume->cdnUrlPattern);
@@ -231,12 +240,15 @@ class AssetsPlatform extends Component
         return AssetsHelper::generateUrl($volume, $asset);
     }
 
-    public function handleAssetTransform(Asset $asset, $transform)
+    public function handleAssetTransform(Asset $asset, $transform, $force = true)
     {
         $volume = $asset->getVolume();
 
         if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
-            return $this->getFileUrl($asset);
+            if ($force) {
+                return $this->getFileUrl($asset);
+            }
+            return;
         }
 
         //If the input type is gif respect the no transform flag
