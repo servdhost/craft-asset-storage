@@ -9,6 +9,7 @@
 ### Fixed
 
 - Don't break filename icons for non image files in the Craft CP assets view
+- Additional fixes for yii debug bar's recent changes
 
 ## 2.5.2 - 2022-04-07
 
