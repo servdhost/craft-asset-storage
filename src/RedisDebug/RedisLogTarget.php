@@ -67,7 +67,11 @@ class RedisLogTarget extends Target
                     $summary['peakMemory'] = $panelData['memory'];
                     $summary['processingTime'] = $panelData['time'];
                 }
-                $data[$id] = Closure\serialize($panelData);
+                if(class_exists('\Opis\Closure')){
+                    $data[$id] = Closure\serialize($panelData);
+                } else {
+                    $data[$id] = serialize($panelData);
+                }
             } catch (\Exception $exception) {
                 $exceptions[$id] = new FlattenException($exception);
             }
@@ -75,7 +79,11 @@ class RedisLogTarget extends Target
         $data['summary'] = $summary;
         $data['exceptions'] = $exceptions;
 
-        $this->redisCon->set($redisKey, Closure\serialize($data), static::REDIS_DATA_TTL);
+        if(class_exists('\Opis\Closure')){
+            $this->redisCon->set($redisKey, Closure\serialize($data), static::REDIS_DATA_TTL);
+        } else {
+            $this->redisCon->set($redisKey, serialize($data), static::REDIS_DATA_TTL);
+        }
         $this->updateIndexFile($summary);
     }
 
@@ -93,13 +101,21 @@ class RedisLogTarget extends Target
         if ($content === false) {
             $manifest = [];
         } else {
-            $manifest = Closure\unserialize($content);
+            if(class_exists('\Opis\Closure')){
+                $manifest = Closure\unserialize($content);
+            } else {
+                $manifest = unserialize($content);
+            }
         }
 
         $manifest[$this->tag] = $summary;
         $this->gc($manifest);
 
-        $this->redisCon->set($redisKey, Closure\serialize($manifest));
+        if(class_exists('\Opis\Closure')){
+            $this->redisCon->set($redisKey, Closure\serialize($manifest));
+        } else {
+            $this->redisCon->set($redisKey, serialize($manifest));
+        }
     }
 
     /**

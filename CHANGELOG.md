@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.2 - 2022-04-07
+
+### Fixed
+
+- Fixed an incompatibility with the latest release of yii2-debug which changed the way data is serialised, breaking our debug logs redis target.
+
 ## 2.5.1 - 2022-02-25
 
 ### Changed
@@ -35,6 +41,7 @@
 ### Updated
 
 - Ensure objects passed into {% dynamicInclude %} contexts, that do not have an id set, are removed (because they can't be rehydrated later)
+- [Craft CMS Hosting on Servd](https://servd.host)
 
 ## 2.4.17 - 2022-01-18
 
