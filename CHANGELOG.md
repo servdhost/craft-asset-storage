@@ -1,5 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.2 - 2022-04-15
+
+### Updated
+
+- Craft 4 compatibility, including:
+- Complete rework of Volume and the new Filesystem objects
+- Rewrite of pull and push-asset commands to support filesystems
+- Allow mapping of Servd Filesystems to Local Folder filesystems to allow copy of assets between them
+- Loads of changes to ImageTransforms and related Events
+- A few changes to support the new craft-flysystem package
+
 ## 2.5.3 - 2022-04-11
 
 ### Added
