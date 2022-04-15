@@ -1,5 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.3 - 2022-04-11
+
+### Added
+
+- Support for video on the Asset Platform
+
+### Fixed
+
+- Don't break filename icons for non image files in the Craft CP assets view
+- Additional fixes for yii debug bar's recent changes
+
 ## 2.5.2 - 2022-04-07
 
 ### Fixed
