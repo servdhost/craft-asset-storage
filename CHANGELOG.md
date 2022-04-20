@@ -1,6 +1,6 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.0.0-beta.3 - 2022-04-15
+## 3.0.0-beta.3 - 2022-04-20
 
 ### Added
 
