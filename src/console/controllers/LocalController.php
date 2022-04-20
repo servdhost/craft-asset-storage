@@ -182,11 +182,15 @@ class LocalController extends Controller
             return ExitCode::OK;
         }
 
-        $this->stdout('Starting streaming database export' . PHP_EOL);
-
         //Perform a direct stream from the remote db into the local
-        $command = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
-        $this->runCommand($command);
+        $this->stdout('Starting streaming database export', Console::FG_GREEN);
+        $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
+        $this->runCommand($importCommand);
+
+        //Optimize the target database after the import is done
+        $this->stdout('Starting database optimization', Console::FG_GREEN);
+        $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
+        $this->runCommand($optimizeCommand);
 
         //Close external database access on Servd
         $this->revertRemoteDatabaseConnectivity();
