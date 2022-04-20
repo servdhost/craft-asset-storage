@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.3 - 2022-04-15
+
+### Added
+
+- The local db push command now runs a MySQL optimize command to fix any indexes that were corrupted during the import
+
 ## 3.0.0-beta.2 - 2022-04-15
 
 ### Updated
@@ -117,7 +123,7 @@
 
 ### Updated
 
-- Added a timeout to the redis connection which clears Servd's static cache. There are now some legitimate situations in which these components might not exist all of the time, but PHP doesn't necesserily know about it. 
+- Added a timeout to the redis connection which clears Servd's static cache. There are now some legitimate situations in which these components might not exist all of the time, but PHP doesn't necesserily know about it.
 
 ## 2.4.8 - 2021-10-20
 
@@ -395,12 +401,12 @@
 
 ## 2.0.2 - 2020-11-30
 
-### Fixed 
+### Fixed
 - CORS tokens were being injected into pages even when they were disabled. These overexicted tokens are now firmly back under control.
 
 ## 2.0.1 - 2020-11-13
 
-### Fixed 
+### Fixed
 - Graceful handling of a situation in which the $SERVD_ASSETS_ENVIRONMENT is explicitly set in the plugin settings, but the env var doesn't actually exist
 - Fixed display of a control panel alert which prompts user to add appropriate plugin settings
 
@@ -415,7 +421,7 @@
 - Large code refactor to plan for upcoming new features
 - Moved Servd Project Slug and Security Key config param to plugin settings instead of volume settings
 
-### Fixed 
+### Fixed
 - Some things that previously broke, but nobody noticed 🤫
 - No default env var fallback for $SERVD_ASSETS_ENVIRONMENT (#11)
 
