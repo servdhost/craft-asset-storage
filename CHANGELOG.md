@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.3 - 2022-05-02
+
+### Fixed
+
+- Tentative fix for a bug with the plugin's Flysystem S3 tweaks
+
 ## 3.0.0-beta.2 - 2022-04-15
 
 ### Updated
