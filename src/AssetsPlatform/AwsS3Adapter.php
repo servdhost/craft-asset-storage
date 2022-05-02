@@ -13,6 +13,13 @@ use League\Flysystem\UnableToWriteFile;
 class AwsS3Adapter extends OriginalAwsS3Adapter
 {
 
+    private const EXTRA_METADATA_FIELDS = [
+        'Metadata',
+        'StorageClass',
+        'ETag',
+        'VersionId',
+    ];
+
     public function copy(string $source, string $destination, Config $config): void
     {
         try {
