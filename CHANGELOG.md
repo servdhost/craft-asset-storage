@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.5.4 - 2022-05-01
+
+### Fixed
+
+- Fixed a bug which could cause an infinite loop when clearing tagged urls from the static cache
+
 ## 2.5.3 - 2022-04-11
 
 ### Added

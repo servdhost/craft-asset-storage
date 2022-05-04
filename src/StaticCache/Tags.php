@@ -88,8 +88,12 @@ class Tags extends Component
         try {
             $redis = $this->getRedisConnection();
             $redis->setOption(Redis::OPT_SCAN, Redis::SCAN_RETRY); /* don't return empty results until we're done */
+            $totalSetSize = $redis->scard(static::TAG_PREFIX . $tag);
+
+            $counter = 0;
             $it = NULL;
-            while ($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) {
+            while (($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) && $counter < $totalSetSize) {
+                $counter += sizeof($arr_mems);
                 $callback($arr_mems);
             }
         } catch (Exception $e) {
