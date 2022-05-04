@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.5 - 2022-05-04
+
+### Updated
+
+- Merge master 2.5.5
+
 ## 3.0.0-beta.4 - 2022-05-02
 
 ### Fixed
