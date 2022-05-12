@@ -11,7 +11,7 @@ use craft\helpers\FileHelper;
 class Logs extends \craft\feedme\services\Logs
 {
 
-    public function log($method, $message, $params = [], $options = [])
+    public function log($method, $message, array $params = [], array $options = []): void
     {
         $type = explode('::', $method)[1];
         if (!$this->_canLog($type)) {
@@ -34,7 +34,7 @@ class Logs extends \craft\feedme\services\Logs
         Craft::$type('feed-me: ' . (empty($key) ? '' : $key . ' ') . $message);
     }
 
-    private function _canLog($type)
+    private function _canLog($type): bool
     {
         $logging = Plugin::$plugin->service->getConfig('logging');
 
