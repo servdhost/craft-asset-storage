@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.5 - 2022-05-12
+
+### Fixed
+
+- Fixed feedme logs integration by adding some typings
+
 ## 3.0.0-beta.5 - 2022-05-04
 
 ### Updated
