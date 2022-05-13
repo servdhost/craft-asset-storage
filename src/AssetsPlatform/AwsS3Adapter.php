@@ -13,7 +13,7 @@ use League\Flysystem\UnableToWriteFile;
 class AwsS3Adapter extends OriginalAwsS3Adapter
 {
 
-    private const EXTRA_METADATA_FIELDS = [
+    public const EXTRA_METADATA_FIELDS = [
         'Metadata',
         'StorageClass',
         'ETag',

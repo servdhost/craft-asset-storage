@@ -1,10 +1,17 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.0.0-beta.5 - 2022-05-12
+## 3.0.0-beta.7 - 2022-05-13
 
 ### Fixed
 
-- Fixed feedme logs integration by adding some typings
+- Some fun with static const overloading. Should they be public? Should they be private? No-one knows.
+- Typo
+
+## 3.0.0-beta.6 - 2022-05-12
+
+### Fixed
+
+- Fixed Feed Me logs integration by adding some typings
 
 ## 3.0.0-beta.5 - 2022-05-04
 
