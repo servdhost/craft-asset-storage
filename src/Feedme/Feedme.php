@@ -12,6 +12,19 @@ class Feedme extends Component
 {
     public function init():void
     {
+
+        if (!extension_loaded('redis')) {
+            return;
+        }
+
+        if (
+            empty(getenv('REDIS_HOST'))
+            || empty(getenv('REDIS_PORT'))
+            || empty(getenv('REDIS_DB'))
+        ) {
+            return;
+        }
+
         $settings = Plugin::$plugin->getSettings();
         if ($settings->adjustFeedmeLogs) {
             $this->registerListeners();

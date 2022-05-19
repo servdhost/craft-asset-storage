@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.8 - 2022-05-19
+
+### Updated
+
+- Feed Me logs now work as originally intended, browsable in the Craft CP, even when running on a load balanced infra or in an isolated task runner
+
 ## 3.0.0-beta.7 - 2022-05-13
 
 ### Fixed
