@@ -82,7 +82,7 @@ class Logs extends \craft\feedme\services\Logs
         $this->redisCon->zremrangebyscore($this->redisLogsKey, '-inf', $deleteBeforeMicro);
     }
 
-    public function getLogEntries($type = null)
+    public function getLogEntries($type = null) : array
     {
         $logEntries = [];
 
