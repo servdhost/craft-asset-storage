@@ -85,7 +85,7 @@
 <fieldset>
 	<h2>Asset Platform</h2>
 	{{ forms.autosuggestField({
-        label: "Assets Volume Environment",
+        label: "Force Assets Environment",
         id: 'assetsEnvironment',
         name: 'assetsEnvironment',
         suggestEnvVars: true,
@@ -98,21 +98,46 @@
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
-        "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
+        "This makes the Servd asset platform act in the same way as a standard S3 storage filesystem.",
         id: 'disableTransforms',
         name: 'disableTransforms',
         on: settings.disableTransforms
     }) }}
 
-	{% if craft35 %}
-		{{ forms.lightswitchField({
-            label: "Use Local Volumes During Dev",
-            instructions: 'Force the use of local filesystem volumes when working outside of Servd.',
-            id: 'useLocalVolumes',
-            name: 'useLocalVolumes',
-            on: settings.useLocalVolumes,
+    <div class="field">
+        
+        {{ forms.lightswitchField({
+            label: "Enable Local Filesystem Links",
+            instructions: "Link your Servd FileSystem objects to Local Filesystem objects to enable local asset pull and push commands.<br>" ~ 
+            "To use this feature, <i>all</i> Servd filesystems must be mapped to different local filesystems.",
+            id: 'fsMapsEnabled',
+            name: 'fsMapsEnabled',
+            on: settings.fsMapsEnabled
         }) }}
-	{% endif %}
+
+
+        {% for servdFs in settings.getServdFilesystems() %}
+            <div style="display:flex; align-items: center; margin-left:-4px;margin-right:-4px;margin-bottom:4px;margin-top:4px;">
+                <div style="padding-left:4px;padding-right:4px;width:30%;font-weight:bold;">
+                    {{ servdFs.name }}
+                </div>
+                <div style="padding-left:4px;padding-right:4px;width:30%;">
+                    {{ forms.selectField({
+                        label: null,
+                        instructions: null,
+                        options: settings.getLocalFsAsOptions(),
+                        id: 'fsMaps['~servdFs.handle~']',
+                        name: 'fsMaps['~servdFs.handle~']',
+                        value: settings.fsMaps[servdFs.handle] ?? ''
+                    }) }}
+                </div>
+            </div>
+        {% endfor %}
+
+        <div>
+            {{ forms.errorList(settings.getErrors('fsMaps')) }}
+        </div>
+    </div>
 
 </fieldset>
 
@@ -122,7 +147,7 @@
 	<h2>Interaction with other plugins</h2>
 
 	{{ forms.lightswitchField({
-        label: "Send feedme logs to Craft's standard log output so that they can be collected and displayed by Servd.",
+        label: "Send Feed Me logs to Craft's standard log output so that they can be collected and displayed by Servd.",
         id: 'adjustFeedmeLogs',
         name: 'adjustFeedmeLogs',
         on: settings.adjustFeedmeLogs

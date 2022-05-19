@@ -10,7 +10,7 @@ use servd\AssetStorage\Plugin;
 class CsrfInjection extends Component
 {
 
-    public function init()
+    public function init(): void
     {
         $settings = Plugin::$plugin->getSettings();
         if ($settings->injectCors) {

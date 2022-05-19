@@ -15,9 +15,9 @@ use spacecatninja\imagerx\exceptions\ImagerException;
 use spacecatninja\imagerx\helpers\ImgixHelpers;
 
 use Imgix\UrlBuilder;
+use servd\AssetStorage\AssetsPlatform\Fs;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
 use servd\AssetStorage\Plugin;
-use servd\AssetStorage\Volume;
 use spacecatninja\imagerx\transformers\TransformerInterface;
 
 class ImagerTransformer extends Component implements TransformerInterface
@@ -50,9 +50,9 @@ class ImagerTransformer extends Component implements TransformerInterface
             $image = $image->source;
         }
 
-        $volume = $image->getVolume();
+        $fs = $image->getVolume()->getFs();
 
-        if (get_class($volume) !== Volume::class) {
+        if (get_class($fs) !== Fs::class) {
             return null;
         }
 

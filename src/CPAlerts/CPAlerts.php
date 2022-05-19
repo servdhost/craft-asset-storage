@@ -7,18 +7,18 @@ use craft\base\Component;
 use craft\db\Query;
 use craft\db\Table;
 use craft\events\RegisterCpAlertsEvent;
+use craft\fs\Local;
 use craft\helpers\App;
 use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\Sendmail;
-use craft\volumes\Local;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
 
 class CPAlerts extends Component
 {
 
-    public function init()
+    public function init(): void
     {
         $this->registerEventHandlers();
     }
@@ -47,19 +47,24 @@ class CPAlerts extends Component
 
     private function checkForVolumeErrors()
     {
+        $env = Craft::$app->getConfig()->env;
+        if (!in_array($env, ['development', 'staging', 'production'])) {
+            return [];
+        }
+
         $messages = [];
 
         //If the project has a Local Folder volume in use
-
-        //Query the DB directly so that we aren't hydrating models that we don't need
-        $query = (new Query())
-            ->select(['id', 'type'])
-            ->from([Table::VOLUMES])
-            ->where(['type' => Local::class, 'dateDeleted' => null]);
-        $count = $query->count();
-
-        if ($count > 0) {
-            $messages[] = 'You have an Assets Volume defined of type \'Local Folder\' which is not supported on Servd.' .
+        $volumeService = Craft::$app->volumes;
+        $fs = array_map(function ($v) {
+            return $v->fs;
+        }, $volumeService->getAllVolumes());
+        $inUseLocalFs = array_filter($fs, function ($fs) {
+            return is_a($fs, Local::class);
+        });
+    
+        if (sizeof($inUseLocalFs) > 0) {
+            $messages[] = 'You have an in-use Filesystem of type \'Local Folder\' which is not supported on Servd.' .
                 ' ' . '<a class="go" href="' . UrlHelper::url('settings/assets') . '">Update</a>';
         }
 
@@ -72,7 +77,7 @@ class CPAlerts extends Component
 
         //If we aren't in staging or prod and the servd plugin hasn't been configured
         $env = Craft::$app->getConfig()->env;
-        if (!in_array($env, ['staging', 'production'])) {
+        if (!in_array($env, ['development', 'staging', 'production'])) {
             $settings = Plugin::$plugin->getSettings();
             if (empty($settings->getProjectSlug()) || empty($settings->getSecurityKey())) {
                 $messages[] = 'You have not set a Servd \'Project Slug\' or \'Security Key\' which are required during local development.' .

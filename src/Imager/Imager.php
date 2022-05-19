@@ -9,7 +9,7 @@ use yii\base\Event;
 class Imager extends Component
 {
 
-    public function init()
+    public function init(): void
     {
         if (!class_exists('\spacecatninja\imagerx\ImagerX')) {
             return;

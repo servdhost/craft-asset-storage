@@ -7,7 +7,7 @@ use craft\web\Controller;
 
 class DynamicContentController extends Controller
 {
-    protected $allowAnonymous = true;
+    protected array|bool|int $allowAnonymous = true;
     public $enableCsrfValidation = false;
 
     public function actionGetContent()

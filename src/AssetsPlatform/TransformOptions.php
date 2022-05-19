@@ -3,7 +3,7 @@
 namespace servd\AssetStorage\AssetsPlatform;
 
 use craft\elements\Asset;
-use craft\models\AssetTransform;
+use craft\models\ImageTransform;
 
 class TransformOptions
 {
@@ -21,7 +21,7 @@ class TransformOptions
     public $fpy = null;
     public $auto = null;
 
-    public function fillFromCraftTransform(Asset $asset, AssetTransform $transform)
+    public function fillFromCraftTransform(Asset $asset, ImageTransform $transform)
     {
         $auto = [];
 

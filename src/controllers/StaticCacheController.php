@@ -12,7 +12,7 @@ use servd\AssetStorage\StaticCache\Tags;
 
 class StaticCacheController extends Controller
 {
-    protected $allowAnonymous = false;
+    protected array|bool|int $allowAnonymous = false;
 
     public function actionPurgeCache()
     {

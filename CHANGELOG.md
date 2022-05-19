@@ -1,22 +1,52 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.6.0 - 2022-05-19
+## 3.0.0-beta.8 - 2022-05-19
 
 ### Updated
 
 - Feed Me logs now work as originally intended, browsable in the Craft CP, even when running on a load balanced infra or in an isolated task runner
 
-## 2.5.5 - 2022-05-01
+## 3.0.0-beta.7 - 2022-05-13
 
 ### Fixed
 
-- Fixed a bug which could cause an infinite loop when clearing tagged urls from the static cache
+- Some fun with static const overloading. Should they be public? Should they be private? No-one knows.
+- Typo
 
-## 2.5.4 - 2022-04-20
+## 3.0.0-beta.6 - 2022-05-12
+
+### Fixed
+
+- Fixed Feed Me logs integration by adding some typings
+
+## 3.0.0-beta.5 - 2022-05-04
+
+### Updated
+
+- Merge master 2.5.5
+
+## 3.0.0-beta.4 - 2022-05-02
+
+### Fixed
+
+- Tentative fix for a bug with the plugin's Flysystem S3 tweaks
+
+## 3.0.0-beta.3 - 2022-04-20
 
 ### Added
 
 - The local db push command now runs a MySQL optimize command to fix any indexes that were corrupted during the import
+
+## 3.0.0-beta.2 - 2022-04-15
+
+### Updated
+
+- Craft 4 compatibility, including:
+- Complete rework of Volume and the new Filesystem objects
+- Rewrite of pull and push-asset commands to support filesystems
+- Allow mapping of Servd Filesystems to Local Folder filesystems to allow copy of assets between them
+- Loads of changes to ImageTransforms and related Events
+- A few changes to support the new craft-flysystem package
 
 ## 2.5.3 - 2022-04-11
 

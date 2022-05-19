@@ -5,7 +5,7 @@ namespace servd\AssetStorage\ImageOptimize;
 use Craft;
 use nystudio107\imageoptimize\services\Optimize;
 use nystudio107\imageoptimize\imagetransforms\ImageTransform;
-use craft\models\AssetTransform;
+use craft\models\ImageTransform as CraftImageTransform;
 use craft\elements\Asset;
 use Exception;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
@@ -22,7 +22,7 @@ class ImageOptimizeTransformer extends ImageTransform
 
     /**
      * @param Asset               $asset
-     * @param AssetTransform|null $transform
+     * @param CraftImageTransform|null $transform
      *
      * @return string|null
      * @throws \yii\base\Exception
@@ -41,7 +41,7 @@ class ImageOptimizeTransformer extends ImageTransform
     /**
      * @param string              $url
      * @param Asset               $asset
-     * @param AssetTransform|null $transform
+     * @param CraftImageTransform|null $transform
      *
      * @return string
      */
@@ -61,14 +61,14 @@ class ImageOptimizeTransformer extends ImageTransform
         return $webPUrl ?? '';
     }
 
-    public function getSettingsHtml()
+    public function getSettingsHtml(): ?string
     {
         return Craft::$app->getView()->renderTemplate('servd-asset-storage/imageOptimiseSettings', [
             'imageTransform' => $this,
         ]);
     }
 
-    public function rules()
+    public function rules(): array
     {
         $rules = parent::rules();
         return $rules;
