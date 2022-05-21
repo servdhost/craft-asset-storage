@@ -78,6 +78,7 @@ class LocalController extends Controller
     {
         $this->stdout("Servd Local Dev\n\n", Console::BOLD);
         $this->stdout("The following commands allow you to sync your database and assets between your local and remote environments.\n\n");
+        return ExitCode::OK;
     }
 
     /**
@@ -90,7 +91,7 @@ class LocalController extends Controller
         }
 
         $exit = $this->requireFrom();
-        if ($exit != 0) {
+        if ($exit != ExitCode::OK) {
             return $exit;
         }
 
@@ -149,6 +150,8 @@ class LocalController extends Controller
         //Close external database access on Servd
         $this->revertRemoteDatabaseConnectivity();
         $this->stdout("Database pull complete." . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
     }
 
     /**
@@ -161,7 +164,7 @@ class LocalController extends Controller
         }
 
         $exit = $this->requireTo();
-        if ($exit != 0) {
+        if ($exit != ExitCode::OK) {
             return $exit;
         }
 
@@ -197,6 +200,8 @@ class LocalController extends Controller
         //Close external database access on Servd
         $this->revertRemoteDatabaseConnectivity();
         $this->stdout("Database push complete." . PHP_EOL, Console::FG_GREEN);
+
+        return ExitCode::OK;
     }
 
     /**
@@ -219,7 +224,7 @@ class LocalController extends Controller
         }
 
         $exit = $this->requireFrom();
-        if ($exit != 0) {
+        if ($exit != ExitCode::OK) {
             return $exit;
         }
 
@@ -284,8 +289,8 @@ class LocalController extends Controller
             }
         }
         $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
-        return ExitCode::OK;
 
+        return ExitCode::OK;
     }
 
     /**
@@ -308,7 +313,7 @@ class LocalController extends Controller
         }
 
         $exit = $this->requireTo();
-        if ($exit != 0) {
+        if ($exit != ExitCode::OK) {
             return $exit;
         }
 
@@ -373,6 +378,7 @@ class LocalController extends Controller
             }
         }
         $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
+        
         return ExitCode::OK;
     }
 
@@ -410,7 +416,7 @@ class LocalController extends Controller
                 return ExitCode::USAGE;
             }
         }
-        return 0;
+        return ExitCode::OK;
     }
 
     private function requireFrom()
@@ -433,7 +439,7 @@ class LocalController extends Controller
                 return ExitCode::USAGE;
             }
         }
-        return 0;
+        return ExitCode::OK;
     }
 
     private function checkServdCreds()
