@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.9 - 2022-05-22
+
+### Fixed
+
+- Added return codes to all CLI commands
+
 ## 3.0.0-beta.8 - 2022-05-19
 
 ### Updated
