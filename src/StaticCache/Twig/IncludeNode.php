@@ -196,6 +196,7 @@ class IncludeNode extends Node implements NodeOutputInterface
             //Exclude any objects which have no id set (not yet saved to the database) - these can't be rehydrated
             if (is_object($el) && is_subclass_of($el, \craft\base\Element::class) && !is_null($el->id)) {
                 $cleaned[$key] = [
+                    'servdShouldHydrate' => true,
                     'type' => get_class($el),
                     'id' => $el->id,
                 ];

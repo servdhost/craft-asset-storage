@@ -80,7 +80,7 @@ class DynamicContentController extends Controller
                 continue;
             }
             if (is_array($el)) {
-                if (isset($el['type']) && isset($el['id'])) {
+                if (isset($el['servdShouldHydrate']) && isset($el['type']) && isset($el['id'])) {
                     $hydrated[$key] = $elements->getElementById($el['id'], $el['type']);
                 } else {
                     $hydrated[$key] = $this->rehydrateArgs($el);
