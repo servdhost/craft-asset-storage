@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.6.1 - 2022-05-26
+
+### Fixed
+
+- Apply stricter checks when hydrating dynamicInclude contexts
+
 ## 2.6.0 - 2022-05-19
 
 ### Updated
