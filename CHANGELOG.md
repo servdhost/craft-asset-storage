@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.11 - 2022-05-26
+
+### Fixed
+
+- Fallback to the [defaultImageQuality](https://craftcms.com/docs/3.x/config/config-settings.html#defaultimagequality) config variable if no image quality is specified when defining a transformation.
+
 ## 3.0.0-beta.10 - 2022-05-26
 
 ### Fixed
