@@ -181,7 +181,7 @@ class ImagerTransformedImageModel extends BaseTransformedImageModel implements T
      *
      * @return float|int
      */
-    public function getSize($unit = 'b', $precision = 2)
+    public function getSize(string $unit = 'b', int $precision = 2): float|int
     {
         return $this->size;
     }

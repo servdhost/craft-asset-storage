@@ -37,7 +37,7 @@ class ImagerTransformer extends Component implements TransformerInterface
      * @return array|null
      * @throws ImagerException
      */
-    public function transform($image, $transforms)
+    public function transform(Asset|string $image, array $transforms): ?array
     {
         $transformedImages = [];
 
