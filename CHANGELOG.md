@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0-beta.12 - 2022-05-30
+
+### Fixed
+
+- ImagerX function typings
+
 ## 3.0.0-beta.11 - 2022-05-26
 
 ### Fixed
