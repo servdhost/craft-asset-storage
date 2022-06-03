@@ -212,12 +212,14 @@ class AssetsPlatform extends Component
         $settings = Plugin::$plugin->getSettings();
         $volume = $asset->getVolume();
 
+        $normalizedCustomSubfolder = Craft::parseEnv($volume->customSubfolder);
+
         //Special handling for videos
         $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO;
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
-                (strlen(trim($volume->customSubfolder, "/")) > 0 ? (trim($volume->customSubfolder, "/") . '/') : '') .
+                (strlen(trim($normalizedCustomSubfolder, "/")) > 0 ? (trim($normalizedCustomSubfolder, "/") . '/') : '') .
                 $asset->getPath();
         }
 
@@ -227,7 +229,7 @@ class AssetsPlatform extends Component
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($volume->customSubfolder, "/"),
+                "subfolder" => trim($normalizedCustomSubfolder, "/"),
                 "filePath" => $asset->getPath(),
             ];
             $finalUrl = $customPattern;

@@ -45,13 +45,15 @@ class ImageTransforms
         $signingKey = $this->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
+        
         // Use a custom URL template if one has been provided
         $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
+        $normalizedCustomSubfolder = Craft::parseEnv($volume->customSubfolder);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($volume->customSubfolder, "/"),
+                "subfolder" => trim($normalizedCustomSubfolder, "/"),
                 "filePath" => $asset->getPath(),
                 "params" => '?' . http_build_query($params),
             ];
