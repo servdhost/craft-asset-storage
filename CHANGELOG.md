@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.0 - 2022-06-03
+
+### Fixed
+
+- Fixed a bug when using an environment variable as the 'subfolder' on a Servd Volume
+
 ## 3.0.0-beta.12 - 2022-05-30
 
 ### Fixed
