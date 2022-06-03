@@ -46,13 +46,15 @@ class ImageTransforms
         $signingKey = $this->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
+        $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
+
         // Use a custom URL template if one has been provided
         $customPattern = App::parseEnv($fs->optimiseUrlPattern);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($fs->customSubfolder, "/"),
+                "subfolder" => trim($normalizedCustomSubfolder, "/"),
                 "filePath" => $asset->getPath(),
                 "params" => '?' . http_build_query($params),
             ];

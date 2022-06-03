@@ -201,12 +201,14 @@ class AssetsPlatform extends Component
         $settings = Plugin::$plugin->getSettings();
         $fs = $asset->getVolume()->getFs();
 
+        $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
+
         //Special handling for videos
         $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO;
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
-                (strlen(trim($fs->customSubfolder, "/")) > 0 ? (trim($fs->customSubfolder, "/") . '/') : '') .
+                (strlen(trim($normalizedCustomSubfolder, "/")) > 0 ? (trim($normalizedCustomSubfolder, "/") . '/') : '') .
                 $asset->getPath();
         }
 
@@ -216,7 +218,7 @@ class AssetsPlatform extends Component
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
-                "subfolder" => trim($fs->customSubfolder, "/"),
+                "subfolder" => trim($normalizedCustomSubfolder, "/"),
                 "filePath" => $asset->getPath(),
             ];
             $finalUrl = $customPattern;
