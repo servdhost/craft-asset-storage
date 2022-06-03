@@ -111,7 +111,12 @@ class ImageTransforms
         if (!empty($transform->quality)) {
             $params['q'] = $transform->quality;
         } else {
-            $autoParams[] = 'compress';
+            $default = Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
+            if (empty($default) || $default == 82) { // 82 is the Craft default
+                $autoParams[] = 'compress';
+            } else {
+                $params['q'] = $default;
+            }
         }
 
         if (!empty($transform->format)) {

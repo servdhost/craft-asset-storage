@@ -1,10 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.6.2 - 2022-06-03
+## 2.6.3 - 2022-06-03
 
 ### Fixed
 
 - Fixed a bug when using an environment variable as the 'subfolder' on a Servd Volume
+
+## 2.6.2 - 2022-05-26
+
+### Fixed
+
+- Fallback to the [defaultImageQuality](https://craftcms.com/docs/3.x/config/config-settings.html#defaultimagequality) config variable if no image quality is specified when defining a transformation.
 
 ## 2.6.1 - 2022-05-26
 
