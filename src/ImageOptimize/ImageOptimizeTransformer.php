@@ -3,9 +3,8 @@
 namespace servd\AssetStorage\ImageOptimize;
 
 use Craft;
-use nystudio107\imageoptimize\services\Optimize;
 use nystudio107\imageoptimize\imagetransforms\ImageTransform;
-use craft\models\ImageTransform as CraftImageTransform;
+use craft\models\ImageTransform as CraftImageTransformModel;
 use craft\elements\Asset;
 use Exception;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
@@ -20,15 +19,7 @@ class ImageOptimizeTransformer extends ImageTransform
         return 'Servd';
     }
 
-    /**
-     * @param Asset               $asset
-     * @param CraftImageTransform|null $transform
-     *
-     * @return string|null
-     * @throws \yii\base\Exception
-     * @throws \yii\base\InvalidConfigException
-     */
-    public function getTransformUrl(Asset $asset, $transform)
+    public function getTransformUrl(Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string
     {
         $transformOptions = new TransformOptions();
         if (!is_null($transform)) {
@@ -38,14 +29,7 @@ class ImageOptimizeTransformer extends ImageTransform
         return Plugin::$plugin->assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
     }
 
-    /**
-     * @param string              $url
-     * @param Asset               $asset
-     * @param CraftImageTransform|null $transform
-     *
-     * @return string
-     */
-    public function getWebPUrl(string $url, Asset $asset, $transform): string
+    public function getWebPUrl(string $url, Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string
     {
         if ($transform) {
             $transform->format = 'webp';

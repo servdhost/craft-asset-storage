@@ -6,7 +6,6 @@ use Craft;
 
 use craft\base\Component;
 use craft\elements\Asset;
-use craft\models\AssetTransform;
 use spacecatninja\imagerx\models\ConfigModel;
 use spacecatninja\imagerx\models\ImgixSettings;
 use spacecatninja\imagerx\models\ImgixTransformedImageModel;
