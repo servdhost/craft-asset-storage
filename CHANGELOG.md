@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.1 - 2022-06-17
+
+### Fixed
+
+- Fixed incoreect function defs for ImageOptimize integration
+
+
 ## 3.0.0 - 2022-06-03
 
 ### Fixed
