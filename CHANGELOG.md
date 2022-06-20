@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.6.4 - 2022-06-20
+
+### Fixed
+
+- Fixed a bug when manually clearing the static cache using a Commerce Product's 'tag'
+
 ## 2.6.3 - 2022-06-03
 
 ### Fixed
