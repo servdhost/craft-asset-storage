@@ -57,13 +57,21 @@ class StaticCacheController extends Controller
         $this->requireCpRequest();
         $req = Craft::$app->getRequest();
 
-        $entries = Craft::$app->entries;
-        $entry = $entries->getEntryById($req->get('entryId'));
-        if (is_null($entry)) {
-            return $this->redirect($req->getReferrer());
+        if (!empty($req->get('productId'))) {
+            $products = Craft::$app->plugins->getPlugin('commerce')->products;
+            $product = $products->getProductById($req->get('productId'));
+            if (is_null($product)) {
+                return $this->redirect($req->getReferrer());
+            }
+            $tag = Tags::ELEMENT_ID_PREFIX . $product->getId();
+        } else {
+            $entries = Craft::$app->entries;
+            $entry = $entries->getEntryById($req->get('entryId'));
+            if (is_null($entry)) {
+                return $this->redirect($req->getReferrer());
+            }
+            $tag = Tags::ELEMENT_ID_PREFIX . $entry->getId();
         }
-
-        $tag = Tags::ELEMENT_ID_PREFIX . $entry->getId();
 
         \craft\helpers\Queue::push(new PurgeTagJob([
             'description' => 'Purge static cache by tag',
