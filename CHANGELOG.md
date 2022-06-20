@@ -1,10 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.2 - 2022-06-20
+
+### Fixed
+
+- Fixed a bug when manually clearing the static cache using a Commerce Product's 'tag'
+
 ## 3.0.1 - 2022-06-17
 
 ### Fixed
 
-- Fixed incoreect function defs for ImageOptimize integration
+- Fixed incorrect function defs for ImageOptimize integration
 
 
 ## 3.0.0 - 2022-06-03
