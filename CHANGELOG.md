@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.3 - 2022-06-28
+
+### Fixed
+
+- Fixed a bug when moving assets between folders
+
 ## 3.0.2 - 2022-06-20
 
 ### Fixed
