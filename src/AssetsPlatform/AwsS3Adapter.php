@@ -3,16 +3,17 @@
 namespace servd\AssetStorage\AssetsPlatform;
 
 use League\Flysystem\AwsS3V3\AwsS3V3Adapter as OriginalAwsS3Adapter;
-use Aws\S3\S3Client;
-use Aws\S3\Exception\S3Exception;
+use Aws\S3\S3ClientInterface;
 use League\Flysystem\Config;
 use Throwable;
 use League\Flysystem\UnableToCopyFile;
 use League\Flysystem\UnableToWriteFile;
+use League\MimeTypeDetection\MimeTypeDetector;
+use League\Flysystem\PathPrefixer;
+use League\Flysystem\VisibilityConverter;
 
 class AwsS3Adapter extends OriginalAwsS3Adapter
 {
-
     public const EXTRA_METADATA_FIELDS = [
         'Metadata',
         'StorageClass',
@@ -20,14 +21,32 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
         'VersionId',
     ];
 
+    public function __construct(
+        S3ClientInterface $client,
+        string $bucket,
+        string $prefix = '',
+        VisibilityConverter $visibility = null,
+        MimeTypeDetector $mimeTypeDetector = null,
+        array $options = [],
+        bool $streamReads = true
+    ) {
+        parent::__construct($client, $bucket, $prefix, $visibility, $mimeTypeDetector, $options, $streamReads);
+        $this->servdPrefixer = new PathPrefixer($prefix);
+        $this->servdClient = $client;
+        $this->servdBucket = $bucket;
+        $this->servdPrefix = $prefix;
+        $this->servdMimeTypeDetector = $mimeTypeDetector;
+        $this->servdOptions = $options;
+    }
+
     public function copy(string $source, string $destination, Config $config): void
     {
         try {
-            $this->client->copy(
-                $this->bucket,
-                $this->prefixer->prefixPath($source),
-                $this->bucket,
-                $this->prefixer->prefixPath($destination),
+            $this->servdClient->copy(
+                $this->servdBucket,
+                $this->servdPrefixer->prefixPath($source),
+                $this->servdBucket,
+                $this->servdPrefixer->prefixPath($destination),
                 'public-read',
                 $this->createOptionsFromConfig($config)['params']
             );
@@ -38,17 +57,17 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
 
     protected function upload(string $path, $body, Config $config): void
     {
-        $key = $this->prefixer->prefixPath($path);
+        $key = $this->servdPrefixer->prefixPath($path);
         $options = $this->createOptionsFromConfig($config);
         $acl = 'public-read';
         $shouldDetermineMimetype = $body !== '' && ! array_key_exists('ContentType', $options['params']);
 
-        if ($shouldDetermineMimetype && $mimeType = $this->mimeTypeDetector->detectMimeType($key, $body)) {
+        if ($shouldDetermineMimetype && $mimeType = $this->servdMimeTypeDetector->detectMimeType($key, $body)) {
             $options['params']['ContentType'] = $mimeType;
         }
 
         try {
-            $this->client->upload($this->bucket, $key, $body, $acl, $options);
+            $this->servdClient->upload($this->servdBucket, $key, $body, $acl, $options);
         } catch (Throwable $exception) {
             throw UnableToWriteFile::atLocation($path, '', $exception);
         }
@@ -57,7 +76,7 @@ class AwsS3Adapter extends OriginalAwsS3Adapter
 
     private function createOptionsFromConfig(Config $config): array
     {
-        $config = $config->withDefaults($this->options);
+        $config = $config->withDefaults($this->servdOptions);
         $options = ['params' => []];
 
         if ($mimetype = $config->get('mimetype')) {
