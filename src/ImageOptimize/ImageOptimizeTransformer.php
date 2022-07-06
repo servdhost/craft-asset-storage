@@ -3,7 +3,6 @@
 namespace servd\AssetStorage\ImageOptimize;
 
 use Craft;
-use nystudio107\imageoptimize\services\Optimize;
 use nystudio107\imageoptimize\imagetransforms\ImageTransform;
 use craft\models\AssetTransform;
 use craft\elements\Asset;
@@ -11,6 +10,8 @@ use Exception;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
 use servd\AssetStorage\Plugin;
 use yii\base\InvalidConfigException;
+use craft\helpers\Image as ImageHelper;
+use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 
 class ImageOptimizeTransformer extends ImageTransform
 {
@@ -30,12 +31,18 @@ class ImageOptimizeTransformer extends ImageTransform
      */
     public function getTransformUrl(Asset $asset, $transform)
     {
+        $assetsPlatform = Plugin::$plugin->assetsPlatform;
         $transformOptions = new TransformOptions();
+
+        if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+            return $assetsPlatform->getFileUrl($asset);
+        }
+
         if (!is_null($transform)) {
             $transformOptions->fillFromCraftTransform($asset, $transform);
         }
 
-        return Plugin::$plugin->assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
+        return $assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
     }
 
     /**
