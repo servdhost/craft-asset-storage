@@ -10,6 +10,7 @@ use Exception;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
 use servd\AssetStorage\Plugin;
 use yii\base\InvalidConfigException;
+use craft\helpers\Image as ImageHelper;
 
 class ImageOptimizeTransformer extends ImageTransform
 {
@@ -21,12 +22,18 @@ class ImageOptimizeTransformer extends ImageTransform
 
     public function getTransformUrl(Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string
     {
+        $assetsPlatform = Plugin::$plugin->assetsPlatform;
         $transformOptions = new TransformOptions();
+
+        if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+            return $assetsPlatform->getFileUrl($asset);
+        }
+
         if (!is_null($transform)) {
             $transformOptions->fillFromCraftTransform($asset, $transform);
         }
 
-        return Plugin::$plugin->assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
+        return $assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
     }
 
     public function getWebPUrl(string $url, Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string

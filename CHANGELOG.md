@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.4 - 2022-07-06
+
+### Fixed
+
+- Fixed a bug when rendering a non-image file with the Image Optimize integration.
+
 ## 3.0.3 - 2022-06-28
 
 ### Fixed
