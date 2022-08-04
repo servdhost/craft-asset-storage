@@ -8,6 +8,7 @@ use craft\base\Component;
 use craft\elements\Asset;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
+use craft\events\DefineHtmlEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
@@ -280,16 +281,21 @@ class AssetsPlatform extends Component
         $request = Craft::$app->getRequest();
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
 
-            Craft::$app->view->hook('cp.assets.edit.details', function (array &$context) {
-                $html = '';
-                $element = $context['element'];
-                $volume = $context['volume'];
-                $fs = $volume->getFs();
-                if ($fs instanceof Fs) {
-                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $element->id]);
+            Event::on(
+                Asset::class,
+                Asset::EVENT_DEFINE_SIDEBAR_HTML,
+                static function (DefineHtmlEvent $event) {
+                    
+                    $asset = $event->sender;
+                    $volume = $asset->volume;
+                    $fs = $volume->getFs();
+                    if ($fs instanceof Fs) {
+                        $event->html .=  Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/asset-cache-clear.twig', ['elementUid' => $asset->id]);
+                    }
+                    return;
                 }
-                return '';
-            });
+            );
+
         }
     }
 }

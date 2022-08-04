@@ -13,6 +13,7 @@ use yii\base\Event;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
+use craft\events\DefineHtmlEvent;
 use craft\events\DeleteTemplateCachesEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementStructureEvent;
@@ -479,31 +480,44 @@ class StaticCache extends Component
         $request = Craft::$app->getRequest();
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
 
-            Craft::$app->view->hook('cp.entries.edit.details', function (array &$context) {
+
+            Event::on(
+                Entry::class,
+                Entry::EVENT_DEFINE_SIDEBAR_HTML,
+                static function (DefineHtmlEvent $event) {
                 $settings = Plugin::$plugin->getSettings();
-                $entry = $context['entry'];
+                    $entry = $event->sender;
                 $url = $entry->getUrl();
                 if (!empty($url)) {
-                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        $html = Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
                         'entryId' => $entry->id,
                         'showTagPurge' => $settings->cacheClearMode == 'tags'
                     ]);
+                        $event->html .= $html;
                 }
-                return '';
-            });
+                    return;
+                }
+            );
 
-            Craft::$app->view->hook('cp.commerce.product.edit.details', function (array &$context) {
+            if(class_exists("\craft\commerce\elements\Product")) {
+                Event::on(
+                    \craft\commerce\elements\Product::class,
+                    \craft\commerce\elements\Product::EVENT_DEFINE_SIDEBAR_HTML,
+                    static function (DefineHtmlEvent $event) {
                 $settings = Plugin::$plugin->getSettings();
-                $product = $context['product'];
+                        $product = $event->sender;
                 $url = $product->getUrl();
                 if (!empty($url)) {
-                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                            $html = Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
                         'productId' => $product->id,
                         'showTagPurge' => $settings->cacheClearMode == 'tags'
                     ]);
+                            $event->html .= $html;
                 }
-                return '';
-            });
+                        return;
+                    }
+                );
+            }
         }
     }
 }
