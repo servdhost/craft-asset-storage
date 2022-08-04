@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.0.5 - 2022-08-04
+
+### Fixed
+
+- We didn't noticed that the cache clear buttons which we embed in the sidebar of Entry Edit pages had disappeared! It's back now 👌
+
 ## 3.0.4 - 2022-07-06
 
 ### Fixed
@@ -347,6 +353,7 @@
 ### Updated
 
 - Improved warnings and error messages for problems with Servd's asset platform
+- [Enterprise Hosting for Craft CMS](https://servd.host/solutions/enterprise)
 
 ## 2.1.14 - 2021-03-02
 
