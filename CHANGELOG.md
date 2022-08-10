@@ -1,12 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.6.6 2022-08-06
+## 2.6.6 - 2022-08-06
 
 ### Added
 
 - Added a tweak to Yii's Redis session management to make it work in the way everyone expects. The PHP session's TTL is now reset whenever is is opened, which prevents the session from expiring after a specific length of time. It now expires after a specific period of user inactivity which will also shortly be configurable via the Servd dashboard.
 
-## 2.6.5 2022-07-06
+## 2.6.5 - 2022-07-06
 
 ### Fixed
 
