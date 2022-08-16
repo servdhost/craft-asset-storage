@@ -56,7 +56,9 @@ class CachePurger extends BaseCachePurger
             call_user_func($setProgressHandler, $count, $total, $progressLabel);
         }
 
-        Ledge::purgeUrls(SiteUriHelper::getUrlsFromSiteUris($siteUris));
+        if($this->isRunningInServd() && $this->isStaticCachingEnabled()) {  
+            Ledge::purgeUrls(SiteUriHelper::getUrlsFromSiteUris($siteUris));
+        }
 
         $count = $total;
 

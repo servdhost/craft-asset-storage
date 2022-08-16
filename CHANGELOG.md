@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.1 - 2022-08-16
+
+### Fixed
+
+- Added some protection to stop the Blitz cache purger from running when developing locally
+
 ## 3.1.0 - 2022-08-16
 
 ### Added
