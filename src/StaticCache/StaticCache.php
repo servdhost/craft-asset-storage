@@ -215,6 +215,15 @@ class StaticCache extends Component
 
     private function registerFrontendEventHandlers()
     {
+
+        
+        $settings = Plugin::$plugin->getSettings();
+        
+        //Only track tags if we're using that feature
+        if ($settings->cacheClearMode !== 'tags') {
+            return ;
+        }
+
         if (\Craft::$app instanceof \craft\console\Application) {
             return false;
         }
