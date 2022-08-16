@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.0 - 2022-08-16
+
+### Added
+
+- Added an integration with Blitx to allow it to make use Servd's static cache as a caching reverse proxy. This allows you to use the speed and throughput of the Static Caching layer, whilst keeping all of your cache configuration and functionality within Blitz. [Servd + Blitz Docs](https://servd.host/docs/caching-with-blitz)
+
 ## 3.0.6 - 2022-08-06
 
 ### Added
