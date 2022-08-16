@@ -7,6 +7,7 @@ use craft\base\Model;
 use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
+use servd\AssetStorage\Blitz\BlitzIntegration;
 use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\Feedme\Feedme;
@@ -85,6 +86,7 @@ class Plugin extends \craft\base\Plugin
             'redisDebug' => RedisDebug::class,
             'localDev' => LocalDev::class,
             'feedMe' => Feedme::class,
+            'blitz' => BlitzIntegration::class,
         ]);
     }
 
@@ -100,5 +102,6 @@ class Plugin extends \craft\base\Plugin
         $this->redisDebug;
         $this->localDev;
         $this->feedMe;
+        $this->blitz;
     }
 }
