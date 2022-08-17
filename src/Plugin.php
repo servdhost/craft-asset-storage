@@ -16,6 +16,7 @@ use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
 use servd\AssetStorage\variables\ServdVariable;
+use servd\AssetStorage\Blitz\BlitzIntegration;
 use yii\base\Event;
 
 class Plugin extends \craft\base\Plugin
@@ -82,6 +83,7 @@ class Plugin extends \craft\base\Plugin
             'redisDebug' => RedisDebug::class,
             'localDev' => LocalDev::class,
             'feedMe' => Feedme::class,
+            'blitz' => BlitzIntegration::class,
         ]);
     }
 
@@ -97,5 +99,6 @@ class Plugin extends \craft\base\Plugin
         $this->redisDebug;
         $this->localDev;
         $this->feedMe;
+        $this->blitz;
     }
 }

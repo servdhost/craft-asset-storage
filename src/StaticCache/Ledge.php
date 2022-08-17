@@ -30,6 +30,7 @@ class Ledge
             static::$client = Craft::createGuzzleClient([
                 'base_uri' => $base,
                 'handler' => $handler,
+                'proxy' => null,
             ]);
         }
 
@@ -80,6 +81,7 @@ class Ledge
             $client = Craft::createGuzzleClient([
                 'base_uri' => $base,
                 'handler' => $handler,
+                'proxy' => null,
             ]);
             try {
                 $client->request('PURGE', '/', [
