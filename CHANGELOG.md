@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.7.1 - 2022-09-14
+
+### Fixed
+
+- Added the 'development' environment to the list of valid Servd environments for pushing/pulling databases and assets
+
 ## 2.7.0 - 2022-08-17
 
 ### Added
