@@ -103,7 +103,7 @@ class Settings extends Model
             return App::parseEnv(getenv('SERVD_ASSETS_ENVIRONMENT'));
         }
         $environment = getenv('ENVIRONMENT');
-        if ('staging' == $environment || 'production' == $environment) {
+        if ('development' == $environment || 'staging' == $environment || 'production' == $environment) {
             return $environment;
         }
         return 'local';

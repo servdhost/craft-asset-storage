@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.2 - 2022-09-14
+
+### Fixed
+
+- Auto detect the Servd 'development' environment when determining the current assets environment
+
 ## 3.1.1 - 2022-08-16
 
 ### Fixed
