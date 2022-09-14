@@ -72,7 +72,7 @@ class CPAlerts extends Component
 
         //If we aren't in staging or prod and the servd plugin hasn't been configured
         $env = Craft::$app->getConfig()->env;
-        if (!in_array($env, ['staging', 'production'])) {
+        if (!in_array($env, ['development', 'staging', 'production'])) {
             $settings = Plugin::$plugin->getSettings();
             if (empty($settings->getProjectSlug()) || empty($settings->getSecurityKey())) {
                 $messages[] = 'You have not set a Servd \'Project Slug\' or \'Security Key\' which are required during local development.' .
