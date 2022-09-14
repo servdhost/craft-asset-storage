@@ -326,7 +326,7 @@ class LocalController extends Controller
 
     private function checkOnlyLocal()
     {
-        $ok = !in_array(getenv('ENVIRONMENT'), ['staging', 'production']);
+        $ok = !in_array(getenv('ENVIRONMENT'), ['development', 'staging', 'production']);
         if (!$ok) {
             $this->stderr("You should only run local dev commands in a local dev environment." . PHP_EOL, Console::FG_RED);
         }
@@ -339,16 +339,17 @@ class LocalController extends Controller
         if (empty($this->to)) {
             if ($this->interactive) {
                 $this->to = $this->select('Which environment would you like to push to?', [
+                    'development' => 'Development',
                     'staging' => 'Staging',
                     'production' => 'Production'
                 ]);
             } else {
-                $this->stderr('--to must be set to a target environment. [staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->to, ['staging', 'production'], true)) {
-                $this->stderr('--to must be set to a target environment. [staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->to, ['development', 'staging', 'production'], true)) {
+                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
@@ -361,16 +362,17 @@ class LocalController extends Controller
         if (empty($this->from)) {
             if ($this->interactive) {
                 $this->from = $this->select('Which environment would you like to pull from?', [
+                    'development' => 'Development',
                     'staging' => 'Staging',
                     'production' => 'Production'
                 ]);
             } else {
-                $this->stderr('--from must be set to a target environment. [staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->from, ['staging', 'production'], true)) {
-                $this->stderr('--from must be set to a target environment. [staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->from, ['development', 'staging', 'production'], true)) {
+                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
