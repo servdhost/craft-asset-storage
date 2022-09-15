@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.7.3 - 2022-09-15
+
+### Fixed
+
+- Avoid purging URLs via Ledge that don't have a recognisable hosts.
+
 ## 2.7.2 - 2022-09-15
 
 ### Fixed

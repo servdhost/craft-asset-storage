@@ -16,8 +16,9 @@ class Ledge
 
     public static function purgeUrl($url)
     {
-
         $urlParts = parse_url($url);
+
+        if (!array_key_exists('host', $urlParts)) { return false; }
 
         $handler = HandlerStack::create();
         $handler->push(Middleware::mapRequest(function (RequestInterface $request) use ($urlParts) {
@@ -63,6 +64,7 @@ class Ledge
         $hosts = [];
         foreach ($urls as $url) {
             $urlParts = parse_url($url);
+            if (!array_key_exists('host', $urlParts)) { continue; }
             $urlHost = $urlParts['host'];
             if (!isset($hosts[$urlHost])) {
                 $hosts[$urlHost] = [];
