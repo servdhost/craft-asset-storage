@@ -26,6 +26,7 @@ class PurgeUrlsJob extends BaseJob
             try {
                 Ledge::purgeUrls($chunk);
                 foreach ($chunk as $url) {
+                    if (is_null($url)) { continue; }
                     $tags->clearTagsForUrl($url);
                 }
             } catch (\Exception $e) {

@@ -22,6 +22,7 @@ class PurgeTagJob extends BaseJob
             try {
                 Ledge::purgeUrls($urls);
                 foreach ($urls as $url) {
+                    if (is_null($url)) { continue; }
                     $tags->clearTagsForUrl($url);
                 }
             } catch (\Exception $e) {

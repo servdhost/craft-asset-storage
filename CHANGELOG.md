@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.7.2 - 2022-09-15
+
+### Fixed
+
+- Skip purging null URLs
+
 ## 2.7.1 - 2022-09-14
 
 ### Fixed
