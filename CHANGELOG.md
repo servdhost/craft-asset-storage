@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.7.4 - 2022-10-05
+
+### Updated
+
+- Cleaned up some static cache busting code which was no longer needed
+
 ## 2.7.3 - 2022-09-15
 
 ### Fixed
