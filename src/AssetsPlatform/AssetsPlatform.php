@@ -205,7 +205,8 @@ class AssetsPlatform extends Component
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
 
         //Special handling for videos
-        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO;
+        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO 
+            || in_array($asset->getExtension(), AssetsHelper::getFileKinds()[Asset::KIND_VIDEO]['extensions']);
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
