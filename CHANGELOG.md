@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.7.5 - 2022-10-12
+
+### Fixed
+
+- Detection of video files updated to work when custom filetype definitions are included in general.php
+
 ## 2.7.4 - 2022-10-05
 
 ### Updated
