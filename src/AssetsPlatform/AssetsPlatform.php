@@ -218,7 +218,7 @@ class AssetsPlatform extends Component
 
         //Special handling for videos
         $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO 
-            || in_array($asset->getExtension(), AssetsHelper::getFileKinds()[Asset::KIND_VIDEO]['extensions']);
+            || in_array(strtolower($asset->getExtension()), AssetsHelper::getFileKinds()[Asset::KIND_VIDEO]['extensions']);
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
