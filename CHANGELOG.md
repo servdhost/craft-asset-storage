@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.5 - 2022-10-21
+
+### Fixed
+
+- Use correct action URLs when a site is using a subfolder basepath
+
 ## 3.1.4 - 2022-10-12
 
 ### Fixed

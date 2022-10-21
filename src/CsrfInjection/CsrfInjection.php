@@ -4,6 +4,7 @@ namespace servd\AssetStorage\CsrfInjection;
 
 use Craft;
 use craft\base\Component;
+use craft\helpers\UrlHelper;
 use craft\web\View;
 use servd\AssetStorage\Plugin;
 
@@ -25,7 +26,7 @@ class CsrfInjection extends Component
         $csrfTokenName = Craft::$app->getConfig()->getGeneral()->csrfTokenName;
 
         if (!Craft::$app->getRequest()->getIsCpRequest()) {
-            $url = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/csrf-token/get-token';
+            $url = UrlHelper::actionUrl('servd-asset-storage/csrf-token/get-token');
             $view->registerJs('
                 window.SERVD_CSRF_TOKEN_NAME = "' . $csrfTokenName . '";
                 function injectCSRF() {

@@ -24,6 +24,7 @@ use craft\events\RegisterUrlRulesEvent;
 use craft\events\SectionEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
+use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Sections;
 use craft\services\Structures;
@@ -93,7 +94,7 @@ class StaticCache extends Component
             }
 
             $view = Craft::$app->getView();
-            $ajaxUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $ajaxUrl = UrlHelper::actionUrl('servd-asset-storage/dynamic-content/get-content');
 
             $view->registerJs('
                 function insertBlocks(blocks)
@@ -169,7 +170,7 @@ class StaticCache extends Component
             $allBlocks = serialize(static::$esiBlocks);
             $compressedData = urlencode(base64_encode(gzcompress($allBlocks)));
 
-            $esiUrl = '/' . Craft::$app->getConfig()->getGeneral()->actionTrigger . '/servd-asset-storage/dynamic-content/get-content';
+            $esiUrl = UrlHelper::actionUrl('servd-asset-storage/dynamic-content/get-content');
             $esiUrl .= '?blocks=' . $compressedData;
 
             $headers = \Craft::$app->getResponse()->getHeaders();
