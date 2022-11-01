@@ -151,7 +151,7 @@ class AssetsPlatform extends Component
                 function (DefineAssetUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
-                    if ($event->url !== null || $event->handled) {
+                    if ($event->handled) {
                         return;
                     }
 
@@ -172,7 +172,7 @@ class AssetsPlatform extends Component
                 function (DefineAssetThumbUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
-                    if ($event->url !== null || $event->handled) {
+                    if ($event->handled) {
                         return;
                     }
 

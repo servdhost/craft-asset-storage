@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.7 - 2022-11-01
+
+### Fixed
+
+- More fixes for the changes in Craft 4.3 which broke asset URL generations
+
 ## 3.1.6 - 2022-11-01
 
 ### Fixed
