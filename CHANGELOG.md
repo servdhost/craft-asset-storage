@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.1.6 - 2022-11-01
+
+### Fixed
+
+- Set the `$handled` property on asset url events to prevent Craft undoing our good work
+
 ## 3.1.5 - 2022-10-21
 
 ### Fixed
