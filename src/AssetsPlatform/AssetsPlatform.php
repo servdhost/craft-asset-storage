@@ -151,7 +151,7 @@ class AssetsPlatform extends Component
                 function (DefineAssetUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
-                    if ($event->url !== null) {
+                    if ($event->url !== null || $event->handled) {
                         return;
                     }
 
@@ -160,6 +160,7 @@ class AssetsPlatform extends Component
                     if ($fs instanceof Fs) {
                         $asset = $event->asset;
                         $transform = $event->transform;
+                        $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, true);
                     }
                 }
@@ -171,10 +172,11 @@ class AssetsPlatform extends Component
                 function (DefineAssetThumbUrlEvent $event) {
 
                     // If another plugin set the url, we'll just use that.
-                    if ($event->url !== null) {
+                    if ($event->url !== null || $event->handled) {
                         return;
                     }
 
+                    
                     $asset = $event->asset;
                     $fs = $asset->getVolume()->getFs();
 
@@ -189,6 +191,7 @@ class AssetsPlatform extends Component
                             'interlace' => 'line',
                         ]);
 
+                        $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
