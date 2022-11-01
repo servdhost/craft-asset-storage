@@ -171,6 +171,7 @@ class AssetsPlatform extends Component
                     if ($volume instanceof AssetStorageVolume) {
                         $asset = $event->asset;
                         $transform = $event->transform;
+                        $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, true);
                     }
                 }
@@ -198,7 +199,8 @@ class AssetsPlatform extends Component
                             'width' => $width,
                             'interlace' => 'line',
                         ]);
-
+                        
+                        $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
