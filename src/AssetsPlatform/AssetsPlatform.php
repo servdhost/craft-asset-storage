@@ -9,6 +9,7 @@ use craft\elements\Asset;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\DefineHtmlEvent;
+use craft\events\GenerateTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
@@ -158,7 +159,6 @@ class AssetsPlatform extends Component
                     $asset = $event->asset;
                     $fs = $asset->getVolume()->getFs();
                     if ($fs instanceof Fs) {
-                        $asset = $event->asset;
                         $transform = $event->transform;
                         $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, true);
@@ -176,12 +176,10 @@ class AssetsPlatform extends Component
                         return;
                     }
 
-                    
                     $asset = $event->asset;
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $asset = $event->asset;
                         $width = $event->width;
                         $height = $event->height;
 
@@ -193,6 +191,27 @@ class AssetsPlatform extends Component
 
                         $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
+                    }
+                }
+            );
+
+            Event::on(
+                Asset::class,
+                Asset::EVENT_BEFORE_GENERATE_TRANSFORM,
+                function (GenerateTransformEvent $event) {
+
+                    // If another plugin set the url, we'll just use that.
+                    if ($event->handled || !empty($event->url)) {
+                        return;
+                    }
+
+                    $asset = $event->asset;
+                    $fs = $asset->getVolume()->getFs();
+
+                    if ($fs instanceof Fs) {
+                        $transform = $event->transform;
+                        $event->handled = true;
+                        $event->url = $this->handleAssetTransform($asset, $transform, true);
                     }
                 }
             );
