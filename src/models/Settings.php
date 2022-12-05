@@ -25,6 +25,7 @@ class Settings extends Model
     public $adjustFeedmeLogs = false;
     public $fsMapsEnabled = false;
     public $fsMaps = [];
+    public $imageAutoConversion = 'webp';
 
     public function rules(): array
     {
