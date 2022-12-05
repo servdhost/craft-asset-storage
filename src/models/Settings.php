@@ -20,6 +20,7 @@ class Settings extends Model
     public $disableDynamic = false;
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
+    public $imageAutoConversion = 'webp';
 
     public function rules()
     {
