@@ -95,6 +95,19 @@
         placeholder: "$SERVD_ASSETS_ENVIRONMENT"
     }) }}
 
+    {{ forms.selectField({
+        label: "Image Format Autoconversion",
+        instructions: "Which formats should be used for automatic format conversion when the client's browser has support?",
+        options: {
+            'none' : 'Disable autoconversion',
+            'webp' : 'WebP',
+            'avif' : 'AVIF with WebP fallback'
+        },
+        id: 'imageAutoConversion',
+        name: 'imageAutoConversion',
+        value: settings.imageAutoConversion
+    }) }}
+
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~

@@ -98,6 +98,9 @@ class ImageTransforms
 
     public function getParamsForTransform(TransformOptions $transform)
     {
+
+        $settings = Plugin::$plugin->getSettings();
+
         $params = [];
         $autoParams = [];
 
@@ -122,8 +125,11 @@ class ImageTransforms
 
         if (!empty($transform->format)) {
             $params['fm'] = $transform->format;
-        } else {
+        } elseif($settings->imageAutoConversion == 'webp'){
             $autoParams[] = 'format';
+        } elseif($settings->imageAutoConversion == 'avif'){
+            $autoParams[] = 'format';
+            $autoParams[] = 'avif';
         }
 
         if (!empty($autoParams)) {
