@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.0 - 2022-12-05
+
+### Added
+
+- You can now disable automatic image format conversion if webp isn't treating your images nicely
+- Alternatively, you can now use AVIF as your auto-format of choice (check the plugin's settings for the new option)
+
 ## 3.1.8 - 2022-11-08
 
 ### Fixed
