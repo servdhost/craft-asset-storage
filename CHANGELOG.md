@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.1 - 2022-12-14
+
+### Fixed
+
+- Fixed an edge case which could result in static cache purges getting stuck in a redirect loop
+
 ## 3.2.0 - 2022-12-05
 
 ### Added

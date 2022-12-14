@@ -44,7 +44,8 @@ class Ledge
                     'json' => [
                         'uris' => $hostUrls,
                         'purge_mode' => 'invalidate'
-                    ]
+                    ],
+                    'allow_redirects' => false
                 ]);
             } catch (BadResponseException $e) {
                 //Nothing
