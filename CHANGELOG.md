@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.8.1 - 2022-12-14
+
+### Fixed
+
+- Fixed an edge case which could result in static cache purges getting stuck in a redirect loop
+
 ## 2.8.0 - 2022-12-05
 
 ### Added
