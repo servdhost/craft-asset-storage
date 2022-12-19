@@ -42,6 +42,49 @@ class ImagerTransformer extends Component implements TransformerInterface
         $transformedImages = [];
 
         if (is_string($image)) {
+            if (substr_count($image, '.assets-servd.host') > 0) {
+                $urlParts = parse_url($image);
+                $filename = explode('/', $urlParts['path']);
+                $filename = $filename[sizeof($filename) - 1];
+                $assets = Asset::find()->filename($filename)->all();
+                if (sizeof($assets) == 1) {
+                    $asset = $assets[0];
+                    $volume = $asset->getVolume();
+                    if (get_class($volume) == Volume::class) {
+                        $image = $asset;
+                    }
+                } else {
+                    foreach ($assets as $asset) {
+                        $volume = $asset->getVolume();
+                        if (get_class($volume) !== Volume::class) {
+                            continue; //Not a servd asset platform asset
+                        }
+
+                        $fullPath = '/';
+                        $trimmedSubfolder = trim(Craft::parseEnv($volume->customSubfolder), '/');
+                        if (!empty($trimmedSubfolder)) {
+                            $fullPath .= $trimmedSubfolder . '/';
+                        }
+                        $trimmedFolderPath = trim($asset->folderPath, '/');
+                        if (!empty($trimmedFolderPath)) {
+                            $fullPath .= $trimmedFolderPath . '/';
+                        }
+                        $fullPath .= $filename;
+
+                        if (substr_count($image, $fullPath) == 0) {
+                            continue;
+                        }
+
+                        $image = $asset;
+                        break;
+                    }
+                }
+            } else {
+                return null;
+            }
+        }
+
+        if (empty($image) || is_string($image)) {
             return null;
         }
 

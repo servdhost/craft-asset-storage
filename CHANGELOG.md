@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.8.2 - 2022-12-19
+
+### Added
+
+- Servd's Imager-X integration will now play nicely with RetCon modified `img` tags, including srcset
+
 ## 2.8.1 - 2022-12-14
 
 ### Fixed
