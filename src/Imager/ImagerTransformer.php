@@ -6,6 +6,7 @@ use Craft;
 
 use craft\base\Component;
 use craft\elements\Asset;
+use craft\helpers\App;
 use spacecatninja\imagerx\models\ConfigModel;
 use spacecatninja\imagerx\models\ImgixSettings;
 use spacecatninja\imagerx\models\ImgixTransformedImageModel;
@@ -41,6 +42,50 @@ class ImagerTransformer extends Component implements TransformerInterface
         $transformedImages = [];
 
         if (is_string($image)) {
+            if (substr_count($image, '.assets-servd.host') > 0) {
+                $urlParts = parse_url($image);
+                $filename = explode('/', $urlParts['path']);
+                $filename = $filename[sizeof($filename) - 1];
+                $assets = Asset::find()->filename($filename)->all();
+                if (sizeof($assets) == 1) {
+                    $asset = $assets[0];
+                    $assetFs = $asset->getVolume()->getFs();
+                    if (get_class($assetFs) == Fs::class) {
+                        $image = $asset;
+                    }
+                } else {
+                    foreach ($assets as $asset) {
+                        $assetFs = $asset->getVolume()->getFs();
+
+                        if (get_class($assetFs) !== Fs::class) {
+                            continue; //Not a servd asset platform asset
+                        }
+
+                        $fullPath = '/';
+                        $trimmedSubfolder = trim(App::parseEnv($assetFs->customSubfolder), '/');
+                        if (!empty($trimmedSubfolder)) {
+                            $fullPath .= $trimmedSubfolder . '/';
+                        }
+                        $trimmedFolderPath = trim($asset->folderPath, '/');
+                        if (!empty($trimmedFolderPath)) {
+                            $fullPath .= $trimmedFolderPath . '/';
+                        }
+                        $fullPath .= $filename;
+
+                        if (substr_count($image, $fullPath) == 0) {
+                            continue;
+                        }
+
+                        $image = $asset;
+                        break;
+                    }
+                }
+            } else {
+                return null;
+            }
+        }
+
+        if (empty($image) || is_string($image)) {
             return null;
         }
 
