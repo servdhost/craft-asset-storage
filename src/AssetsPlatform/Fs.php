@@ -35,6 +35,13 @@ class Fs extends FlysystemFs
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
 
+    public $subfolder = ''; //Required for compatibility with Imager-X + Imgix
+
+    public function __construct()
+    {
+        $this->subfolder = $this->_subfolder();
+    }
+
     public static function displayName(): string
     {
         return 'Servd Asset Storage';
@@ -89,16 +96,6 @@ class Fs extends FlysystemFs
     protected function visibility(): string
     {
         return Visibility::PUBLIC;
-    }
-
-    public function getSubfolder()
-    {
-        return $this->_subfolder();
-    }
-
-    public function setSubfolder()
-    {
-        //Do nothing
     }
 
     protected function invalidateCdnPath(string $path): bool

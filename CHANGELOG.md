@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.3 - 2022-12-20
+
+### Fixed
+
+- Fixed compatibility with Imager-X's Imgix transformer when using Servd's Asset Platform for storage
+
 ## 3.2.2 - 2022-12-19
 
 ### Added
