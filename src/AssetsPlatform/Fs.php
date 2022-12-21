@@ -37,8 +37,9 @@ class Fs extends FlysystemFs
 
     public $subfolder = ''; //Required for compatibility with Imager-X + Imgix
 
-    public function __construct()
+    public function __construct($config = [])
     {
+        parent::__construct($config);
         $this->subfolder = $this->_subfolder();
     }
 
