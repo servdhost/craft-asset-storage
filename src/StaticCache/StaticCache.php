@@ -4,23 +4,19 @@ namespace servd\AssetStorage\StaticCache;
 
 use Craft;
 use craft\base\Component;
-use craft\helpers\FileHelper;
 use Exception;
 use Redis;
 use servd\AssetStorage\Plugin;
-use yii\base\ErrorException;
 use yii\base\Event;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\events\DefineHtmlEvent;
-use craft\events\DeleteTemplateCachesEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\MoveElementEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
-use craft\events\RegisterUrlRulesEvent;
 use craft\events\SectionEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
@@ -28,15 +24,12 @@ use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Sections;
 use craft\services\Structures;
-use craft\services\TemplateCaches;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
-use craft\web\UrlManager;
 use craft\web\View;
-use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
 use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
-use yii\base\View as BaseView;
+use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
 
 class StaticCache extends Component
@@ -113,9 +106,9 @@ class StaticCache extends Component
                         for(var node of allChildren){
                             dBlock.parentNode.insertBefore(node, dBlock);
                         }
-                        dBlock.parentNode.removeChild(dBlock);    
+                        dBlock.parentNode.removeChild(dBlock);
                     }
-                    
+
                     return allChildrenOnPage;
                 }
                 function pullDynamic() {
@@ -217,9 +210,9 @@ class StaticCache extends Component
     private function registerFrontendEventHandlers()
     {
 
-        
+
         $settings = Plugin::$plugin->getSettings();
-        
+
         //Only track tags if we're using that feature
         if ($settings->cacheClearMode !== 'tags') {
             return ;
@@ -415,21 +408,26 @@ class StaticCache extends Component
             if (in_array(get_class($event->element), Tags::IGNORE_TAGS_FROM_CLASSES)) {
                 return [];
             }
-            if (ElementHelper::isDraftOrRevision($event->element)) {
-                return [];
+
+            try {
+                if (ElementHelper::isDraftOrRevision($event->element)) {
+                    return [];
+                }
+            } catch (InvalidConfigException $e) {
+                return []; // Handles when the owner element can't be located in the database
             }
+
             if (property_exists($event->element, 'resaving') && $event->element->resaving === true) {
                 return [];
             }
 
-
             if ($event->element instanceof \craft\elements\GlobalSet && is_string($event->element->handle)) {
                 $tags[] = Tags::GLOBAL_SET_PREFIX . $event->element->handle;
             } elseif ($event->element instanceof \craft\elements\Asset && $event->isNew) {
-                // Required if a new asset is created in case anything has looped over the volume contents 
+                // Required if a new asset is created in case anything has looped over the volume contents
                 $tags[] = Tags::VOLUME_ID_PREFIX . (string)$event->element->volumeId;
             } else {
-                // Required if an entry is activated added to a section. 
+                // Required if an entry is activated added to a section.
                 // Needs to refresh any index pages which may have looped the section contents
                 if (isset($event->element->sectionId)) {
                     $tags[] = Tags::SECTION_ID_PREFIX . $event->element->sectionId;
