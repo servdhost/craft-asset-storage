@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.5 - 2023-02-03
+
+### Fixed
+
+- Added a fix for when an owner entry can't be located when attempting to get tags for a draft/revision entry.
+
 ## 3.2.4 - 2022-12-21
 
 ### Fixed
