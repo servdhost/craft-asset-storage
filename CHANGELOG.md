@@ -4,7 +4,7 @@
 
 ### Fixed
 
-- Introduced batching to the code that purges specific URLs from the static cache. By default the batch size is 1000 but this can be configured by the
+- Introduced batching to the code that purges specific URLs from the static cache. The batch size can be controlled by setting a SERVD_PURGE_BATCH_SIZE environment variable to an integer value.
 
 ## 3.2.5 - 2023-02-03
 
