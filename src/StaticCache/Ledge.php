@@ -30,7 +30,7 @@ class Ledge
 
         $batchSize = is_numeric(getenv('SERVD_PURGE_BATCH_SIZE'))
             ? intval(getenv('SERVD_PURGE_BATCH_SIZE'))
-            : 1000;
+            : 50;
 
         foreach ($hosts as $host => $hostUrls) {
             $urlBatches = array_chunk($hostUrls, $batchSize);

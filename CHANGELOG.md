@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.6 - 2023-02-08
+
+### Fixed
+
+- Introduced batching to the code that purges specific URLs from the static cache. By default the batch size is 1000 but this can be configured by the
+
 ## 3.2.5 - 2023-02-03
 
 ### Fixed
