@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.7 - 2023-02-10
+
+## Added
+
+- The priority of the static cache purge job can now be controlled by setting an optional SERVD_PURGE_PRIORITY environment variable to an integer value. By default, the priority is set to 1025.
+
 ## 3.2.6 - 2023-02-08
 
 ### Fixed

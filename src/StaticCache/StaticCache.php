@@ -38,6 +38,13 @@ class StaticCache extends Component
     public static $esiBlocks = [];
     public static $dynamicBlocksAdded = false;
 
+    public static function purgePriority(): int
+    {
+        return is_numeric(getenv('SERVD_PURGE_PRIORITY'))
+            ? intval(getenv('SERVD_PURGE_PRIORITY'))
+            : 1025;
+    }
+
     public function init(): void
     {
         $this->registerTwigExtension();
@@ -394,7 +401,7 @@ class StaticCache extends Component
             \craft\helpers\Queue::push(new PurgeTagJob([
                 'description' => 'Purge static cache by tag',
                 'tag' => $tag
-            ]), 1025);
+            ]), static::purgePriority());
         }
     }
 

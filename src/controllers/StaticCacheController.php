@@ -4,10 +4,9 @@ namespace servd\AssetStorage\controllers;
 
 use Craft;
 use craft\web\Controller;
-use servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob;
-use servd\AssetStorage\Plugin;
 use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
 use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
+use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
 
 class StaticCacheController extends Controller
@@ -45,7 +44,7 @@ class StaticCacheController extends Controller
         \craft\helpers\Queue::push(new PurgeUrlsJob([
             'description' => 'Purge static cache by url',
             'urls' => $urls,
-        ]), 1025);
+        ]), StaticCache::purgePriority());
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
@@ -76,7 +75,7 @@ class StaticCacheController extends Controller
         \craft\helpers\Queue::push(new PurgeTagJob([
             'description' => 'Purge static cache by tag',
             'tag' => $tag
-        ]), 1025);
+        ]), StaticCache::purgePriority());
 
         Craft::$app->getSession()->setNotice('Cache clear job created');
 
