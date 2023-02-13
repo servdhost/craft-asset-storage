@@ -52,7 +52,11 @@ class CsrfInjection extends Component
                         xhr.send();
                     }
                 }
-                setTimeout(injectCSRF, 200);
+                setTimeout(function(){
+                    if (!window.SERVD_MANUAL_CSRF_LOAD) {
+                        injectCSRF();
+                    }
+                }, 50);
             ', View::POS_END);
         }
     }

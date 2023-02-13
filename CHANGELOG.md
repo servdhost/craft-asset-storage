@@ -1,8 +1,14 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.8 - 2023-02-13
+
+### Updated
+
+- The plugin's CSRF token and dynamic content injection JS functions can now be deferred and executed manually to avoid collisions with other ajax requests which might run on intial page load (causing csrf session issues).
+
 ## 3.2.7 - 2023-02-10
 
-## Added
+### Added
 
 - The priority of the static cache purge job can now be controlled by setting an optional SERVD_PURGE_PRIORITY environment variable to an integer value. By default, the priority is set to 1025.
 

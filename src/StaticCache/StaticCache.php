@@ -160,7 +160,13 @@ class StaticCache extends Component
                         window.dispatchEvent( new CustomEvent("servd.dynamicloaded", {detail: {blocks: []}}) );
                     }
                 }
-                setTimeout(pullDynamic, 50);
+                
+                setTimeout(function(){
+                    if (!window.SERVD_MANUAL_DYNAMIC_LOAD) {
+                        pullDynamic();
+                    }
+                }, 50);
+                
             ', View::POS_END);
 
             if (sizeof(static::$esiBlocks) == 0) {
