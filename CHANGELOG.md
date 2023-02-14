@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.8.3 - 2023-02-14
+
+### Updated
+
+- The plugin's CSRF token and dynamic content injection JS functions can now be deferred and executed manually to avoid collisions with other ajax requests which might run on intial page load (causing csrf session issues).
+
 ## 2.8.2 - 2022-12-19
 
 ### Added
