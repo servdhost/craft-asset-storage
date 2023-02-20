@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.9 - 2023-02-20
+
+### Fixed
+
+- Fix for the cookie SERVD_LOGGED_IN_STATUS was not cleared as expected when using a wildcard cookie domain.
+
 ## 3.2.8 - 2023-02-13
 
 ### Updated
