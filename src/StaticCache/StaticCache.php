@@ -291,7 +291,10 @@ class StaticCache extends Component
         Event::on(Application::class, Application::EVENT_INIT, function () {
             $user = Craft::$app->getUser();
             if ($user->isGuest) {
-                Craft::$app->response->cookies->remove('SERVD_LOGGED_IN_STATUS');
+                Craft::$app->response->cookies->remove(new \yii\web\Cookie([
+                    'name' => 'SERVD_LOGGED_IN_STATUS',
+                    'domain' => Craft::$app->getConfig()->getGeneral()->defaultCookieDomain,
+                ]));
             } else {
                 $cookieValue = $user->checkPermission('accessCp') ? '1' : '2';
                 $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;
