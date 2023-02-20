@@ -37,6 +37,7 @@ class LocalController extends Controller
     public $servdKey;
     public $skipBackup = false;
     public $skipDelete = false;
+    public $verbose = false;
 
     private $leaveOpen = true;
     private $baseServdDomain = 'https://app.servd.host';

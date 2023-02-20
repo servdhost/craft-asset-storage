@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.11 - 2023-02-20
+
+### Fixed
+
+- Fixed a missing change from the previous commit
+
 ## 3.2.10 - 2023-02-20
 
 ### Added
