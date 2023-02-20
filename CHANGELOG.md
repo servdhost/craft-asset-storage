@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.2.10 - 2023-02-20
+
+### Added
+
+- Added a `-v` flag for the CLI commands to provide verbose output to help track down errors
+
 ## 3.2.9 - 2023-02-20
 
 ### Fixed
