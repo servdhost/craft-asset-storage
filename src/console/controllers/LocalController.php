@@ -54,6 +54,7 @@ class LocalController extends Controller
             'servdKey',
             'skipBackup',
             'skipDelete',
+            'verbose'
         ]);
     }
 
@@ -67,6 +68,7 @@ class LocalController extends Controller
             'ss' => 'servdKey',
             'sb' => 'skipBackup',
             'sd' => 'skipDelete',
+            'v' => 'verbose',
         ]);
     }
 
@@ -90,8 +92,10 @@ class LocalController extends Controller
             return ExitCode::USAGE;
         }
 
+        $this->outputDebug("Checking a 'from' environment has been set");
         $exit = $this->requireFrom();
         if ($exit != ExitCode::OK) {
+            $this->outputDebug("Exiting");
             return $exit;
         }
 
@@ -501,6 +505,7 @@ class LocalController extends Controller
 
     private function checkLocalDBCreds()
     {
+        $this->outputDebug("Checking local database credentials are set");
         $dbConfig = App::dbConfig();
         if ($dbConfig['driverName'] != 'mysql') {
             $this->stderr('Only mysql databases can be synced to and from Servd' . PHP_EOL);
@@ -610,6 +615,7 @@ class LocalController extends Controller
 
     private function runCommand($command)
     {
+        $this->outputDebug("Running command: " . $command);
         $shellCommand = new ShellCommand();
         $shellCommand->setCommand($command);
         // If we don't have proc_open, maybe we've got exec
@@ -619,6 +625,8 @@ class LocalController extends Controller
 
         $success = $shellCommand->execute();
         if (!$success) {
+            $this->outputDebug("An error occurred");
+            $this->outputDebug($shellCommand->getOutput());
             $this->stderr($shellCommand->getStdErr() . PHP_EOL, Console::FG_RED);
         } else {
             $this->stdout($shellCommand->getOutput() . PHP_EOL);
@@ -834,5 +842,12 @@ class LocalController extends Controller
             }
         ]);
         $manager->transfer();
+    }
+
+    private function outputDebug($message)
+    {
+        if($this->verbose){
+            $this->stdout($message . PHP_EOL);
+        }
     }
 }
