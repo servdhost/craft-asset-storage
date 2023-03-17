@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.3.0 - 2023-03-17
+
+### Added
+
+- Support for 'letterbox' image cropping in Craft 4.4
+
 ## 3.2.11 - 2023-02-20
 
 ### Fixed

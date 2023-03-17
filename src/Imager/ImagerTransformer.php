@@ -161,6 +161,7 @@ class ImagerTransformer extends Component implements TransformerInterface
         }
         if ($transform['mode'] == 'letterbox') {
             $transformOptions->fit = 'fill';
+            $transformOptions->fill = 'solid';
             //These functions are stolen directly from Imager codebase
             $letterboxDef = $config->getSetting('letterbox', $transform);
             $transformOptions->fillColor = $this->getLetterboxColor($letterboxDef);

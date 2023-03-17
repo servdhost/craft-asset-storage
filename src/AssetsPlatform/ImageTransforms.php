@@ -153,6 +153,10 @@ class ImageTransforms
             }
         }
 
+        if (!empty($transform->fill)) {
+            $params['fill'] = $transform->fill;
+        }
+
         if (!empty($transform->fillColor)) {
             $params['fill-color'] = $transform->fillColor;
         }

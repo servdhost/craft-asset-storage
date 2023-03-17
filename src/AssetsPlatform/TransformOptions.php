@@ -15,6 +15,7 @@ class TransformOptions
     public $quality = null;
     public $aspectRatio = null;
     public $dpr = null;
+    public $fill = null;
     public $fillColor = null;
     public $crop = null;
     public $fpx = null;
@@ -47,6 +48,11 @@ class TransformOptions
                 break;
             case 'stretch':
                 $this->fit = 'scale';
+                break;
+            case 'letterbox':
+                $this->fit = 'fill';
+                $this->fill = 'solid';
+                $this->fillColor = str_replace('#', '', ($transform->fill ?? '000000'));
                 break;
             default:
                 // Set a sane default
