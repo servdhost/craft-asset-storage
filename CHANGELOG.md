@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.3.1 - 2023-04-13
+
+### Fixed
+
+- Fix a bug when pulling or pushing the database but the local DB's password is empty
+
 ## 3.3.0 - 2023-03-17
 
 ### Added
