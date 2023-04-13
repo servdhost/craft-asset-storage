@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.8.5 - 2023-04-13
+
+### Fixed
+
+- Fix a bug when pulling or pushing the database but the local DB's password is empty
+
 ## 2.8.4 - 2023-02-20
 
 ### Fixed
