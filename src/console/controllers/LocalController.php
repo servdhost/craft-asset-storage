@@ -141,7 +141,8 @@ class LocalController extends Controller
         }
 
         //Perform a direct stream from the remote db into the local
-        $command = "mysqldump $skipColStat --no-tablespaces --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase";
+        $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
+        $command = "mysqldump $skipColStat --no-tablespaces --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase";
         $this->runCommand($command);
 
         //Close external database access on Servd
@@ -184,7 +185,8 @@ class LocalController extends Controller
 
         //Perform a direct stream from the remote db into the local
         $this->stdout('Starting streaming database export', Console::FG_GREEN);
-        $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser -p\"$localPassword\" $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
+        $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
+        $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
         $this->runCommand($importCommand);
 
         //Optimize the target database after the import is done
