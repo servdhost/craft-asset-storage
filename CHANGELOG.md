@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.8.6 - 2023-04-16
+
+### Added
+
+- Support for fillmax image transform mode
+
 ## 2.8.5 - 2023-04-13
 
 ### Fixed
