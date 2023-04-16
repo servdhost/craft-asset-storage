@@ -184,6 +184,9 @@ class ImagerTransformer extends Component implements TransformerInterface
             if ($transformOptions->fit === 'clip') {
                 $transformOptions->fit = 'max';
             }
+            if ($transformOptions->fit === 'fill') {
+                $transformOptions->fit = 'fillmax';
+            }
         }
 
         return $transformOptions;

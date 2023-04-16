@@ -136,7 +136,7 @@ class ImageTransforms
             $params['auto'] = implode(',', $autoParams);
         }
 
-        if (!empty($transform->fit) && in_array($transform->fit, ['fill', 'scale', 'crop', 'clip', 'min', 'max'])) {
+        if (!empty($transform->fit) && in_array($transform->fit, ['fillmax', 'fill', 'scale', 'crop', 'clip', 'min', 'max'])) {
             $params['fit'] = $transform->fit;
         } else {
             $params['fit'] = 'clip';

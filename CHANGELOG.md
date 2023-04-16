@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.3.2 - 2023-04-16
+
+### Added
+
+- Support for fillmax image transform mode
+
 ## 3.3.1 - 2023-04-13
 
 ### Fixed
