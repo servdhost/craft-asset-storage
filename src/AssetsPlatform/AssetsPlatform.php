@@ -24,9 +24,9 @@ use craft\services\Fs as FsService;
 class AssetsPlatform extends Component
 {
 
-    const S3_BUCKET = 'cdn-assets-servd-host';
-    const S3_REGION = 'eu-west-1';
-    const CACHE_KEY_PREFIX = 'servdassets.';
+    //const S3_BUCKET = 'cdn-assets-servd-host';
+    //const S3_REGION = 'eu-west-1';
+    const CACHE_KEY_PREFIX = 'servdassets3.';
     const CACHE_DURATION_SECONDS = 3600 * 24;
     const DEFAULT_SECURITY_TOKEN_URL = 'https://app.servd.host/create-assets-token';
 
@@ -42,42 +42,82 @@ class AssetsPlatform extends Component
     public function getStorageBaseDirectory()
     {
         $settings = Plugin::$plugin->getSettings();
-        $fullPath = $settings->getProjectSlug() . '/';
+        //$info = $this->getStorageInfoFromServd();
+        if($settings->assetPlatformV3){
+            $fullPath = '';
+        } else {
+            $fullPath = $settings->getProjectSlug() . '/';
+        }
         return $fullPath;
     }
 
-    public function getS3ConfigArray($forceSlug = null, $forceKey = null)
+    public function getCacheKey($type)
     {
+        $settings = Plugin::$plugin->getSettings();
+        $v3 = $settings->assetPlatformV3;
+        $projectSlug = $forceSlug ?? $settings->getProjectSlug();
+        return static::CACHE_KEY_PREFIX . $type . '.' . md5($projectSlug) . '.' . ($v3 ? 'v3' : 'v2');
+    }
 
+    public function getStorageInfoFromServd($forceSlug = null, $forceKey = null)
+    {
         $settings = Plugin::$plugin->getSettings();
         $projectSlug = $forceSlug ?? $settings->getProjectSlug();
         $securityKey = $forceKey ?? $settings->getSecurityKey();
 
+        $credentials = [];
+        $v3 = $settings->assetPlatformV3;
+        $tokenKey = $this->getCacheKey('creds');
+        $usageKey = $this->getCacheKey('usage');
+        $typeKey = $this->getCacheKey('type');
+        if (Craft::$app->cache->exists($tokenKey)) {
+            $credentials = Craft::$app->cache->get($tokenKey);
+            $usage = Craft::$app->cache->get($usageKey);
+            $type = Craft::$app->cache->get($typeKey);
+        } else {
+            //Grab tokens from token service
+            $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
+            $credentials = $credentialsResponse['credentials'];
+            $usage = $credentialsResponse['usage'] ?? 0;
+            $type = $credentialsResponse['type'] ?? 'backblaze';
+            
+            Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set($typeKey, $type, static::CACHE_DURATION_SECONDS);
+        }
+
+        $bucket = 'cdn-assets-servd-host';
+        if($settings->assetPlatformV3){
+            $bucket = 'servd-' . $projectSlug;
+        }
+
+        return [
+            'type' => $type,
+            'credentials' => $credentials,
+            'usage' => $usage,
+            'bucket' => $bucket
+        ];
+    }
+
+    public function getS3ConfigArray($forceSlug = null, $forceKey = null)
+    {
+        
+        $servdResponse = $this->getStorageInfoFromServd($forceSlug, $forceKey);
+        
         $config = [
-            'region' => static::S3_REGION,
+            'region' => $servdResponse['credentials']['region'],
             'version' => 'latest',
             'http'    => [
                 'connect_timeout' => 3,
                 'timeout' => 30,
             ]
         ];
-
-        $credentials = [];
-        $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
-        $usageKey = static::CACHE_KEY_PREFIX . 'usage.' . md5($projectSlug);
-        if (Craft::$app->cache->exists($tokenKey)) {
-            $credentials = Craft::$app->cache->get($tokenKey);
-        } else {
-            //Grab tokens from token service
-            $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
-            $credentials = $credentialsResponse['credentials'];
-            $usage = $credentialsResponse['usage'] ?? 0;
-            Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
-            Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
-        }
-
-        $config['credentials'] = $credentials;
-        $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
+        $config['bucket'] = $servdResponse['bucket'];
+        $config['credentials'] = [
+            'key' => $servdResponse['credentials']['key'],
+            'secret' => $servdResponse['credentials']['secret'],
+        ];
+        $config['endpoint'] = $servdResponse['credentials']['endpoint'];
         $config['use_path_style_endpoint'] = true;
         $config['dual_stack'] = false;
         $config['accelerate'] = false;
@@ -87,11 +127,15 @@ class AssetsPlatform extends Component
         return $config;
     }
 
+    public function getCurrentStorageType()
+    {
+        $usageKey = $this->getCacheKey('type');
+        return Craft::$app->cache->get($usageKey) ?? 0;
+    }
+
     public function getCurrentUsagePercent()
     {
-        $settings = Plugin::$plugin->getSettings();
-        $projectSlug = $settings->getProjectSlug();
-        $usageKey = static::CACHE_KEY_PREFIX . 'usage.' . md5($projectSlug);
+        $usageKey = $this->getCacheKey('usage');
         return Craft::$app->cache->get($usageKey) ?? 0;
     }
 

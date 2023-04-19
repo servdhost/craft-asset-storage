@@ -24,6 +24,7 @@ class Settings extends Model
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
     public $fsMapsEnabled = false;
+    public $assetPlatformV3 = false;
     public $fsMaps = [];
     public $imageAutoConversion = 'webp';
 

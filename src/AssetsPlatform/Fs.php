@@ -26,7 +26,7 @@ use League\Flysystem\Visibility;
 
 class Fs extends FlysystemFs
 {
-    const S3_BUCKET = 'cdn-assets-servd-host';
+    //const S3_BUCKET = 'cdn-assets-servd-host';
     public $customSubfolder = '';
     public $makeUploadsPublic = true;
     public $optimisePrefix = ''; //DEPRECATED
@@ -57,7 +57,12 @@ class Fs extends FlysystemFs
 
     public function getRootUrl(): ?string
     {
-        $base = 'https://cdn2.assets-servd.host/';
+        $settings = Plugin::$plugin->getSettings();
+        if($settings->assetPlatformV3){
+            $base = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+        } else {
+            $base = 'https://cdn2.assets-servd.host/';
+        }
         return $base . $this->_subfolder();
     }
 
@@ -86,7 +91,7 @@ class Fs extends FlysystemFs
     {
         $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
         $client = static::client($config);
-        return new AwsS3Adapter($client, AssetsPlatform::S3_BUCKET, $this->_subfolder());
+        return new AwsS3Adapter($client, $config['bucket'], $this->_subfolder());
     }
 
     protected static function client(array $config = []): S3Client
@@ -102,5 +107,16 @@ class Fs extends FlysystemFs
     protected function invalidateCdnPath(string $path): bool
     {
         return true;
+    }
+
+    public function beforeSave(bool $isNew): bool
+    {
+        $settings = Plugin::$plugin->getSettings();
+        if($settings->assetPlatformV3){
+            $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+        } else {
+            $this->url = 'https://cdn2.assets-servd.host/';
+        }
+        return parent::beforeSave($isNew);
     }
 }

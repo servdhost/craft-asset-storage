@@ -66,7 +66,13 @@ class ImageTransforms
         }
 
         //Otherwise
-        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
+        if($settings->assetPlatformV3){
+            $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
+        } else {
+            $base = 'https://optimise2.assets-servd.host/'; 
+        }
+        
+        return $base . $fullPath . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)

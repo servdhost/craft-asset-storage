@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
+use servd\AssetStorage\AssetsPlatform\Fs;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\Blitz\BlitzIntegration;
 use servd\AssetStorage\CPAlerts\CPAlerts;
@@ -58,6 +59,24 @@ class Plugin extends \craft\base\Plugin
             'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>='),
             
         ]);
+    }
+
+    public function  afterSaveSettings(): void
+    {
+        //Set the base path on any servd filesystems to match the asset platform selected
+        $settings = $this->getSettings();
+        $filesystems = Craft::$app->getFS();
+        foreach ($filesystems->getAllFilesystems() as $filesystem) {
+            if($filesystem instanceof Fs){
+                if($settings->assetPlatformV3){
+                    $filesystem->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+                } else {
+                    $filesystem->url = 'https://cdn2.assets-servd.host/';
+                }
+                $filesystems->saveFilesystem($filesystem);
+            }
+        }
+        parent::afterSaveSettings();
     }
 
     private function registerVariables()
