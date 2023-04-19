@@ -85,14 +85,6 @@
 <fieldset>
 	<h2>Asset Platform</h2>
 
-	{{ forms.lightswitchField({
-        label: "Use Asset Platform V3",
-        instructions: "Enable this once the Servd project has been migrated to Asset Platform V3. ",
-        id: 'assetPlatformV3',
-        name: 'assetPlatformV3',
-        on: settings.assetPlatformV3
-    }) }}
-
 	{{ forms.autosuggestField({
         label: "Force Assets Environment",
         id: 'assetsEnvironment',

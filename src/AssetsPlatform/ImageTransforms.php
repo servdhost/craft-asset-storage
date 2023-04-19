@@ -6,6 +6,7 @@ use Craft;
 use craft\elements\Asset;
 use craft\helpers\App;
 use craft\helpers\ImageTransforms as HelpersImageTransforms;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
 
 class ImageTransforms
@@ -66,7 +67,7 @@ class ImageTransforms
         }
 
         //Otherwise
-        if($settings->assetPlatformV3){
+        if(Settings::$CURRENT_TYPE == 'wasabi'){
             $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
         } else {
             $base = 'https://optimise2.assets-servd.host/'; 

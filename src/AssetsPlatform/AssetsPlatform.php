@@ -20,6 +20,7 @@ use Exception;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
 use craft\services\Fs as FsService;
+use servd\AssetStorage\models\Settings;
 
 class AssetsPlatform extends Component
 {
@@ -29,6 +30,7 @@ class AssetsPlatform extends Component
     const CACHE_KEY_PREFIX = 'servdassets3.';
     const CACHE_DURATION_SECONDS = 3600 * 24;
     const DEFAULT_SECURITY_TOKEN_URL = 'https://app.servd.host/create-assets-token';
+    const CACHE_KEY_TYPE = 'servdassets.type';
 
     public $imageTransforms;
 
@@ -43,7 +45,7 @@ class AssetsPlatform extends Component
     {
         $settings = Plugin::$plugin->getSettings();
         //$info = $this->getStorageInfoFromServd();
-        if($settings->assetPlatformV3){
+        if(Settings::$CURRENT_TYPE == 'wasabi'){
             $fullPath = '';
         } else {
             $fullPath = $settings->getProjectSlug() . '/';
@@ -54,7 +56,7 @@ class AssetsPlatform extends Component
     public function getCacheKey($type)
     {
         $settings = Plugin::$plugin->getSettings();
-        $v3 = $settings->assetPlatformV3;
+        $v3 = Settings::$CURRENT_TYPE == 'wasabi';
         $projectSlug = $forceSlug ?? $settings->getProjectSlug();
         return static::CACHE_KEY_PREFIX . $type . '.' . md5($projectSlug) . '.' . ($v3 ? 'v3' : 'v2');
     }
@@ -66,14 +68,13 @@ class AssetsPlatform extends Component
         $securityKey = $forceKey ?? $settings->getSecurityKey();
 
         $credentials = [];
-        $v3 = $settings->assetPlatformV3;
+        $v3 = Settings::$CURRENT_TYPE == 'wasabi';
         $tokenKey = $this->getCacheKey('creds');
         $usageKey = $this->getCacheKey('usage');
-        $typeKey = $this->getCacheKey('type');
         if (Craft::$app->cache->exists($tokenKey)) {
             $credentials = Craft::$app->cache->get($tokenKey);
             $usage = Craft::$app->cache->get($usageKey);
-            $type = Craft::$app->cache->get($typeKey);
+            $type = Craft::$app->cache->get(self::CACHE_KEY_TYPE);
         } else {
             //Grab tokens from token service
             $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
@@ -83,11 +84,11 @@ class AssetsPlatform extends Component
             
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
             Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
-            Craft::$app->cache->set($typeKey, $type, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set(self::CACHE_KEY_TYPE, $type);
         }
 
         $bucket = 'cdn-assets-servd-host';
-        if($settings->assetPlatformV3){
+        if(Settings::$CURRENT_TYPE == 'wasabi'){
             $bucket = 'servd-' . $projectSlug;
         }
 
@@ -129,8 +130,7 @@ class AssetsPlatform extends Component
 
     public function getCurrentStorageType()
     {
-        $usageKey = $this->getCacheKey('type');
-        return Craft::$app->cache->get($usageKey) ?? 0;
+        return Craft::$app->cache->get(self::CACHE_KEY_TYPE) ?? null;
     }
 
     public function getCurrentUsagePercent()

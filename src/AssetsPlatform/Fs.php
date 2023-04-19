@@ -23,6 +23,7 @@ use servd\AssetStorage\Plugin;
 use League\Flysystem\FilesystemAdapter;
 use League\Flysystem\AwsS3V3\PortableVisibilityConverter;
 use League\Flysystem\Visibility;
+use servd\AssetStorage\models\Settings;
 
 class Fs extends FlysystemFs
 {
@@ -40,7 +41,13 @@ class Fs extends FlysystemFs
     public function __construct($config = [])
     {
         parent::__construct($config);
+        $settings = Plugin::$plugin->getSettings();
         $this->subfolder = $this->_subfolder();
+        if(Settings::$CURRENT_TYPE == 'wasabi'){
+            $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+        } else {
+            $this->url = 'https://cdn2.assets-servd.host/';
+        }
     }
 
     public static function displayName(): string
@@ -57,12 +64,7 @@ class Fs extends FlysystemFs
 
     public function getRootUrl(): ?string
     {
-        $settings = Plugin::$plugin->getSettings();
-        if($settings->assetPlatformV3){
-            $base = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
-        } else {
-            $base = 'https://cdn2.assets-servd.host/';
-        }
+        $base = rtrim($this->url, '/') . '/';
         return $base . $this->_subfolder();
     }
 
@@ -109,14 +111,4 @@ class Fs extends FlysystemFs
         return true;
     }
 
-    public function beforeSave(bool $isNew): bool
-    {
-        $settings = Plugin::$plugin->getSettings();
-        if($settings->assetPlatformV3){
-            $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
-        } else {
-            $this->url = 'https://cdn2.assets-servd.host/';
-        }
-        return parent::beforeSave($isNew);
-    }
 }
