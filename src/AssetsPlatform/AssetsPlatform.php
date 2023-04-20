@@ -156,6 +156,8 @@ class AssetsPlatform extends Component
                     'slug' => $projectSlug,
                     'key' => $securityKey,
                 ],
+                'connect_timeout' => 1, //If the user is offline, bail after 1 sec
+                'timeout' => 5, //If the Servd servers aren't responding, wait max 5 seconds
             ]);
             $res = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
