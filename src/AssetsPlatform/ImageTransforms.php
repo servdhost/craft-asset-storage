@@ -4,6 +4,7 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
 use servd\AssetStorage\Volume;
 
@@ -45,7 +46,7 @@ class ImageTransforms
         $signingKey = $this->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
-        
+
         // Use a custom URL template if one has been provided
         $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
         $normalizedCustomSubfolder = Craft::parseEnv($volume->customSubfolder);
@@ -65,7 +66,13 @@ class ImageTransforms
         }
 
         //Otherwise
-        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
+        } else {
+            $base = 'https://optimise2.assets-servd.host/';
+        }
+
+        return $base . $fullPath . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)
@@ -124,9 +131,9 @@ class ImageTransforms
 
         if (!empty($transform->format)) {
             $params['fm'] = $transform->format;
-        } elseif($settings->imageAutoConversion == 'webp'){
+        } elseif ($settings->imageAutoConversion == 'webp') {
             $autoParams[] = 'format';
-        } elseif($settings->imageAutoConversion == 'avif'){
+        } elseif ($settings->imageAutoConversion == 'avif') {
             $autoParams[] = 'format';
             $autoParams[] = 'avif';
         }

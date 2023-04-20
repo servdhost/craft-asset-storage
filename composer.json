@@ -36,5 +36,11 @@
         "name": "Servd Assets and Helpers",
         "handle": "servd-asset-storage",
         "documentationUrl": "https://github.com/servdhost/craft-asset-storage"
+    },
+    "config": {
+        "allow-plugins": {
+            "yiisoft/yii2-composer": true,
+            "craftcms/plugin-installer": true
+        }
     }
 }
