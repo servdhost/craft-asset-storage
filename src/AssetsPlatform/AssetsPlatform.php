@@ -286,10 +286,13 @@ class AssetsPlatform extends Component
             foreach ($variables as $key => $value) {
                 $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
             }
-            return $finalUrl;
+        }else {
+            $finalUrl = AssetsHelper::generateUrl($volume, $asset);
         }
-
-        return AssetsHelper::generateUrl($volume, $asset);
+        $parts = explode('/', $finalUrl);
+        //urlencode the final part
+        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
+        return implode('/', $parts);
     }
 
     public function handleAssetTransform(Asset $asset, $transform, $force = true)

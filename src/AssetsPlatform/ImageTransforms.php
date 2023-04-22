@@ -96,6 +96,12 @@ class ImageTransforms
         $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
             return rawurlencode($match[0]);
         }, $filePath);
+
+        $parts = explode('/', $filePath);
+        //urlencode the final part
+        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
+        $filePath = implode('/', $parts);
+
         $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
         $base = ltrim($base, '/');
 
