@@ -82,7 +82,7 @@ class AssetsPlatform extends Component
 
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
             Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
-            Craft::$app->cache->set(self::CACHE_KEY_TYPE, $type);
+            Craft::$app->cache->set(self::CACHE_KEY_TYPE, $type, 0);
         }
 
         $bucket = 'cdn-assets-servd-host';
