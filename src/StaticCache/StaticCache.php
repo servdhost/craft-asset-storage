@@ -160,13 +160,13 @@ class StaticCache extends Component
                         window.dispatchEvent( new CustomEvent("servd.dynamicloaded", {detail: {blocks: []}}) );
                     }
                 }
-                
+
                 setTimeout(function(){
                     if (!window.SERVD_MANUAL_DYNAMIC_LOAD) {
                         pullDynamic();
                     }
                 }, 50);
-                
+
             ', View::POS_END);
 
             if (sizeof(static::$esiBlocks) == 0) {
@@ -503,45 +503,40 @@ class StaticCache extends Component
     {
         $request = Craft::$app->getRequest();
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-
-
             Event::on(
                 Entry::class,
                 Entry::EVENT_DEFINE_SIDEBAR_HTML,
                 static function (DefineHtmlEvent $event) {
-                $settings = Plugin::$plugin->getSettings();
+                    $settings = Plugin::$plugin->getSettings();
                     $entry = $event->sender;
-                $url = $entry->getUrl();
-                if (!empty($url)) {
+                    $url = $entry->getUrl();
+                    if (!empty($url)) {
                         $html = Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
-                        'entryId' => $entry->id,
-                        'showTagPurge' => $settings->cacheClearMode == 'tags'
-                    ]);
+                            'entryId' => $entry->id,
+                            'showTagPurge' => $settings->cacheClearMode == 'tags'
+                        ]);
                         $event->html .= $html;
-                }
+                    }
                     return;
                 }
             );
-
-            if(class_exists("\craft\commerce\elements\Product")) {
-                Event::on(
-                    \craft\commerce\elements\Product::class,
-                    \craft\commerce\elements\Product::EVENT_DEFINE_SIDEBAR_HTML,
-                    static function (DefineHtmlEvent $event) {
-                $settings = Plugin::$plugin->getSettings();
-                        $product = $event->sender;
-                $url = $product->getUrl();
-                if (!empty($url)) {
-                            $html = Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
-                        'productId' => $product->id,
-                        'showTagPurge' => $settings->cacheClearMode == 'tags'
-                    ]);
-                            $event->html .= $html;
-                }
-                        return;
-                    }
-                );
+            if (class_exists("\\craft\\commerce\\elements\\Product")) {
+                Craft::$app->getView()->hook('cp.commerce.product.edit.details', [$this, '_commerceProductHook']);
             }
         }
+    }
+
+    public function _commerceProductHook(array $context)
+    {
+        $settings = Plugin::$plugin->getSettings();
+        $product = $context['product'];
+        $url = $product->getUrl();
+        if (!empty($url)) {
+            return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                'productId' => $product->id,
+                'showTagPurge' => $settings->cacheClearMode == 'tags'
+            ]);
+        }
+        return '';
     }
 }
