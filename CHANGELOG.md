@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.3.3 - 2023-04-24
+
+### Added
+
+- Fix for missing "Purge Product URL(s)" buttons on Craft Commerce product pages.
+
 ## 3.3.2 - 2023-04-16
 
 ### Added
