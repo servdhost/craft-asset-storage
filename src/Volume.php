@@ -17,10 +17,11 @@ use craft\behaviors\EnvAttributeParserBehavior;
 use League\Flysystem\AdapterInterface;
 use servd\AssetStorage\assetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\AwsS3Adapter;
+use servd\AssetStorage\models\Settings;
 
 class Volume extends FlysystemVolume
 {
-    const S3_BUCKET = 'cdn-assets-servd-host';
+
     public $customSubfolder = '';
     public $makeUploadsPublic = true;
     public $optimisePrefix = ''; //DEPRECATED
@@ -29,11 +30,20 @@ class Volume extends FlysystemVolume
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
 
+    public $subfolder = null;
+
     protected $isVolumeLocal = false;
 
     public function __construct(array $config = [])
     {
         parent::__construct($config);
+        $settings = Plugin::$plugin->getSettings();
+        $this->subfolder = $this->_subfolder();
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+        } else {
+            $this->url = 'https://cdn2.assets-servd.host/';
+        }
     }
 
     public static function displayName(): string
@@ -87,7 +97,7 @@ class Volume extends FlysystemVolume
     {
         $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray();
         $client = static::client($config);
-        return new AwsS3Adapter($client, AssetsPlatform::S3_BUCKET, $this->_subfolder(), [], false);
+        return new AwsS3Adapter($client, $config['bucket'], $this->_subfolder(), [], false);
     }
 
     protected static function client(array $config = []): S3Client
@@ -98,15 +108,5 @@ class Volume extends FlysystemVolume
     protected function visibility(): string
     {
         return AdapterInterface::VISIBILITY_PUBLIC;
-    }
-
-    public function getSubfolder()
-    {
-        return $this->_subfolder();
-    }
-
-    public function setSubfolder()
-    {
-        //Do nothing
     }
 }

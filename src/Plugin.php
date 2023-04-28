@@ -42,6 +42,8 @@ class Plugin extends \craft\base\Plugin
         $this->registerVariables();
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
+
+        $settings->checkForType();
     }
 
     protected function createSettingsModel()
