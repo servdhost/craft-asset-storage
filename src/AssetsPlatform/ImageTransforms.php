@@ -39,11 +39,11 @@ class ImageTransforms
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         //Full path of asset on the CDN platform
-        $fullPaths = $this->getFullPathForAssetAndTransform($asset, $params);
-        if (!$fullPaths) {
+        $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);
+        if (!$fullPath) {
             return;
         }
-        $signingKey = $this->getKeyForPath($fullPaths['raw']);
+        $signingKey = $this->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
 
@@ -55,7 +55,7 @@ class ImageTransforms
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $asset->getPath(),
+                "filePath" => $this->encodeFilenameInFilePath($asset->getPath()),
                 "params" => '?' . http_build_query($params),
             ];
             $finalUrl = $customPattern;
@@ -72,7 +72,7 @@ class ImageTransforms
             $base = 'https://optimise2.assets-servd.host/';
         }
 
-        return $base . $fullPaths['encoded'] . '&s=' . $signingKey;
+        return $base . $fullPath . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)
@@ -81,6 +81,18 @@ class ImageTransforms
         $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
         $hash = md5($signingKey . '/' . $path);
         return $hash;
+    }
+
+    private function encodeFilenameInFilePath($path)
+    {
+        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+            return rawurlencode($match[0]);
+        }, $path);
+        
+        $parts = explode('/', $path);
+        //urlencode the final part
+        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
+        return implode('/', $parts);
     }
 
     public function getFullPathForAssetAndTransform(Asset $asset, $params)
@@ -92,23 +104,12 @@ class ImageTransforms
         /** @var \servd\AssetStorage\Volume */
         $volume = $asset->getVolume();
 
-        $filePathRaw = $asset->getPath();
-        $filePathRaw = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
-            return rawurlencode($match[0]);
-        }, $filePathRaw);
-        
-        $parts = explode('/', $filePathRaw);
-        //urlencode the final part
-        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
-        $filePath = implode('/', $parts);
+        $filePath = $this->encodeFilenameInFilePath($asset->getPath());
 
         $base = rtrim($volume->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
-        return [
-            'encoded' => $base . $filePath . "?" . http_build_query($params),
-            'raw' => $base . $filePathRaw . "?" . http_build_query($params)
-        ];
+        return $base . $filePath . "?" . http_build_query($params);
     }
 
     public function getParamsForTransform(TransformOptions $transform)
