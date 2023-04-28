@@ -40,11 +40,11 @@ class ImageTransforms
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         //Full path of asset on the CDN platform
-        $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);
-        if (!$fullPath) {
+        $fullPaths = $this->getFullPathForAssetAndTransform($asset, $params);
+        if (!$fullPaths) {
             return;
         }
-        $signingKey = $this->getKeyForPath($fullPath);
+        $signingKey = $this->getKeyForPath($fullPaths['raw']);
         $params['s'] = $signingKey;
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
@@ -73,7 +73,7 @@ class ImageTransforms
             $base = 'https://optimise2.assets-servd.host/'; 
         }
         
-        return $base . $fullPath . '&s=' . $signingKey;
+        return $base . $fullPaths['encoded'] . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)
@@ -93,20 +93,23 @@ class ImageTransforms
         /** @var \servd\AssetStorage\AssetsPlatform\Fs */
         $fs = $asset->getVolume()->getFs();
 
-        $filePath = $asset->getPath();
-        $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+        $filePathRaw = $asset->getPath();
+        $filePathRaw = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
             return rawurlencode($match[0]);
-        }, $filePath);
+        }, $filePathRaw);
         
-        $parts = explode('/', $filePath);
+        $parts = explode('/', $filePathRaw);
         //urlencode the final part
         $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
         $filePath = implode('/', $parts);
 
-        $base = rtrim($fs->_subfolder(), '/') . '/' . $filePath;
+        $base = rtrim($fs->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
-        return $base . "?" . http_build_query($params);
+        return [
+            'encoded' => $base . $filePath . "?" . http_build_query($params),
+            'raw' => $base . $filePathRaw . "?" . http_build_query($params)
+        ];
     }
 
     public function getParamsForTransform(TransformOptions $transform)
