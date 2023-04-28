@@ -6,6 +6,7 @@ use Craft;
 use craft\base\Model;
 use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
+use servd\AssetStorage\AssetsPlatform\Fs;
 use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\Blitz\BlitzIntegration;
 use servd\AssetStorage\CPAlerts\CPAlerts;
@@ -14,6 +15,7 @@ use servd\AssetStorage\Feedme\Feedme;
 use servd\AssetStorage\ImageOptimize\ImageOptimize;
 use servd\AssetStorage\Imager\Imager;
 use servd\AssetStorage\LocalDev\LocalDev;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
@@ -32,17 +34,19 @@ class Plugin extends \craft\base\Plugin
         self::$plugin = $this;
 
         $settings = $this->getSettings();
-
         // Set the controllerNamespace based on whether this is a console or web request
         if (Craft::$app->getRequest()->getIsConsoleRequest()) {
             $this->controllerNamespace = 'servd\\AssetStorage\\console\\controllers';
         } else {
             $this->controllerNamespace = 'servd\\AssetStorage\\controllers';
         }
-
+        
         $this->registerVariables();
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
+        
+        $settings->checkForType();
+
     }
 
     protected function createSettingsModel() : ?Model
