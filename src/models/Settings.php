@@ -28,7 +28,7 @@ class Settings extends Model
     public function checkForType()
     {
         //Check if we know what version we're running, if not, try to find out
-        $overrideEnv = Craft::parseEnv('SERVD_ASSETS_TYPE');
+        $overrideEnv = getenv('SERVD_ASSETS_TYPE');
         if (!empty($overrideEnv)) {
             self::$CURRENT_TYPE = $overrideEnv;
             return;
