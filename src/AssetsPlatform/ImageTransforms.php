@@ -39,11 +39,11 @@ class ImageTransforms
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         //Full path of asset on the CDN platform
-        $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);
-        if (!$fullPath) {
+        $fullPaths = $this->getFullPathForAssetAndTransform($asset, $params);
+        if (!$fullPaths) {
             return;
         }
-        $signingKey = $this->getKeyForPath($fullPath);
+        $signingKey = $this->getKeyForPath($fullPaths['raw']);
         $params['s'] = $signingKey;
 
 
@@ -72,7 +72,7 @@ class ImageTransforms
             $base = 'https://optimise2.assets-servd.host/';
         }
 
-        return $base . $fullPath . '&s=' . $signingKey;
+        return $base . $fullPaths['encoded'] . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)
@@ -92,20 +92,23 @@ class ImageTransforms
         /** @var \servd\AssetStorage\Volume */
         $volume = $asset->getVolume();
 
-        $filePath = $asset->getPath();
-        $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+        $filePathRaw = $asset->getPath();
+        $filePathRaw = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
             return rawurlencode($match[0]);
-        }, $filePath);
-
-        $parts = explode('/', $filePath);
+        }, $filePathRaw);
+        
+        $parts = explode('/', $filePathRaw);
         //urlencode the final part
         $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
         $filePath = implode('/', $parts);
 
-        $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
+        $base = rtrim($volume->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
-        return $base . "?" . http_build_query($params);
+        return [
+            'encoded' => $base . $filePath . "?" . http_build_query($params),
+            'raw' => $base . $filePathRaw . "?" . http_build_query($params)
+        ];
     }
 
     public function getParamsForTransform(TransformOptions $transform)
