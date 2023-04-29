@@ -4,6 +4,7 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
 use servd\AssetStorage\Volume;
 
@@ -45,7 +46,7 @@ class ImageTransforms
         $signingKey = $this->getKeyForPath($fullPath);
         $params['s'] = $signingKey;
 
-        
+
         // Use a custom URL template if one has been provided
         $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
         $normalizedCustomSubfolder = Craft::parseEnv($volume->customSubfolder);
@@ -54,7 +55,7 @@ class ImageTransforms
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $asset->getPath(),
+                "filePath" => $this->encodeFilenameInFilePath($asset->getPath()),
                 "params" => '?' . http_build_query($params),
             ];
             $finalUrl = $customPattern;
@@ -65,7 +66,13 @@ class ImageTransforms
         }
 
         //Otherwise
-        return 'https://optimise2.assets-servd.host/' . $fullPath . '&s=' . $signingKey;
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
+        } else {
+            $base = 'https://optimise2.assets-servd.host/';
+        }
+
+        return $base . $fullPath . '&s=' . $signingKey;
     }
 
     public function getKeyForPath($path)
@@ -74,6 +81,18 @@ class ImageTransforms
         $signingKey = base64_decode('Nzh5NjQzb2h1aXF5cmEzdzdveTh1aWhhdzM0OW95ODg0dQ==');
         $hash = md5($signingKey . '/' . $path);
         return $hash;
+    }
+
+    private function encodeFilenameInFilePath($path)
+    {
+        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+            return rawurlencode($match[0]);
+        }, $path);
+        
+        $parts = explode('/', $path);
+        //urlencode the final part
+        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
+        return implode('/', $parts);
     }
 
     public function getFullPathForAssetAndTransform(Asset $asset, $params)
@@ -85,14 +104,12 @@ class ImageTransforms
         /** @var \servd\AssetStorage\Volume */
         $volume = $asset->getVolume();
 
-        $filePath = $asset->getPath();
-        $filePath = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
-            return rawurlencode($match[0]);
-        }, $filePath);
-        $base = rtrim($volume->_subfolder(), '/') . '/' . $filePath;
+        $filePath = $this->encodeFilenameInFilePath($asset->getPath());
+
+        $base = rtrim($volume->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
-        return $base . "?" . http_build_query($params);
+        return $base . $filePath . "?" . http_build_query($params);
     }
 
     public function getParamsForTransform(TransformOptions $transform)
@@ -124,9 +141,9 @@ class ImageTransforms
 
         if (!empty($transform->format)) {
             $params['fm'] = $transform->format;
-        } elseif($settings->imageAutoConversion == 'webp'){
+        } elseif ($settings->imageAutoConversion == 'webp') {
             $autoParams[] = 'format';
-        } elseif($settings->imageAutoConversion == 'avif'){
+        } elseif ($settings->imageAutoConversion == 'avif') {
             $autoParams[] = 'format';
             $autoParams[] = 'avif';
         }

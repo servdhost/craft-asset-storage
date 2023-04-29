@@ -18,6 +18,7 @@ use craft\services\Assets;
 use craft\services\Volumes;
 use craft\web\UrlManager;
 use Exception;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
 use servd\AssetStorage\Volume as AssetStorageVolume;
 use yii\base\Event;
@@ -25,11 +26,10 @@ use yii\base\Event;
 class AssetsPlatform extends Component
 {
 
-    const S3_BUCKET = 'cdn-assets-servd-host';
-    const S3_REGION = 'eu-west-1';
-    const CACHE_KEY_PREFIX = 'servdassets.';
+    const CACHE_KEY_PREFIX = 'servdassets3.';
     const CACHE_DURATION_SECONDS = 3600 * 24;
     const DEFAULT_SECURITY_TOKEN_URL = 'https://app.servd.host/create-assets-token';
+    const CACHE_KEY_TYPE = 'servdassets.type';
 
     public $imageTransforms;
 
@@ -43,42 +43,80 @@ class AssetsPlatform extends Component
     public function getStorageBaseDirectory()
     {
         $settings = Plugin::$plugin->getSettings();
-        $fullPath = $settings->getProjectSlug() . '/';
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $fullPath = '';
+        } else {
+            $fullPath = $settings->getProjectSlug() . '/';
+        }
         return $fullPath;
+    }
+
+    public function getCacheKey($type)
+    {
+        $settings = Plugin::$plugin->getSettings();
+        $v3 = Settings::$CURRENT_TYPE == 'wasabi';
+        $projectSlug = $forceSlug ?? $settings->getProjectSlug();
+        return static::CACHE_KEY_PREFIX . $type . '.' . md5($projectSlug) . '.' . ($v3 ? 'v3' : 'v2');
+    }
+
+    public function getStorageInfoFromServd($forceSlug = null, $forceKey = null)
+    {
+        $settings = Plugin::$plugin->getSettings();
+        $projectSlug = $forceSlug ?? $settings->getProjectSlug();
+        $securityKey = $forceKey ?? $settings->getSecurityKey();
+
+        $credentials = [];
+        $v3 = Settings::$CURRENT_TYPE == 'wasabi';
+        $tokenKey = $this->getCacheKey('creds');
+        $usageKey = $this->getCacheKey('usage');
+        if (Craft::$app->cache->exists($tokenKey)) {
+            $credentials = Craft::$app->cache->get($tokenKey);
+            $usage = Craft::$app->cache->get($usageKey);
+            $type = Craft::$app->cache->get(self::CACHE_KEY_TYPE);
+        } else {
+            //Grab tokens from token service
+            $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
+            $credentials = $credentialsResponse['credentials'];
+            $usage = $credentialsResponse['usage'] ?? 0;
+            $type = $credentialsResponse['type'] ?? 'backblaze';
+
+            Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
+            Craft::$app->cache->set(self::CACHE_KEY_TYPE, $type, 0);
+        }
+
+        $bucket = 'cdn-assets-servd-host';
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $bucket = 'servd-' . $projectSlug;
+        }
+
+        return [
+            'type' => $type,
+            'credentials' => $credentials,
+            'usage' => $usage,
+            'bucket' => $bucket
+        ];
     }
 
     public function getS3ConfigArray($forceSlug = null, $forceKey = null)
     {
 
-        $settings = Plugin::$plugin->getSettings();
-        $projectSlug = $forceSlug ?? $settings->getProjectSlug();
-        $securityKey = $forceKey ?? $settings->getSecurityKey();
+        $servdResponse = $this->getStorageInfoFromServd($forceSlug, $forceKey);
 
         $config = [
-            'region' => static::S3_REGION,
+            'region' => $servdResponse['credentials']['region'],
             'version' => 'latest',
             'http'    => [
                 'connect_timeout' => 3,
                 'timeout' => 30,
             ]
         ];
-
-        $credentials = [];
-        $tokenKey = static::CACHE_KEY_PREFIX . md5($projectSlug);
-        $usageKey = static::CACHE_KEY_PREFIX . 'usage.' . md5($projectSlug);
-        if (Craft::$app->cache->exists($tokenKey)) {
-            $credentials = Craft::$app->cache->get($tokenKey);
-        } else {
-            //Grab tokens from token service
-            $credentialsResponse = $this->getSecurityToken($projectSlug, $securityKey);
-            $credentials = $credentialsResponse['credentials'];
-            $usage = $credentialsResponse['usage'] ?? 0;
-            Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
-            Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
-        }
-
-        $config['credentials'] = $credentials;
-        $config['endpoint'] = 'https://s3.eu-central-003.backblazeb2.com';
+        $config['bucket'] = $servdResponse['bucket'];
+        $config['credentials'] = [
+            'key' => $servdResponse['credentials']['key'],
+            'secret' => $servdResponse['credentials']['secret'],
+        ];
+        $config['endpoint'] = $servdResponse['credentials']['endpoint'];
         $config['use_path_style_endpoint'] = true;
         $config['dual_stack'] = false;
         $config['accelerate'] = false;
@@ -86,6 +124,11 @@ class AssetsPlatform extends Component
         $config['http_handler'] = new GuzzleHandler($client);
 
         return $config;
+    }
+
+    public function getCurrentStorageType()
+    {
+        return Craft::$app->cache->get(self::CACHE_KEY_TYPE) ?? null;
     }
 
     public function getCurrentUsagePercent()
@@ -113,6 +156,8 @@ class AssetsPlatform extends Component
                     'slug' => $projectSlug,
                     'key' => $securityKey,
                 ],
+                'connect_timeout' => 1, //If the user is offline, bail after 1 sec
+                'timeout' => 5, //If the Servd servers aren't responding, wait max 5 seconds
             ]);
             $res = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
@@ -199,7 +244,7 @@ class AssetsPlatform extends Component
                             'width' => $width,
                             'interlace' => 'line',
                         ]);
-                        
+
                         $event->handled = true;
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
@@ -219,7 +264,7 @@ class AssetsPlatform extends Component
         //in_array($asset->getExtension(), craft\helpers\Assets::getFileKinds()[craft\elements\Asset::KIND_VIDEO]['extensions']);
 
         //Special handling for videos
-        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO 
+        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO
             || in_array(strtolower($asset->getExtension()), AssetsHelper::getFileKinds()[Asset::KIND_VIDEO]['extensions']);
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
@@ -241,10 +286,13 @@ class AssetsPlatform extends Component
             foreach ($variables as $key => $value) {
                 $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
             }
-            return $finalUrl;
+        }else {
+            $finalUrl = AssetsHelper::generateUrl($volume, $asset);
         }
-
-        return AssetsHelper::generateUrl($volume, $asset);
+        $parts = explode('/', $finalUrl);
+        //urlencode the final part
+        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
+        return implode('/', $parts);
     }
 
     public function handleAssetTransform(Asset $asset, $transform, $force = true)

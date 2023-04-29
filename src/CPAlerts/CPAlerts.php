@@ -12,6 +12,7 @@ use craft\helpers\Cp;
 use craft\helpers\UrlHelper;
 use craft\mail\transportadapters\Sendmail;
 use craft\volumes\Local;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
 
@@ -41,8 +42,18 @@ class CPAlerts extends Component
                 $event->alerts = array_merge($event->alerts, $this->checkForVolumeErrors());
                 $event->alerts = array_merge($event->alerts, $this->checkForSettingsErrors());
                 $event->alerts = array_merge($event->alerts, $this->checkForSendmail());
+                $event->alerts = array_merge($event->alerts, $this->checkForAssetsVersion());
             }
         );
+    }
+
+    private function checkForAssetsVersion()
+    {
+        $messages = [];
+        if (empty(Settings::$CURRENT_TYPE)) {
+            $messages[] = 'Unable to connect to Servd\'s Asset Platform. Check your \'Project Slug\' and \'Security Key\' then clear Craft\'s data cache';
+        }
+        return $messages;
     }
 
     private function checkForVolumeErrors()
