@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.0 - 2023-04-29
+
+### Added
+
+- [Asset Platform V3 Support](https://servd.host/blog/asset-platform-v3)
+
 ## 2.8.6 - 2023-04-16
 
 ### Added
