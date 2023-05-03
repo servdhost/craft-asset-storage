@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.1 - 2023-05-03
+
+### Fixed
+
+- Fixed a URL encoding issue involving `@` characters in asset file names which caused 401 security token errors to be returned.
+
 ## 2.9.0 - 2023-04-29
 
 ### Added
@@ -47,7 +53,7 @@
 ### Added
 
 - You can now disable automatic image format conversion if webp isn't treating your images nicely
-- Alternatively, you can now use AVIF as your auto-format of choice (check the plugin's settings for the new option) 
+- Alternatively, you can now use AVIF as your auto-format of choice (check the plugin's settings for the new option)
 
 ## 2.7.7 - 2022-11-01
 

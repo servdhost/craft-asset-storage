@@ -85,10 +85,10 @@ class ImageTransforms
 
     private function encodeFilenameInFilePath($path)
     {
-        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]|\@/', function ($match) {
             return rawurlencode($match[0]);
         }, $path);
-        
+
         $parts = explode('/', $path);
         //urlencode the final part
         $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
