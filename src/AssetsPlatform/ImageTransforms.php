@@ -46,7 +46,7 @@ class ImageTransforms
         }
 
         $signingKey = $this->getKeyForPath($fullPath);
-        
+
         $params['s'] = $signingKey;
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
@@ -72,9 +72,9 @@ class ImageTransforms
         if(Settings::$CURRENT_TYPE == 'wasabi'){
             $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
         } else {
-            $base = 'https://optimise2.assets-servd.host/'; 
+            $base = 'https://optimise2.assets-servd.host/';
         }
-        
+
         return $base . $fullPath . '&s=' . $signingKey;
     }
 
@@ -88,10 +88,10 @@ class ImageTransforms
 
     private function encodeFilenameInFilePath($path)
     {
-        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
+        $path = preg_replace_callback('/[\s]|[^\x20-\x7f]|\@/', function ($match) {
             return rawurlencode($match[0]);
         }, $path);
-        
+
         $parts = explode('/', $path);
         //urlencode the final part
         $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
