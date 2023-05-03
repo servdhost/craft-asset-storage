@@ -2,6 +2,8 @@
 
 ## 3.4.1 - 2023-05-03
 
+### Fixed
+
 - Fixed a URL encoding issue involving `@` characters in asset file names which caused 401 security token errors to be returned.
 
 ## 3.4.0 - 2023-04-29
