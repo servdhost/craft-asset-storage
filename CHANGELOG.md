@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.2 - 2023-05-03
+
+### Fixed
+
+- Removed all URL encoding in transform URLs, it was upsetting things
+
 ## 3.4.1 - 2023-05-03
 
 ### Fixed
