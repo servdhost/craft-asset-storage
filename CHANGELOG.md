@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.3 - 2023-05-15
+
+### Added
+
+- Added additional request validation for dynamicInclude endpoint to prevent annoying exceptions being thrown by bots
+
 ## 2.9.2 - 2023-05-03
 
 ### Fixed

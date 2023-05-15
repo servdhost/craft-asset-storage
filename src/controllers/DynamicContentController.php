@@ -43,7 +43,14 @@ class DynamicContentController extends Controller
             return $this->asJson($response);
         } else {
             //ESI can only use get requests and only contain a single block
-            $blocks = unserialize(gzuncompress(base64_decode($req->getQueryParam('blocks'))));
+
+            //Make sure the request has a blocks query param
+            $blocks = $req->getQueryParam('blocks');
+            if (empty($blocks)) {
+                return $this->asErrorJson('No blocks specified');
+            }
+
+            $blocks = unserialize(gzuncompress(base64_decode($blocks)));
 
             $response = ['blocks' => []];
             foreach ($blocks as $block) {
