@@ -4,6 +4,7 @@ namespace servd\AssetStorage\controllers;
 
 use Craft;
 use craft\web\Controller;
+use craft\web\Request;
 
 class DynamicContentController extends Controller
 {
@@ -12,6 +13,7 @@ class DynamicContentController extends Controller
 
     public function actionGetContent()
     {
+        /** @var Request $req */
         $req = Craft::$app->getRequest();
 
         $seomatic = Craft::$app->plugins->getPlugin('seomatic');
@@ -43,7 +45,14 @@ class DynamicContentController extends Controller
             return $this->asJson($response);
         } else {
             //ESI can only use get requests and only contain a single block
-            $blocks = unserialize(gzuncompress(base64_decode($req->getQueryParam('blocks'))));
+            
+            //Make sure the request has a blocks query param
+            $blocks = $req->getQueryParam('blocks');
+            if (empty($blocks)) {
+                return $this->asFailure('No blocks specified');
+            }
+
+            $blocks = unserialize(gzuncompress(base64_decode($blocks)));
 
             $response = ['blocks' => []];
             foreach ($blocks as $block) {
