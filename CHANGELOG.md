@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.4 - 2023-05-22
+
+### Fixed
+
+- Fixed a couple of bugs when syncing assets between asset platform V3 and the local filesystem
+
 ## 3.4.3 - 2023-05-15
 
 ### Added
