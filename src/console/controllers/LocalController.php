@@ -22,6 +22,7 @@ use craft\volumes\Local;
 use Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
+use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Volume;
 
 class LocalController extends Controller
@@ -237,15 +238,25 @@ class LocalController extends Controller
             $query->where(['type' => Volume::class]);
             $results = $query->all();
 
+            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
+            if(Settings::$CURRENT_TYPE == 'wasabi'){
+                $projectBasePath = 's3://' . $config['bucket'] . '/';
+                $remotePrefixBase = '';
+            } else {
+                $projectBasePath = 's3://' . $config['bucket'] . '/' . $this->servdSlug . '/';
+                $remotePrefixBase = $this->servdSlug . '/';
+            }
+
             foreach ($results as $v) {
                 $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
                 $s = json_decode($v['settings'], true);
-                $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->from/" . $s['customSubfolder'];
-                $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                $remotePath = $projectBasePath . $this->from . "/" . $s['customSubfolder'];
+                $remotePathPrefix = $remotePrefixBase . $this->from . "/" . $s['customSubfolder'];
+                $localPath = rtrim(FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/')), '/') . '/';
                 if (!is_dir($localPath)) {
                     mkdir($localPath, 0775, true);
                 }
-                $this->syncS3Down($remotePath, $localPath, "$this->servdSlug/$this->from/" . $s['customSubfolder']);
+                $this->syncS3Down($remotePath, $localPath, $remotePathPrefix);
             }
             $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
         } else {
@@ -298,15 +309,25 @@ class LocalController extends Controller
             $query->where(['type' => Volume::class]);
             $results = $query->all();
 
+            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
+            if(Settings::$CURRENT_TYPE == 'wasabi'){
+                $projectBasePath = 's3://' . $config['bucket'] . '/';
+                $remotePrefixBase = '';
+            } else {
+                $projectBasePath = 's3://' . $config['bucket'] . '/' . $this->servdSlug . '/';
+                $remotePrefixBase = $this->servdSlug . '/';
+            }
+
             foreach ($results as $v) {
                 $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
                 $s = json_decode($v['settings'], true);
-                $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->to/" . $s['customSubfolder'];
-                $localPath = FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/'));
+                $remotePath = $projectBasePath . $this->to . '/' . $s['customSubfolder'];
+                $remotePathPrefix = $remotePrefixBase . $this->to . "/" . $s['customSubfolder'];
+                $localPath = rtrim(FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/')), '/') . '/';
                 if (!is_dir($localPath)) {
                     mkdir($localPath, 0775, true);
                 }
-                $this->syncS3Up($localPath, $remotePath, "$this->servdSlug/$this->to/" . $s['customSubfolder']);
+                $this->syncS3Up($localPath, $remotePath, $remotePathPrefix);
                 $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
             }
         } else {
@@ -663,7 +684,7 @@ class LocalController extends Controller
         $toDownload = $client
             ->getPaginator('ListObjects', [
                 'Prefix' => $fullS3Prefix,
-                'Bucket' => static::S3_BUCKET
+                'Bucket' => $config['bucket']
             ])
             ->search('Contents[]');
         $toDownload = \Aws\filter($toDownload, function ($obj) {
@@ -672,20 +693,20 @@ class LocalController extends Controller
         //Hijack iterator to remove from all files list so that we only end up with ones to delete
         $toDownload = \Aws\map($toDownload, function ($obj) use ($fullS3Prefix, $dest, &$existingFiles) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . '/' . $sansPrefix;
+            $localPath = $dest . $sansPrefix;
             unset($existingFiles[$localPath]);
             return $obj;
         });
         $toDownload = \Aws\filter($toDownload, function ($obj) use ($fullS3Prefix, $dest) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . '/' . $sansPrefix;
+            $localPath = $dest . $sansPrefix;
             if (!file_exists($localPath)) {
                 return true;
             }
             return md5_file($localPath) != trim($obj['ETag'], '"');
         });
-        $toDownload = \Aws\map($toDownload, function ($obj) {
-            return "s3://cdn-assets-servd-host/" . $obj['Key'];
+        $toDownload = \Aws\map($toDownload, function ($obj) use ($config) {
+            return 's3://' . $config['bucket'] . '/' . $obj['Key'];
         });
 
         $manager = new \Aws\S3\Transfer($client, $toDownload, $dest, [
@@ -721,7 +742,7 @@ class LocalController extends Controller
         $toDelete = $client
             ->getPaginator('ListObjects', [
                 'Prefix' => $fullS3Prefix,
-                'Bucket' => static::S3_BUCKET
+                'Bucket' => $config['bucket']
             ])
             ->search('Contents[]');
         $toDelete = \Aws\filter($toDelete, function ($obj) {
@@ -734,7 +755,7 @@ class LocalController extends Controller
         });
         $toDelete = \Aws\filter($toDelete, function ($obj) use ($fullS3Prefix, $source) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $source . '/' . $sansPrefix;
+            $localPath = $source . $sansPrefix;
             return !file_exists($localPath);
         });
         $toDelete = \Aws\map($toDelete, function ($obj) {
@@ -746,7 +767,7 @@ class LocalController extends Controller
 
         //Delete anything on the remote which is not present on the local
         if (!$this->skipDelete) {
-            $batchDelete = BatchDelete::fromIterator($client, static::S3_BUCKET, $toDelete);
+            $batchDelete = BatchDelete::fromIterator($client, $config['bucket'], $toDelete);
             $batchDelete->delete();
         } else {
             //Just run the ListObjects iterator to get a list of remote files
