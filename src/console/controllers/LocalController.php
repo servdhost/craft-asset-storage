@@ -764,19 +764,21 @@ class LocalController extends Controller
         //Hijack iterator to remove from all files list so that we only end up with ones to delete
         $toDownload = \Aws\map($toDownload, function ($obj) use ($fullS3Prefix, $dest, &$existingFiles) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . '/' . $sansPrefix;
+            $localPath = $dest . $sansPrefix;
             unset($existingFiles[$localPath]);
             return $obj;
         });
         $toDownload = \Aws\filter($toDownload, function ($obj) use ($fullS3Prefix, $dest) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . '/' . $sansPrefix;
+            $localPath = $dest . $sansPrefix;
             if (!file_exists($localPath)) {
                 return true;
             }
+            // FIXME: This does not handle multipart uploads 
+            // https://wasabi-support.zendesk.com/hc/en-us/articles/360035806191-How-does-Hashing-Process-work-and-How-to-generate-ETag-s-for-uploaded-objects-
             return md5_file($localPath) != trim($obj['ETag'], '"');
         });
-        $toDownload = \Aws\map($toDownload, function ($obj, $config) {
+        $toDownload = \Aws\map($toDownload, function ($obj) use ($config) {
             return 's3://' . $config['bucket'] . "/" . $obj['Key'];
         });
 
@@ -826,7 +828,7 @@ class LocalController extends Controller
         });
         $toDelete = \Aws\filter($toDelete, function ($obj) use ($fullS3Prefix, $source) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $source . '/' . $sansPrefix;
+            $localPath = $source . $sansPrefix;
             return !file_exists($localPath);
         });
         $toDelete = \Aws\map($toDelete, function ($obj) {
