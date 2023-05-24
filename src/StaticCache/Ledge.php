@@ -15,6 +15,22 @@ class Ledge
 
     public static function purgeUrls($urls)
     {
+        $shouldHaveTrailingSlash = Craft::$app->getConfig()->getGeneral()->addTrailingSlashesToUrls ?? false;
+        foreach ($urls as $url) {
+            $urlParts = parse_url($url);
+            if($urlParts['path'] == '' || $urlParts['path'] == '/') {
+                continue;
+            }
+            
+            //If the url has a trailing slash, purge the non-trailing slash version too
+            if (!$shouldHaveTrailingSlash && substr($urlParts['path'], -1) == '/') {
+                $urls[] = $urlParts['scheme'] . '://' . $urlParts['host'] . substr($urlParts['path'], 0, -1) . (isset($urlParts['query']) ? '?' . $urlParts['query'] : '');
+            }
+            if ($shouldHaveTrailingSlash && !substr($urlParts['path'], -1) == '/') {
+                $urls[] = $urlParts['scheme'] . '://' . $urlParts['host'] . $urlParts['path'] . '/' . (isset($urlParts['query']) ? '?' . $urlParts['query'] : '');
+            }
+        }
+
         $hosts = [];
         foreach ($urls as $url) {
             $urlParts = parse_url($url);
