@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.5 - 2023-05-24
+
+### Fixed
+
+- Craft does not adhere to its own `addTrailingSlashesToUrls` setting for some multisite URLs. That is now handled when purging static cache URLs
+
 ## 3.4.4 - 2023-05-22
 
 ### Fixed
