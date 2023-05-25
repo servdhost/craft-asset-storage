@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.5 - 2023-05-25
+
+### Fixed
+
+- A little fix to handle an unexpected code path when a Servd Volume is instantiated before Craft has bootstrapped
+
 ## 2.9.4 - 2023-05-22
 
 ### Fixed
