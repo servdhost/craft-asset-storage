@@ -37,12 +37,17 @@ class Volume extends FlysystemVolume
     public function __construct(array $config = [])
     {
         parent::__construct($config);
-        $settings = Plugin::$plugin->getSettings();
-        $this->subfolder = $this->_subfolder();
-        if (Settings::$CURRENT_TYPE == 'wasabi') {
-            $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+        $pluginInstance = Plugin::$plugin;
+        if(empty($pluginInstance)){
+            //Plugin hasn't been initialised - maybe we're in a migration?
         } else {
-            $this->url = 'https://cdn2.assets-servd.host/';
+            $settings = $pluginInstance->getSettings();
+            $this->subfolder = $this->_subfolder();
+            if (Settings::$CURRENT_TYPE == 'wasabi') {
+                $this->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+            } else {
+                $this->url = 'https://cdn2.assets-servd.host/';
+            }
         }
     }
 
