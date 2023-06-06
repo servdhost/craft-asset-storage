@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.6 - 2023-06-06
+
+### Updated
+
+- Removed an instance of urlencoding for non-image assets which was causing problems when interacting with some other plugins which also urlencoded URLs
+
 ## 3.4.5 - 2023-05-24
 
 ### Fixed

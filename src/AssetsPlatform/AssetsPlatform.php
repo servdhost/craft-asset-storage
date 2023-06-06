@@ -298,10 +298,8 @@ class AssetsPlatform extends Component
         }else {
             $finalUrl = AssetsHelper::generateUrl($fs, $asset);
         }
-        $parts = explode('/', $finalUrl);
-        //urlencode the final part
-        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
-        return implode('/', $parts);
+        
+        return $finalUrl;
     }
 
     public function handleAssetTransform(Asset $asset, $transform, $force = true)
