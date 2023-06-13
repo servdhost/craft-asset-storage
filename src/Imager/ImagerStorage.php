@@ -51,7 +51,7 @@ class ImagerStorage implements ImagerStorageInterface
         }
 
         $opts = array_merge($opts, [
-            'Bucket' => AssetsPlatform::S3_BUCKET,
+            'Bucket' => $clientConfig['bucket'],
             'Key' => $uri,
             'Body' => fopen($file, 'rb'),
             //'ACL' => $visibility,
