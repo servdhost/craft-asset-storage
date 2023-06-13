@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.6 - 2023-06-13
+
+### Fixed
+
+- Fixed a reference to a const which has recently been removed which broke the ImagerX storage adapter
+
 ## 2.9.5 - 2023-05-25
 
 ### Fixed
