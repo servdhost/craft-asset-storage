@@ -42,7 +42,7 @@ class ImagerTransformer extends Component implements TransformerInterface
         $transformedImages = [];
 
         if (is_string($image)) {
-            if (substr_count($image, '.assets-servd.host') > 0) {
+            if (substr_count($image, '.assets-servd.host') > 0 || substr_count($image, '.svdcdn.com') > 0) {
                 $urlParts = parse_url($image);
                 $filename = explode('/', $urlParts['path']);
                 $filename = $filename[sizeof($filename) - 1];
