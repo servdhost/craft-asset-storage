@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.8 - 2023-07-31
+
+### Fixed
+
+- Fixed an incompatibility between Asset Platform V3 and ImagerX integration when Imager is passed a URL as a string (like it is when retcon is transforming images)
+
 ## 3.4.7 - 2023-06-13
 
 ### Fixed
