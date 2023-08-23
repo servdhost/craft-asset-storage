@@ -190,10 +190,12 @@ class LocalController extends Controller
         $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
         $this->runCommand($importCommand);
 
-        //Optimize the target database after the import is done
-        $this->stdout('Starting database optimization', Console::FG_GREEN);
-        $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
-        $this->runCommand($optimizeCommand);
+        if ($remoteConfig['optimize']) {
+            //Optimize the target database after the import is done
+            $this->stdout('Starting database optimization', Console::FG_GREEN);
+            $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
+            $this->runCommand($optimizeCommand);
+        }
 
         //Close external database access on Servd
         $this->revertRemoteDatabaseConnectivity();
@@ -509,6 +511,7 @@ class LocalController extends Controller
             'remoteUser' => $body['user'],
             'remotePassword' => $body['password'],
             'remoteDatabase' => $body['database'],
+            'optimize' => $body['optimize'] == true
         ];
     }
 
