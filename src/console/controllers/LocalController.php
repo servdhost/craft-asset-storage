@@ -3,30 +3,25 @@
 namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
-use Aws\S3\S3Client;
 use Composer\Util\Platform;
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use servd\AssetStorage\Plugin;
 use yii\console\ExitCode;
 use mikehaertl\shellcommand\Command as ShellCommand;
-use craft\errors\ShellCommandException;
 use craft\helpers\FileHelper;
 use craft\fs\Local as LocalFs;
 use Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use servd\AssetStorage\AssetsPlatform\Fs;
-use servd\AssetStorage\models\Settings;
 
 class LocalController extends Controller
 {
+    use ControllerTrait;
 
     public $defaultAction = 'index';
 
@@ -34,15 +29,10 @@ class LocalController extends Controller
     public $from;
     public $servdFs;
     public $localFs;
-    public $servdSlug;
-    public $servdKey;
     public $skipBackup = false;
     public $skipDelete = false;
-    public $verbose = false;
 
     private $leaveOpen = true;
-    private $baseServdDomain = 'https://app.servd.host';
-    private $baseRunnerDomain = 'https://runner.servd.host';
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
@@ -269,21 +259,11 @@ class LocalController extends Controller
                 return ExitCode::OK;
             }
 
-            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if(Settings::$CURRENT_TYPE == 'wasabi'){
-                $projectBasePath = 's3://' . $config['bucket'] . '/';
-                $remotePrefixBase = '';
-            } else {
-                $projectBasePath = 's3://' . $config['bucket'] . '/' . $this->servdSlug . '/';
-                $remotePrefixBase = $this->servdSlug . '/';
-            }
-
             foreach ($settings->fsMaps as $servdHandle => $localHandle) {
                 $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
                 $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                
-                $remotePath = $projectBasePath . $this->from . "/" . $servdFsObject->customSubfolder;
-                $remotePathPrefix = $remotePrefixBase . $this->from . "/" . $servdFsObject->customSubfolder;
+                $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->from/" . $servdFsObject->customSubfolder;
+                $remotePathPrefix = "$this->servdSlug/$this->from/" . $servdFsObject->customSubfolder;
                 $localPath = rtrim(FileHelper::normalizePath(App::parseEnv($localFsObject->path)), '/') . '/';
                 $this->stdout("Syncing filesystem $servdFsObject->handle to $localFsObject->handle" . PHP_EOL);
                 $this->stdout("  $remotePathPrefix -> $localPath" . PHP_EOL);
@@ -368,20 +348,11 @@ class LocalController extends Controller
                 return ExitCode::OK;
             }
 
-            $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if(Settings::$CURRENT_TYPE == 'wasabi'){
-                $projectBasePath = 's3://' . $config['bucket'] . '/';
-                $remotePrefixBase = '';
-            } else {
-                $projectBasePath = 's3://' . $config['bucket'] . '/' . $this->servdSlug . '/';
-                $remotePrefixBase = $this->servdSlug . '/';
-            }
-
             foreach ($settings->fsMaps as $servdHandle => $localHandle) {
                 $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
                 $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                $remotePath = $projectBasePath . $this->to . "/" . $servdFsObject->customSubfolder;
-                $remotePathPrefix = $remotePrefixBase . $this->to . "/" . $servdFsObject->customSubfolder;
+                $remotePath = "s3://cdn-assets-servd-host/$this->servdSlug/$this->to/" . $servdFsObject->customSubfolder;
+                $remotePathPrefix = "$this->servdSlug/$this->to/" . $servdFsObject->customSubfolder;
                 $localPath = rtrim(FileHelper::normalizePath(App::parseEnv($localFsObject->path)), '/') . '/';
                 $this->stdout("Syncing filesystem $localFsObject->handle to $servdFsObject->handle" . PHP_EOL);
                 $this->stdout("  $localPath -> $remotePathPrefix" . PHP_EOL);
@@ -405,7 +376,7 @@ class LocalController extends Controller
             }
         }
         $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
-        
+
         return ExitCode::OK;
     }
 
@@ -467,63 +438,6 @@ class LocalController extends Controller
             }
         }
         return ExitCode::OK;
-    }
-
-    private function checkServdCreds()
-    {
-        //Ensure the project has access to some Servd credentials
-        //If the project is installed these might be in the plugin settings
-
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            if (Craft::$app->getIsInstalled(true)) {
-                $settings = Plugin::$plugin->getSettings();
-                $this->servdSlug = $settings->getProjectSlug();
-                $this->servdKey = $settings->getSecurityKey();
-            }
-        }
-
-        //If not they might be in environment variables
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            $this->servdSlug = getenv('SERVD_PROJECT_SLUG');
-            $this->servdKey = getenv('SERVD_SECURITY_KEY');
-        }
-
-        //If neither we can ask for them
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            $this->stdout('Could not reliably determine a Servd project slug and security key automatically.' . PHP_EOL, Console::FG_YELLOW);
-
-            if (!$this->interactive) {
-                //No way to determine Servd creds
-                $this->stderr('Please use the --servdSlug and --servdKey flags to provide authentication credentials.' . PHP_EOL, Console::FG_RED);
-                return false;
-            }
-
-            $this->servdSlug = $this->prompt('Servd project slug:', [
-                'default' => $this->servdSlug ?: null,
-                'validator' => function (string $input): bool {
-                    if (empty($input)) {
-                        $this->stderr('Please supply a project slug.' . PHP_EOL, Console::FG_RED);
-                        return false;
-                    }
-                    return true;
-                },
-            ]);
-
-            $this->servdKey = $this->prompt('Servd project security key:', [
-                'default' => $this->servdKey ?: null,
-                'validator' => function (string $input): bool {
-                    if (empty($input)) {
-                        $this->stderr('Please supply a security key.' . PHP_EOL, Console::FG_RED);
-                        return false;
-                    }
-                    return true;
-                },
-            ]);
-        } else {
-            $this->stdout('Servd project slug and key found' . PHP_EOL, Console::FG_GREEN);
-        }
-
-        return true;
     }
 
     private function checkLocalDBCreds()
@@ -658,36 +572,6 @@ class LocalController extends Controller
         return $success;
     }
 
-    private function pollUntilTaskFinished($slug, $taskId, $securityKey, $maxWait = 600)
-    {
-        sleep(2);
-        $ready = false;
-        $count = 0;
-        while (!$ready && $count < $maxWait / 2) {
-            $guz = Craft::createGuzzleClient();
-            $result = $guz->post($this->baseRunnerDomain . '/get-task', [
-                'json' => [
-                    "project_slug" => $slug,
-                    "token" => $securityKey,
-                    "uuid" => $taskId
-                ]
-            ]);
-            $body = json_decode((string)$result->getBody(), true);
-            if ($body['task']['status'] == 'complete') {
-                $ready = true;
-            } else {
-                sleep(2);
-                $count++;
-            }
-        }
-
-        if (!$ready) {
-            $this->stderr("Gave up waiting for remote database to become accessible" . PHP_EOL, Console::FG_RED);
-            return false;
-        }
-        return true;
-    }
-
     private function cloneAssets($from, $to)
     {
         $guz = Craft::createGuzzleClient();
@@ -755,7 +639,7 @@ class LocalController extends Controller
         $toDownload = $client
             ->getPaginator('ListObjects', [
                 'Prefix' => $fullS3Prefix,
-                'Bucket' => $config['bucket']
+                'Bucket' => static::S3_BUCKET
             ])
             ->search('Contents[]');
         $toDownload = \Aws\filter($toDownload, function ($obj) {
@@ -764,22 +648,20 @@ class LocalController extends Controller
         //Hijack iterator to remove from all files list so that we only end up with ones to delete
         $toDownload = \Aws\map($toDownload, function ($obj) use ($fullS3Prefix, $dest, &$existingFiles) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . $sansPrefix;
+            $localPath = $dest . '/' . $sansPrefix;
             unset($existingFiles[$localPath]);
             return $obj;
         });
         $toDownload = \Aws\filter($toDownload, function ($obj) use ($fullS3Prefix, $dest) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $dest . $sansPrefix;
+            $localPath = $dest . '/' . $sansPrefix;
             if (!file_exists($localPath)) {
                 return true;
             }
-            // FIXME: This does not handle multipart uploads 
-            // https://wasabi-support.zendesk.com/hc/en-us/articles/360035806191-How-does-Hashing-Process-work-and-How-to-generate-ETag-s-for-uploaded-objects-
             return md5_file($localPath) != trim($obj['ETag'], '"');
         });
-        $toDownload = \Aws\map($toDownload, function ($obj) use ($config) {
-            return 's3://' . $config['bucket'] . "/" . $obj['Key'];
+        $toDownload = \Aws\map($toDownload, function ($obj) {
+            return "s3://cdn-assets-servd-host/" . $obj['Key'];
         });
 
         $manager = new \Aws\S3\Transfer($client, $toDownload, $dest, [
@@ -815,7 +697,7 @@ class LocalController extends Controller
         $toDelete = $client
             ->getPaginator('ListObjects', [
                 'Prefix' => $fullS3Prefix,
-                'Bucket' => $config['bucket']
+                'Bucket' => static::S3_BUCKET
             ])
             ->search('Contents[]');
         $toDelete = \Aws\filter($toDelete, function ($obj) {
@@ -828,7 +710,7 @@ class LocalController extends Controller
         });
         $toDelete = \Aws\filter($toDelete, function ($obj) use ($fullS3Prefix, $source) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
-            $localPath = $source . $sansPrefix;
+            $localPath = $source . '/' . $sansPrefix;
             return !file_exists($localPath);
         });
         $toDelete = \Aws\map($toDelete, function ($obj) {
@@ -840,7 +722,7 @@ class LocalController extends Controller
 
         //Delete anything on the remote which is not present on the local
         if (!$this->skipDelete) {
-            $batchDelete = BatchDelete::fromIterator($client, $config['bucket'], $toDelete);
+            $batchDelete = BatchDelete::fromIterator($client, static::S3_BUCKET, $toDelete);
             $batchDelete->delete();
         } else {
             //Just run the ListObjects iterator to get a list of remote files
@@ -867,12 +749,5 @@ class LocalController extends Controller
             }
         ]);
         $manager->transfer();
-    }
-
-    private function outputDebug($message)
-    {
-        if($this->verbose){
-            $this->stdout($message . PHP_EOL);
-        }
     }
 }

@@ -40,11 +40,11 @@ class Plugin extends \craft\base\Plugin
         } else {
             $this->controllerNamespace = 'servd\\AssetStorage\\controllers';
         }
-        
+
         $this->registerVariables();
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
-        
+
         $settings->checkForType();
 
     }
@@ -60,7 +60,7 @@ class Plugin extends \craft\base\Plugin
         return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [
             'settings' => $settings,
             'craft35' => version_compare(Craft::$app->getVersion(), '3.5', '>='),
-            
+
         ]);
     }
 
