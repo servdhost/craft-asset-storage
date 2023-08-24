@@ -1,5 +1,13 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.9 - 2023-08-23
+
+### Added
+
+- It's now possible to trigger clones between remote Servd environments using the `./craft servd-asset-storage/clone` console command.
+- The database optimisation step performed by the `./craft servd-asset-storage/local/push-database` command is now controlled by an internal back-end config setting, and only run when determined by the Servd task runner.
+- Non-transformed file URLs now get a `dm` query parameter appended to allow for cache busting if the underlying asset changes.
+
 ## 3.4.8 - 2023-07-31
 
 ### Fixed

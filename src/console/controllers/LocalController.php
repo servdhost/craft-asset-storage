@@ -200,10 +200,12 @@ class LocalController extends Controller
         $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
         $this->runCommand($importCommand);
 
-        //Optimize the target database after the import is done
-        $this->stdout('Starting database optimization', Console::FG_GREEN);
-        $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
-        $this->runCommand($optimizeCommand);
+        if ($remoteConfig['optimize']) {
+            //Optimize the target database after the import is done
+            $this->stdout('Starting database optimization', Console::FG_GREEN);
+            $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
+            $this->runCommand($optimizeCommand);
+        }
 
         //Close external database access on Servd
         $this->revertRemoteDatabaseConnectivity();
@@ -281,7 +283,7 @@ class LocalController extends Controller
             foreach ($settings->fsMaps as $servdHandle => $localHandle) {
                 $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
                 $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                
+
                 $remotePath = $projectBasePath . $this->from . "/" . $servdFsObject->customSubfolder;
                 $remotePathPrefix = $remotePrefixBase . $this->from . "/" . $servdFsObject->customSubfolder;
                 $localPath = rtrim(FileHelper::normalizePath(App::parseEnv($localFsObject->path)), '/') . '/';
@@ -405,7 +407,7 @@ class LocalController extends Controller
             }
         }
         $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
-        
+
         return ExitCode::OK;
     }
 
@@ -595,6 +597,7 @@ class LocalController extends Controller
             'remoteUser' => $body['user'],
             'remotePassword' => $body['password'],
             'remoteDatabase' => $body['database'],
+            'optimize' => $body['optimize'] == true
         ];
     }
 
@@ -774,7 +777,7 @@ class LocalController extends Controller
             if (!file_exists($localPath)) {
                 return true;
             }
-            // FIXME: This does not handle multipart uploads 
+            // FIXME: This does not handle multipart uploads
             // https://wasabi-support.zendesk.com/hc/en-us/articles/360035806191-How-does-Hashing-Process-work-and-How-to-generate-ETag-s-for-uploaded-objects-
             return md5_file($localPath) != trim($obj['ETag'], '"');
         });

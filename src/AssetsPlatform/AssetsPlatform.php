@@ -81,7 +81,7 @@ class AssetsPlatform extends Component
             $credentials = $credentialsResponse['credentials'];
             $usage = $credentialsResponse['usage'] ?? 0;
             $type = $credentialsResponse['type'] ?? 'backblaze';
-            
+
             Craft::$app->cache->set($tokenKey, $credentials, static::CACHE_DURATION_SECONDS);
             Craft::$app->cache->set($usageKey, $usage, static::CACHE_DURATION_SECONDS);
             Craft::$app->cache->set(self::CACHE_KEY_TYPE, $type, 0);
@@ -102,9 +102,9 @@ class AssetsPlatform extends Component
 
     public function getS3ConfigArray($forceSlug = null, $forceKey = null)
     {
-        
+
         $servdResponse = $this->getStorageInfoFromServd($forceSlug, $forceKey);
-        
+
         $config = [
             'region' => $servdResponse['credentials']['region'],
             'version' => 'latest',
@@ -191,7 +191,20 @@ class AssetsPlatform extends Component
         });
 
         $settings = Plugin::$plugin->getSettings();
-        if (!$settings->disableTransforms) {
+        if ($settings->disableTransforms) {
+            Event::on(
+                Asset::class,
+                Asset::EVENT_DEFINE_URL,
+                function (DefineAssetUrlEvent $event) {
+                    // If another plugin set the url, we'll just use that.
+                    if ($event->handled) {
+                        return;
+                    }
+                    $event->handled = true;
+                    $event->url = $this->getFileUrl($event->asset);
+                }
+            );
+        } else {
             Event::on(
                 Asset::class,
                 Asset::EVENT_DEFINE_URL,
@@ -273,7 +286,7 @@ class AssetsPlatform extends Component
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
 
         //Special handling for videos
-        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO 
+        $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO
             || in_array(strtolower($asset->getExtension()), AssetsHelper::getFileKinds()[Asset::KIND_VIDEO]['extensions']);
         if ($assetIsVideo) {
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
@@ -295,10 +308,18 @@ class AssetsPlatform extends Component
             foreach ($variables as $key => $value) {
                 $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
             }
-        }else {
+        } else {
             $finalUrl = AssetsHelper::generateUrl($fs, $asset);
         }
-        
+
+        // Append dm query parameter to allow cache busting if the underlying asset changes
+        $finalUrlQuery = parse_url($finalUrl, PHP_URL_QUERY);
+        if ($finalUrlQuery) {
+            $finalUrl .= '&dm=' . $asset->dateUpdated->getTimestamp();
+        } else {
+            $finalUrl .= '?dm=' . $asset->dateUpdated->getTimestamp();
+        }
+
         return $finalUrl;
     }
 
@@ -355,7 +376,7 @@ class AssetsPlatform extends Component
                 Asset::class,
                 Asset::EVENT_DEFINE_SIDEBAR_HTML,
                 static function (DefineHtmlEvent $event) {
-                    
+
                     $asset = $event->sender;
                     $volume = $asset->volume;
                     $fs = $volume->getFs();
