@@ -20,6 +20,7 @@ class CloneController extends Controller
     public $assets = false;
     public $bundle = false;
     public $newEnvVars = false;
+    public $wait = false;
 
     public function options($actionID): array
     {
@@ -34,6 +35,7 @@ class CloneController extends Controller
             'servdSlug',
             'servdKey',
             'verbose',
+            'wait'
         ]);
     }
 
@@ -50,6 +52,7 @@ class CloneController extends Controller
             'sk' => 'servdSlug',
             'ss' => 'servdKey',
             'v' => 'verbose',
+            'w' => 'wait'
         ]);
     }
 
@@ -59,10 +62,6 @@ class CloneController extends Controller
 
     public function actionIndex()
     {
-        if (!$this->environmentOk()) {
-            return ExitCode::USAGE;
-        }
-
         $this->outputDebug("Checking a 'from' environment has been set");
         $exit = $this->requireFrom();
         if ($exit != ExitCode::OK) {
@@ -146,7 +145,9 @@ class CloneController extends Controller
             throw new Exception("Error whilst creating a clone environment task: " . $body['message']);
         }
 
-        $this->pollUntilTaskFinished($this->servdSlug, $body['uuid'], $this->servdKey);
+        if (boolval($this->wait)) {
+            $this->pollUntilTaskFinished($this->servdSlug, $body['uuid'], $this->servdKey);
+        }
 
         return ExitCode::OK;
     }
@@ -154,15 +155,6 @@ class CloneController extends Controller
     /******************
      * Private Functions
      *****************/
-
-    private function environmentOk()
-    {
-        $ok = !in_array(getenv('ENVIRONMENT'), ['development', 'staging', 'production']);
-        if (!$ok) {
-            $this->stderr("You can only run remote commands for production, staging or development environments." . PHP_EOL, Console::FG_RED);
-        }
-        return $ok;
-    }
 
     private function requireTo()
     {

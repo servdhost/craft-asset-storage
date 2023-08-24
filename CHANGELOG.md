@@ -1,5 +1,15 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.10 - 2023-08-24
+
+### Added
+
+- A `--wait` option to the `./craft servd-asset-storage/clone` command that polls the Servd task runner until completion.
+
+### Fixed
+
+- Relaxed environment constraint for where the `./craft servd-asset-storage/clone` command could be run from.
+
 ## 3.4.9 - 2023-08-23
 
 ### Added
