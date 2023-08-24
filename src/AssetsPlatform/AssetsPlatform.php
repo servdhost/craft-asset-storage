@@ -313,11 +313,11 @@ class AssetsPlatform extends Component
         }
 
         // Append dm query parameter to allow cache busting if the underlying asset changes
-        if (!str_contains('dm=', $finalUrl)) {
-            if (!str_contains('?', $finalUrl)) {
-                $finalUrl .= '?';
-            }
-            $finalUrl .= 'dm=' . $asset->dateUpdated->getTimestamp();
+        $finalUrlQuery = parse_url($finalUrl, PHP_URL_QUERY);
+        if ($finalUrlQuery) {
+            $finalUrl .= '&dm=' . $asset->dateUpdated->getTimestamp();
+        } else {
+            $finalUrl .= '?dm=' . $asset->dateUpdated->getTimestamp();
         }
 
         return $finalUrl;
