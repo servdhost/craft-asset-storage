@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.4.11 - 2023-08-25
+
+### Fixed
+
+- Fix for an issue where the URLs for non-Servd assets were getting handled when the disable transforms setting was enabled.
+
 ## 3.4.10 - 2023-08-24
 
 ### Added

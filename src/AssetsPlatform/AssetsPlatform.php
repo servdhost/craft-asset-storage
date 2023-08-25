@@ -196,12 +196,18 @@ class AssetsPlatform extends Component
                 Asset::class,
                 Asset::EVENT_DEFINE_URL,
                 function (DefineAssetUrlEvent $event) {
+
                     // If another plugin set the url, we'll just use that.
                     if ($event->handled) {
                         return;
                     }
-                    $event->handled = true;
-                    $event->url = $this->getFileUrl($event->asset);
+
+                    $asset = $event->sender;
+                    $fs = $asset->getVolume()->getFs();
+                    if ($fs instanceof Fs) {
+                        $event->handled = true;
+                        $event->url = $this->getFileUrl($asset);
+                    }
                 }
             );
         } else {
@@ -215,7 +221,7 @@ class AssetsPlatform extends Component
                         return;
                     }
 
-                    $asset = $event->asset;
+                    $asset = $event->sender;
                     $fs = $asset->getVolume()->getFs();
                     if ($fs instanceof Fs) {
                         $transform = $event->transform;
