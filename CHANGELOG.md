@@ -1,5 +1,13 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.8 - 2023-09-14
+
+### Updated
+
+- Increased the timeout when contacting the Servd Asset Platform to obtain a token
+- Removed a url encoding which would break asset urls with a rev query param
+
+
 ## 2.9.7 - 2023-07-31
 
 ### Fixed
