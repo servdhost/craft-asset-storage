@@ -157,7 +157,7 @@ class AssetsPlatform extends Component
                     'key' => $securityKey,
                 ],
                 'connect_timeout' => 1, //If the user is offline, bail after 1 sec
-                'timeout' => 5, //If the Servd servers aren't responding, wait max 5 seconds
+                'timeout' => 20, //If the Servd servers aren't responding, wait max 5 seconds
             ]);
             $res = json_decode($response->getBody(), true);
         } catch (\Exception $e) {
@@ -289,10 +289,7 @@ class AssetsPlatform extends Component
         }else {
             $finalUrl = AssetsHelper::generateUrl($volume, $asset);
         }
-        $parts = explode('/', $finalUrl);
-        //urlencode the final part
-        $parts[count($parts) - 1] = rawurlencode($parts[count($parts) - 1]);
-        return implode('/', $parts);
+        return $finalUrl;
     }
 
     public function handleAssetTransform(Asset $asset, $transform, $force = true)
