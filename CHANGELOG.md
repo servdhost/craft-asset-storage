@@ -1,6 +1,9 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.9.9 - 2023-09-19
+## 2.10.0 - 2023-09-19
+
+> [!IMPORTANT]  
+> If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
 
 ### Updated
 

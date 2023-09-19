@@ -119,9 +119,10 @@ class IncludeNode extends Node implements NodeOutputInterface
         $n = self::$_blockCount++;
         $namespace = $compiler->getVarName();
 
-        $compiler->write('$' . $namespace . 'template = ');
+        $compiler->write('$' . $namespace . 'template = \Craft::$app->getSecurity()->hashData(');
         $compiler->subcompile($this->getNode('expr'));
-        $compiler->write(';' . "\n");
+        $compiler->write(');' . "\n");
+
         $compiler->write('$' . $namespace . 'fullContext = ');
         $this->addTemplateArguments($compiler, true);
         $compiler->write(';' . "\n");

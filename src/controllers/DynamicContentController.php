@@ -57,7 +57,7 @@ class DynamicContentController extends Controller
             foreach ($blocks as $block) {
                 $id = $block['id'];
                 $siteId = $block['siteId'];
-                $template = $block['template'];
+                $template = Craft::$app->getSecurity()->validateData($block['template']);
                 $args = $block['args'];
                 $args = $this->rehydrateArgs($args);
 
