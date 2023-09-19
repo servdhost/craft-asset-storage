@@ -31,6 +31,7 @@ class DynamicContentController extends Controller
                 $id = $block['id'];
                 $siteId = $block['siteId'];
                 $template = base64_decode($block['template']);
+                $template = Craft::$app->getSecurity()->validateData($template);
                 $args = unserialize(gzuncompress(base64_decode($block['args'])));
                 $args = $this->rehydrateArgs($args);
 
@@ -58,7 +59,7 @@ class DynamicContentController extends Controller
             foreach ($blocks as $block) {
                 $id = $block['id'];
                 $siteId = $block['siteId'];
-                $template = $block['template'];
+                $template = Craft::$app->getSecurity()->validateData($block['template']);
                 $args = $block['args'];
                 $args = $this->rehydrateArgs($args);
 

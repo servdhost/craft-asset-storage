@@ -1,5 +1,14 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.0 - 2023-09-19
+
+> [!IMPORTANT]  
+> If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
+
+### Updated
+
+- Improve security of dynamic include calls
+
 ## 3.4.11 - 2023-08-25
 
 ### Fixed
