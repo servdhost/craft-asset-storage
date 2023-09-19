@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.9.9 - 2023-09-19
+
+### Updated
+
+- Improve security of dynamic include calls
+
 ## 2.9.8 - 2023-09-14
 
 ### Updated
