@@ -13,6 +13,9 @@ class DynamicContentController extends Controller
     public function actionGetContent()
     {
         $req = Craft::$app->getRequest();
+        if($req->getIsCpRequest()){
+            return $this->asErrorJson('Not to be used with control panel requests');
+        }
 
         $seomatic = Craft::$app->plugins->getPlugin('seomatic');
         if (!empty($seomatic)) {
