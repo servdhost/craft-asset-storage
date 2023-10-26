@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.1 - 2023-10-26
+
+### Fixed
+
+- Ampersands in filenames of assets are now encoded to prevent security token hash mismatches
+
 ## 3.5.0 - 2023-09-19
 
 > [!IMPORTANT]  
