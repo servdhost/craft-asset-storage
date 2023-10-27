@@ -110,7 +110,11 @@ class ImageTransforms
         $base = rtrim($volume->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
-        return $base . $filePath . "?" . http_build_query($params);
+        // Fix ampersands
+        $baseAndPath = $base.$filePath;
+        $baseAndPath = str_replace('&', '%26', $baseAndPath);
+
+        return $baseAndPath . "?" . http_build_query($params);
     }
 
     public function getParamsForTransform(TransformOptions $transform)
