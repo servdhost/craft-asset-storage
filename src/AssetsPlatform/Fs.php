@@ -84,6 +84,44 @@ class Fs extends FlysystemFs
         return $fullPath;
     }
 
+    public function rules(): array
+    {
+        $rules = parent::rules();
+        $rules[] = ['cdnUrlPattern', 'validateCdnUrlPattern'];
+        $rules[] = ['optimiseUrlPattern', 'validateOptimiseUrlPattern'];
+        return $rules;
+    }
+
+    public function validateCdnUrlPattern($attribute)
+    {
+        $value = $this->$attribute;
+
+        // Check if the value is an environment variable reference
+        if (strpos($value, '$') === 0) {
+            $value = App::parseEnv($value); // This will return the actual value of the environment variable
+            if (strpos($value, '{{params}}') !== false) {
+                $this->addError($attribute, "This environment variable contains the {{params}} placeholder, which isn't available for the CDN URL Pattern.");
+            }
+        } else if (strpos($value, '{{params}}') !== false) {
+            $this->addError($attribute, "The {{params}} placeholder isn't available for the CDN URL Pattern.");
+        }
+    }
+
+    public function validateOptimiseUrlPattern($attribute)
+    {
+        $value = $this->$attribute;
+
+        // Check if the value is an environment variable reference
+        if (strpos($value, '$') === 0) {
+            $value = App::parseEnv($value); // This will return the actual value of the environment variable
+            if (strpos($value, '{{params}}') === false) {
+                $this->addError($attribute, "This environment variable doesn't contain the {{params}} placeholder, which is required for the Transform URL Pattern.");
+            }
+        } else if (strpos($value, '{{params}}') === false) {
+            $this->addError($attribute, "The Transform URL Pattern must contain the {{params}} placeholder.");
+        }
+    }
+
     /**
      * Creates a Flysystem adapter instance based on the stored settings.
      *
@@ -110,5 +148,4 @@ class Fs extends FlysystemFs
     {
         return true;
     }
-
 }
