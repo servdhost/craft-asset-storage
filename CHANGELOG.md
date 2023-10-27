@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.2 - 2023-10-27
+
+### Added
+
+- Added validation to the Servd Filesystem's CDN URL Pattern field to prevent the `{{params}}` placeholder from being added.
+- Added validation to the Servd Filesystem's Image Transform URL Pattern field to check the `{{params}}` placeholder is present.
+
 ## 3.5.1 - 2023-10-26
 
 ### Fixed
@@ -8,7 +15,7 @@
 
 ## 3.5.0 - 2023-09-19
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
 
 ### Updated
