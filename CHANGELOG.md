@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.3 - 2023-11-02
+
+### Added
+
+- Added a new `./craft servd-asset-storage/command` command which can be used to run Craft console commands in a Servd environment.
+
 ## 3.5.2 - 2023-10-27
 
 ### Added
