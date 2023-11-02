@@ -117,7 +117,7 @@ class CloneController extends Controller
             return ExitCode::CONFIG;
         }
 
-        $this->stdout('Starting import from ' . $this->from . ' to ' . $this->to . PHP_EOL, Console::FG_GREEN);
+        $this->stdout('Triggering a clone from ' . $this->from . ' to ' . $this->to . '...' . PHP_EOL, Console::FG_GREEN);
 
         $guz = Craft::createGuzzleClient();
         $result = $guz->post($this->baseRunnerDomain . "/create-task", [
@@ -147,6 +147,9 @@ class CloneController extends Controller
 
         if (boolval($this->wait)) {
             $this->pollUntilTaskFinished($this->servdSlug, $body['uuid'], $this->servdKey);
+            $this->stdout('Clone complete' . PHP_EOL, Console::FG_GREEN);
+        } else {
+            $this->stdout('Clone successfully triggered' . PHP_EOL, Console::FG_GREEN);
         }
 
         return ExitCode::OK;
@@ -161,7 +164,7 @@ class CloneController extends Controller
         //Check --to is set properly
         if (empty($this->to)) {
             if ($this->interactive) {
-                $this->to = $this->select('Which environment would you like to import to?', [
+                $this->to = $this->select('Which environment would you like to clone to?', [
                     'development' => 'Development',
                     'staging' => 'Staging',
                     'production' => 'Production'
@@ -183,7 +186,7 @@ class CloneController extends Controller
     {
         if (empty($this->from)) {
             if ($this->interactive) {
-                $this->from = $this->select('Which environment would you like to import from?', [
+                $this->from = $this->select('Which environment would you like to clone from?', [
                     'development' => 'Development',
                     'staging' => 'Staging',
                     'production' => 'Production',
@@ -204,7 +207,7 @@ class CloneController extends Controller
     private function requireDatabase()
     {
         if (empty($this->database) && $this->interactive) {
-            $this->database = $this->confirm('Import the database?');
+            $this->database = $this->confirm('Clone the database?');
         }
         return ExitCode::OK;
     }
@@ -212,7 +215,7 @@ class CloneController extends Controller
     private function requireAssets()
     {
         if (empty($this->assets) && $this->interactive) {
-            $this->assets = $this->confirm('Import the assets?');
+            $this->assets = $this->confirm('Clone the assets?');
         }
         return ExitCode::OK;
     }
@@ -220,7 +223,7 @@ class CloneController extends Controller
     private function requireBundle()
     {
         if (empty($this->bundle) && $this->interactive) {
-            $this->bundle = $this->confirm('Import and deploy the selected bundle?');
+            $this->bundle = $this->confirm('Clone and deploy the selected bundle?');
         }
         return ExitCode::OK;
     }
@@ -228,7 +231,7 @@ class CloneController extends Controller
     private function requireNewEnvVars()
     {
         if (empty($this->newEnvVars) && $this->interactive) {
-            $this->newEnvVars = $this->confirm('Import any new environment variables?');
+            $this->newEnvVars = $this->confirm('Clone any new environment variables?');
         }
         return ExitCode::OK;
     }
