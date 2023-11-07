@@ -1,10 +1,23 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.5.2 - 2023-11-07
+## 3.5.4 - 2023-11-07
 
 ### Updated
 
 - Normalise any accent modifier characters in asset filenames which upset our Asset Platform storage provider's API
+
+## 3.5.3 - 2023-11-02
+
+### Added
+
+- Added a new `./craft servd-asset-storage/command` command which can be used to run Craft console commands in a Servd environment.
+
+## 3.5.2 - 2023-10-27
+
+### Added
+
+- Added validation to the Servd Filesystem's CDN URL Pattern field to prevent the `{{params}}` placeholder from being added.
+- Added validation to the Servd Filesystem's Image Transform URL Pattern field to check the `{{params}}` placeholder is present.
 
 ## 3.5.1 - 2023-10-26
 
@@ -14,7 +27,7 @@
 
 ## 3.5.0 - 2023-09-19
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
 
 ### Updated
