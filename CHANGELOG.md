@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.2 - 2023-11-07
+
+### Updated
+
+- Normalise any accent modifier characters in asset filenames which upset our Asset Platform storage provider's API
+
 ## 3.5.1 - 2023-10-26
 
 ### Fixed

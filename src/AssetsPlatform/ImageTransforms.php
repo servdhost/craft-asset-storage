@@ -88,6 +88,7 @@ class ImageTransforms
 
     private function encodeFilenameInFilePath($path)
     {
+        $path = \Normalizer::normalize($path, \Normalizer::FORM_C); //Remove any accent combining characters which break Wasabi
         $path = preg_replace_callback('/[\s]|[^\x20-\x7f]/', function ($match) {
             return rawurlencode($match[0]);
         }, $path);
