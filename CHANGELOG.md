@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.5 - 2023-11-20
+
+### Added
+
+- Added a CLI command to convert accent modifier characters in asset filenames in the database to their equivalent absolute accented characters as is used by the S3 protocol.
+
 ## 3.5.4 - 2023-11-07
 
 ### Updated
