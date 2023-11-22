@@ -35,7 +35,7 @@ class ImageTransforms
             return null;
         }
 
-        $params = $this->getParamsForTransform($transform);
+        $params = $this->getParamsForTransform($transform, $asset);
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         //Full path of asset on the CDN platform
@@ -118,74 +118,98 @@ class ImageTransforms
         return $baseAndPath . "?" . http_build_query($params);
     }
 
-    public function getParamsForTransform(TransformOptions $transform)
+    public function getParamsForTransform(TransformOptions $transform, Asset $asset)
     {
 
         $settings = Plugin::$plugin->getSettings();
+        $params = $this->calculateMaxTransformSize($transform, $asset);
 
-        $params = [];
         $autoParams = [];
 
-        if (!empty($transform->width)) {
-            $params['w'] = $transform->width;
-        }
-
-        if (!empty($transform->height)) {
-            $params['h'] = $transform->height;
-        }
-
         if (!empty($transform->quality)) {
-            $params['q'] = $transform->quality;
+          $params['q'] = $transform->quality;
         } else {
-            $default = Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
-            if (empty($default) || $default == 82) { // 82 is the Craft default
-                $autoParams[] = 'compress';
-            } else {
-                $params['q'] = $default;
-            }
+          $default = Craft::$app->getConfig()->getGeneral()->defaultImageQuality;
+          if (empty($default) || $default == 82) { // 82 is the Craft default
+            $autoParams[] = 'compress';
+          } else {
+            $params['q'] = $default;
+          }
         }
-
+    
         if (!empty($transform->format)) {
-            $params['fm'] = $transform->format;
+          $params['fm'] = $transform->format;
         } elseif ($settings->imageAutoConversion == 'webp') {
-            $autoParams[] = 'format';
+          $autoParams[] = 'format';
         } elseif ($settings->imageAutoConversion == 'avif') {
-            $autoParams[] = 'format';
-            $autoParams[] = 'avif';
+          $autoParams[] = 'format';
+          $autoParams[] = 'avif';
         }
-
+    
         if (!empty($autoParams)) {
-            $params['auto'] = implode(',', $autoParams);
+          $params['auto'] = implode(',', $autoParams);
         }
-
+    
         if (!empty($transform->fit) && in_array($transform->fit, ['fillmax', 'fill', 'scale', 'crop', 'clip', 'min', 'max'])) {
-            $params['fit'] = $transform->fit;
+          $params['fit'] = $transform->fit;
         } else {
-            $params['fit'] = 'clip';
+          $params['fit'] = 'clip';
         }
-
+    
         $params['crop'] = $transform->crop;
         if ($transform->crop == 'focalpoint') {
-            if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
-                $params['fp-x'] = $transform->fpx;
-            }
-
-            if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
-                $params['fp-y'] = $transform->fpy;
-            }
+          if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
+            $params['fp-x'] = $transform->fpx;
+          }
+    
+          if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
+            $params['fp-y'] = $transform->fpy;
+          }
         }
-
+    
         if (!empty($transform->fillColor)) {
-            $params['fill-color'] = $transform->fillColor;
+          $params['fill-color'] = $transform->fillColor;
         }
-
+    
         if (!empty($transform->dpr) && is_numeric($transform->dpr) && $transform->dpr != 1) {
-            $params['dpr'] = $transform->dpr;
+          $params['dpr'] = $transform->dpr;
         }
-
+    
         return $params;
-    }
-
+      }
+    
+      public function calculateMaxTransformSize(TransformOptions $transform, Asset $asset)
+      {
+        $upscaleImages = Craft::$app->getConfig()->getGeneral()->upscaleImages;
+        $params = [];
+    
+        if (!empty($transform->width)) {
+          $params['w'] = $upscaleImages ? $transform->width : min($transform->width, $asset->width);
+        }
+    
+        if (!empty($transform->height)) {
+          $params['h'] = $upscaleImages ? $transform->height : min($transform->height, $asset->height);
+        }
+    
+        // check that the aspect ratio has been kept if upscaleImages was set to false
+        if (!empty($transform->width) && !empty($transform->height) && !$upscaleImages && ($transform->width > $asset->width || $transform->height > $asset->height)) {
+          $originalAspectRatio = $asset->width / $asset->height;
+          $targetAspectRatio = $transform->width / $transform->height;
+          if ($targetAspectRatio == 1) {
+            $params['w'] = min($transform->width, $asset->width, $asset->height);
+            $params['h'] = $params['w'];
+          } else if ($originalAspectRatio > $targetAspectRatio) {
+            $params['h'] = min($asset->height, $transform->height);
+            $params['w'] = round($params['h'] * $targetAspectRatio);
+          } else {
+            $params['w'] = min($asset->width, $transform->width);
+            $params['h'] = round($params['w'] / $targetAspectRatio);
+          }
+        }
+    
+        return $params;
+      }
+    
     public function outputWillBeSVG($asset, $transform)
     {
         if (empty($transform->format)) {
