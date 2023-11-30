@@ -7,6 +7,9 @@ use craft\base\Component;
 use yii\base\Event;
 use putyourlightson\blitz\helpers\CachePurgerHelper;
 use craft\events\RegisterComponentTypesEvent;
+use craft\web\View;
+use craft\events\RegisterTemplateRootsEvent;
+
 
 class BlitzIntegration extends Component
 {
@@ -28,5 +31,10 @@ class BlitzIntegration extends Component
             }
         );
 
+        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
+            function(RegisterTemplateRootsEvent $event) {
+                $event->roots['servd-blitz'] = __DIR__.'/templates/';
+            }
+        );
     }
 }

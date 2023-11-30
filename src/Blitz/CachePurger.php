@@ -33,18 +33,6 @@ class CachePurger extends BaseCachePurger
     /**
      * @inheritdoc
      */
-    public function init(): void
-    {
-        Event::on(View::class, View::EVENT_REGISTER_CP_TEMPLATE_ROOTS,
-            function(RegisterTemplateRootsEvent $event) {
-                $event->roots['servd-blitz'] = __DIR__.'/templates/';
-            }
-        );
-    }
-
-    /**
-     * @inheritdoc
-     */
     public function purgeUrisWithProgress(array $siteUris, callable $setProgressHandler = null): void
     {
         $count = 0;

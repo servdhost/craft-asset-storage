@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.6 - 2023-11-30
+
+### Fixed
+
+- Fixed an order of execution bug when integrating the Servd Plugin with Blitz
+
 ## 3.5.5 - 2023-11-20
 
 ### Added
