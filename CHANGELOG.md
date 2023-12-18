@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.7 - 2023-12-18
+
+### Added
+
+- Added some useful debugging info for failed dynamicInclude calls
+
 ## 3.5.6 - 2023-11-30
 
 ### Fixed

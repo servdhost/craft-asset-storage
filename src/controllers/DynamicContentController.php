@@ -15,7 +15,7 @@ class DynamicContentController extends Controller
     {
         /** @var Request $req */
         $req = Craft::$app->getRequest();
-        if($req->getIsCpRequest()){
+        if ($req->getIsCpRequest()) {
             return $this->asFailure('Not to be used with control panel requests');
         }
 
@@ -31,10 +31,18 @@ class DynamicContentController extends Controller
             $response = ['blocks' => []];
 
             foreach ($blocks as $block) {
+                if (!isset($block['id']) || !isset($block['siteId']) || !isset($block['template']) || !isset($block['args'])) {
+                    Craft::warning('Invalid dynamic block request - required parameter missing', 'servd-asset-storage');
+                    continue;
+                }
                 $id = $block['id'];
                 $siteId = $block['siteId'];
                 $template = base64_decode($block['template']);
                 $template = Craft::$app->getSecurity()->validateData($template);
+                if (empty($template)) {
+                    Craft::warning('Invalid dynamic block request - supplied template failed security check: ' . $block['template'] , 'servd-asset-storage');
+                    continue;
+                }
                 $args = unserialize(gzuncompress(base64_decode($block['args'])));
                 $args = $this->rehydrateArgs($args);
 
@@ -49,7 +57,7 @@ class DynamicContentController extends Controller
             return $this->asJson($response);
         } else {
             //ESI can only use get requests and only contain a single block
-            
+
             //Make sure the request has a blocks query param
             $blocks = $req->getQueryParam('blocks');
             if (empty($blocks)) {
@@ -60,9 +68,17 @@ class DynamicContentController extends Controller
 
             $response = ['blocks' => []];
             foreach ($blocks as $block) {
+                if (!isset($block['id']) || !isset($block['siteId']) || !isset($block['template']) || !isset($block['args'])) {
+                    Craft::warning('Invalid dynamic block request - required parameter missing', 'servd-asset-storage');
+                    continue;
+                }
                 $id = $block['id'];
                 $siteId = $block['siteId'];
                 $template = Craft::$app->getSecurity()->validateData($block['template']);
+                if (empty($template)) {
+                    Craft::warning('Invalid dynamic block request - supplied template failed security check: ' . $block['template'], 'servd-asset-storage');
+                    continue;
+                }
                 $args = $block['args'];
                 $args = $this->rehydrateArgs($args);
 
