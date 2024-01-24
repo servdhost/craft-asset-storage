@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.8 - 2024-01-24
+
+### Added
+
+- Respect image upscaling settings in Craft general settings and directly on transforms
+
 ## 3.5.7 - 2023-12-18
 
 ### Added

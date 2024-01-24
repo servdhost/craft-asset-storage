@@ -36,7 +36,7 @@ class ImageTransforms
             return null;
         }
 
-        $params = $this->getParamsForTransform($transform);
+        $params = $this->getParamsForTransform($transform, $asset);
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
         //Full path of asset on the CDN platform
@@ -69,7 +69,7 @@ class ImageTransforms
         }
 
         //Otherwise
-        if(Settings::$CURRENT_TYPE == 'wasabi'){
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
             $base = 'https://' . $settings->getProjectSlug() . '.transforms.svdcdn.com/';
         } else {
             $base = 'https://optimise2.assets-servd.host/';
@@ -115,13 +115,13 @@ class ImageTransforms
         $base = ltrim($base, '/');
 
         // Fix ampersands
-        $baseAndPath = $base.$filePath;
+        $baseAndPath = $base . $filePath;
         $baseAndPath = str_replace('&', '%26', $baseAndPath);
 
         return $baseAndPath . "?" . http_build_query($params);
     }
 
-    public function getParamsForTransform(TransformOptions $transform)
+    public function getParamsForTransform(TransformOptions $transform, Asset $asset)
     {
 
         $settings = Plugin::$plugin->getSettings();
@@ -129,12 +129,27 @@ class ImageTransforms
         $params = [];
         $autoParams = [];
 
-        if (!empty($transform->width)) {
-            $params['w'] = $transform->width;
+        $targetWidth = $transform->width;
+        $targetHeight = $transform->height;
+
+        if (!$transform->upscale) {
+            if (!empty($targetWidth) && $targetWidth > $asset->width) {
+                //Reduce height to maintain aspect ratio given non upscaled width
+                $targetHeight = !empty($targetHeight) ? $targetHeight * ($asset->width / $targetWidth) : null;
+                $targetWidth = $asset->width;
+            }
+            if (!empty($targetHeight) && $targetHeight > $asset->height) {
+                //Reduce width to maintain aspect ratio given non upscaled height
+                $targetWidth = !empty($targetWidth) ? $targetWidth * ($asset->height / $targetHeight) : null;
+                $targetHeight = $asset->height;
+            }
         }
 
-        if (!empty($transform->height)) {
-            $params['h'] = $transform->height;
+        if (!empty($targetWidth)) {
+            $params['w'] = $targetWidth;
+        }
+        if (!empty($targetHeight)) {
+            $params['h'] = $targetHeight;
         }
 
         if (!empty($transform->quality)) {
@@ -150,9 +165,9 @@ class ImageTransforms
 
         if (!empty($transform->format)) {
             $params['fm'] = $transform->format;
-        } elseif($settings->imageAutoConversion == 'webp'){
+        } elseif ($settings->imageAutoConversion == 'webp') {
             $autoParams[] = 'format';
-        } elseif($settings->imageAutoConversion == 'avif'){
+        } elseif ($settings->imageAutoConversion == 'avif') {
             $autoParams[] = 'format';
             $autoParams[] = 'avif';
         }
