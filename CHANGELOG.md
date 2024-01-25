@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.9 - 2024-01-25
+
+### Fixed
+
+- Fixed a bug with the ImagerX integration
+
 ## 3.5.8 - 2024-01-24
 
 ### Added
