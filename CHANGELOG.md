@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.10 - 2024-02-13
+
+### Fixed
+
+- Fixed an issue where parentheses in v3 asset filenames would cause the image to fail to load.
+
 ## 3.5.9 - 2024-01-25
 
 ### Fixed
