@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.5 - 2024-02-13
+
+### Fixed
+
+- Fixed an issue where parentheses in v3 asset filenames would cause the image to fail to load.
+
 ## 2.10.4 - 2023-11-30
 
 ### Fixed
@@ -26,7 +32,7 @@
 
 ## 2.10.0 - 2023-09-19
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
 
 ### Updated
