@@ -118,6 +118,11 @@ class ImageTransforms
         $baseAndPath = $base . $filePath;
         $baseAndPath = str_replace('&', '%26', $baseAndPath);
 
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
+            $baseAndPath = str_replace('(', '%28', $baseAndPath);
+            $baseAndPath = str_replace(')', '%29', $baseAndPath);
+        }
+
         return $baseAndPath . "?" . http_build_query($params);
     }
 
