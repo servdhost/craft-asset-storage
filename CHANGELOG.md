@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.0 - 2024-02-14
+
+### Added
+
+- Preliminary Craft 5 Support. Happy valentines day 💕
+
 ## 3.5.7 - 2023-12-18
 
 ### Added
