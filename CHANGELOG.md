@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.1 - 2024-03-08
+
+### Fixed
+
+- Fixed a call to a method which has changed signature in Craft 5
+
 ## 4.0.0 - 2024-02-14
 
 ### Added

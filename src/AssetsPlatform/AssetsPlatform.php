@@ -315,7 +315,7 @@ class AssetsPlatform extends Component
                 $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
             }
         } else {
-            $finalUrl = AssetsHelper::generateUrl($fs, $asset);
+            $finalUrl = AssetsHelper::generateUrl($asset);
         }
 
         // Append dm query parameter to allow cache busting if the underlying asset changes
