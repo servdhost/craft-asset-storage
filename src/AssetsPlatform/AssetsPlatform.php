@@ -316,7 +316,7 @@ class AssetsPlatform extends Component
             }
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
-            $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . '/' . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
+            $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
         
         } else {
             $finalUrl = AssetsHelper::generateUrl($fs, $asset);
