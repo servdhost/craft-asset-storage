@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.6 - 2024-02-13
+
+### Updated
+
+- Added rawurlencoding to custom file pattern URLs to match non-custom handling
+
 ## 2.10.5 - 2024-02-13
 
 ### Fixed
