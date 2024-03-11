@@ -314,6 +314,10 @@ class AssetsPlatform extends Component
             foreach ($variables as $key => $value) {
                 $finalUrl = str_replace('{{' . $key . '}}', $value, $finalUrl);
             }
+            //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
+            $urlParts = parse_url($finalUrl);
+            $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
+        
         } else {
             $finalUrl = AssetsHelper::generateUrl($asset);
         }

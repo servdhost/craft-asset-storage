@@ -18,6 +18,12 @@
 
 - Preliminary Craft 5 Support. Happy valentines day 💕
 
+## 3.5.11 - 2024-03-11
+
+### Updated
+
+- Added rawurlencoding to custom file pattern URLs to match non-custom handling
+
 ## 3.5.10 - 2024-02-13
 
 ### Fixed
