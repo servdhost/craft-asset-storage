@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.2 - 2024-03-11
+
+### Updated
+
+- Merged recent v3.x plugin changes
+
 ## 4.0.1 - 2024-03-08
 
 ### Fixed
@@ -11,6 +17,24 @@
 ### Added
 
 - Preliminary Craft 5 Support. Happy valentines day 💕
+
+## 3.5.10 - 2024-02-13
+
+### Fixed
+
+- Fixed an issue where parentheses in v3 asset filenames would cause the image to fail to load.
+
+## 3.5.9 - 2024-01-25
+
+### Fixed
+
+- Fixed a bug with the ImagerX integration
+
+## 3.5.8 - 2024-01-24
+
+### Added
+
+- Respect image upscaling settings in Craft general settings and directly on transforms
 
 ## 3.5.7 - 2023-12-18
 

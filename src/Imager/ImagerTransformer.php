@@ -110,7 +110,7 @@ class ImagerTransformer extends Component implements TransformerInterface
     private function getTransformedImage($image, $transform): ImagerTransformedImageModel
     {
         $transformOptions = $this->imagerTransformToTransformOptions($image, $transform);
-        $params = Plugin::$plugin->assetsPlatform->imageTransforms->getParamsForTransform($transformOptions);
+        $params = Plugin::$plugin->assetsPlatform->imageTransforms->getParamsForTransform($transformOptions, $image);
         $url = Plugin::$plugin->assetsPlatform->imageTransforms->transformUrl($image, $transformOptions);
         return new ImagerTransformedImageModel($url, $image, $params);
     }
