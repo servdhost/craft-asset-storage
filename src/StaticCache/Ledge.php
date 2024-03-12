@@ -18,7 +18,7 @@ class Ledge
         $shouldHaveTrailingSlash = Craft::$app->getConfig()->getGeneral()->addTrailingSlashesToUrls ?? false;
         foreach ($urls as $url) {
             $urlParts = parse_url($url);
-            if($urlParts['path'] == '' || $urlParts['path'] == '/') {
+            if(empty($urlParts['path']) || $urlParts['path'] == '/') {
                 continue;
             }
             
