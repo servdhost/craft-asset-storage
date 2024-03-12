@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.7 - 2024-03-12
+
+### Fixed
+
+- Fixed a bug when purging static cache URLs with no defined path
+
 ## 2.10.6 - 2024-02-13
 
 ### Updated
