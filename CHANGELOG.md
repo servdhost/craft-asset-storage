@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.4 - 2024-03-13
+
+### Updated
+
+- Moved image do-not-upscale logic over to asset platform
+
 ## 4.0.3 - 2024-03-12
 
 ### Fixed

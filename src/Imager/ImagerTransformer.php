@@ -176,18 +176,7 @@ class ImagerTransformer extends Component implements TransformerInterface
             $transformOptions->fpy = ((float)$top) / 100;
         }
 
-        //Don't allow upscaling based on imager settings
-        if (!empty($transformOptions->fit) && !$config->getSetting('allowUpscale', $transform)) {
-            if ($transformOptions->fit === 'crop') {
-                $transformOptions->fit = 'min';
-            }
-            if ($transformOptions->fit === 'clip') {
-                $transformOptions->fit = 'max';
-            }
-            if ($transformOptions->fit === 'fill') {
-                $transformOptions->fit = 'fillmax';
-            }
-        }
+        $transformOptions->upscale = $config->getSetting('allowUpscale', $transform) ?? false;
 
         return $transformOptions;
     }
