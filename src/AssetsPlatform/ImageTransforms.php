@@ -138,15 +138,14 @@ class ImageTransforms
         $targetHeight = $transform->height;
 
         if (!$transform->upscale) {
-            if (!empty($targetWidth) && $targetWidth > $asset->width) {
-                //Reduce height to maintain aspect ratio given non upscaled width
-                $targetHeight = !empty($targetHeight) ? $targetHeight * ($asset->width / $targetWidth) : null;
-                $targetWidth = $asset->width;
+            if ($transform->fit === 'crop') {
+                $transform->fit = 'min';
             }
-            if (!empty($targetHeight) && $targetHeight > $asset->height) {
-                //Reduce width to maintain aspect ratio given non upscaled height
-                $targetWidth = !empty($targetWidth) ? $targetWidth * ($asset->height / $targetHeight) : null;
-                $targetHeight = $asset->height;
+            if ($transform->fit === 'clip') {
+                $transform->fit = 'max';
+            }
+            if ($transform->fit === 'fill') {
+                $transform->fit = 'fillmax';
             }
         }
 
