@@ -287,9 +287,13 @@ class AssetsPlatform extends Component
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $fs = $asset->getVolume()->getFs();
+        $volume = $asset->getVolume();
+        $fs = $volume->getFs();
+
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
+        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
+        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
 
         //Special handling for videos
         $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO
@@ -298,6 +302,7 @@ class AssetsPlatform extends Component
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
                 (strlen(trim($normalizedCustomSubfolder, "/")) > 0 ? (trim($normalizedCustomSubfolder, "/") . '/') : '') .
+                $normalizedSubpath .
                 $asset->getPath();
         }
 
@@ -308,7 +313,7 @@ class AssetsPlatform extends Component
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $asset->getPath(),
+                "filePath" => $normalizedSubpath . $asset->getPath(),
             ];
             $finalUrl = $customPattern;
             foreach ($variables as $key => $value) {
@@ -317,7 +322,7 @@ class AssetsPlatform extends Component
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
-        
+
         } else {
             $finalUrl = AssetsHelper::generateUrl($asset);
         }
