@@ -1,22 +1,19 @@
 # Release Notes for Servd Assets and Helpers
 
-## 4.0.4 - 2024-03-13
+## 4.0.2 - 2024-03-29
+
+### Added
+
+- Support for Craft 5 volume subpaths
 
 ### Updated
 
 - Moved image do-not-upscale logic over to asset platform
-
-## 4.0.3 - 2024-03-12
+- Merged recent v3.x plugin changes
 
 ### Fixed
 
 - Fixed a bug when purging static cache URLs with no defined path
-
-## 4.0.2 - 2024-03-11
-
-### Updated
-
-- Merged recent v3.x plugin changes
 
 ## 4.0.1 - 2024-03-08
 
