@@ -5,6 +5,7 @@
 ### Fixed
 
 - Update class references in StaticCache to match Craft 5 deprecations
+- Removed a reference to a composer package which is  no longer installed with Craft 5
 
 ## 4.0.2 - 2024-03-29
 
