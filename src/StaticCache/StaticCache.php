@@ -22,6 +22,7 @@ use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
+use craft\services\Entries;
 use craft\services\Sections;
 use craft\services\Structures;
 use craft\utilities\ClearCaches;
@@ -356,7 +357,10 @@ class StaticCache extends Component
         Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Element::class, Element::EVENT_AFTER_MOVE_IN_STRUCTURE, function ($event) {
+        Event::on(Element::class, Structures::EVENT_AFTER_INSERT_ELEMENT, function ($event) {
+            $this->handleUpdateEvent($event);
+        });
+        Event::on(Element::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
         Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, function ($event) {
@@ -365,7 +369,7 @@ class StaticCache extends Component
         Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function ($event) {
+        Event::on(Entries::class, Entries::EVENT_AFTER_SAVE_SECTION, function ($event) {
             $this->handleUpdateEvent($event);
         });
     }
@@ -458,7 +462,7 @@ class StaticCache extends Component
             $tags[] = Tags::SECTION_ID_PREFIX . $event->section->id;
         }
 
-        if ($event instanceof MoveElementEvent or $event instanceof ElementStructureEvent) {
+        if ($event instanceof MoveElementEvent) {
             $tags[] = Tags::STRUCTURE_ID_PREFIX . $event->structureId;
         }
 

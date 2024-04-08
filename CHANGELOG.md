@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.3 - 2024-04-08
+
+### Fixed
+
+- Update class references in StaticCache to match Craft 5 deprecations
+
 ## 4.0.2 - 2024-03-29
 
 ### Added
