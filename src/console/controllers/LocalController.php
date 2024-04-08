@@ -4,7 +4,6 @@ namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
 use Aws\S3\S3Client;
-use Composer\Util\Platform;
 use Craft;
 use craft\console\Controller;
 use craft\db\Query;
@@ -132,7 +131,7 @@ class LocalController extends Controller
         // Find out if mysqldump supports column-statistics
         $shellCommand = new ShellCommand();
 
-        if (Platform::isWindows()) {
+        if (stripos(PHP_OS, 'WIN') === 0) {
             $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
         } else {
             $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
@@ -272,7 +271,7 @@ class LocalController extends Controller
             }
 
             $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if(Settings::$CURRENT_TYPE == 'wasabi'){
+            if (Settings::$CURRENT_TYPE == 'wasabi') {
                 $projectBasePath = 's3://' . $config['bucket'] . '/';
                 $remotePrefixBase = '';
             } else {
@@ -371,7 +370,7 @@ class LocalController extends Controller
             }
 
             $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if(Settings::$CURRENT_TYPE == 'wasabi'){
+            if (Settings::$CURRENT_TYPE == 'wasabi') {
                 $projectBasePath = 's3://' . $config['bucket'] . '/';
                 $remotePrefixBase = '';
             } else {
@@ -874,7 +873,7 @@ class LocalController extends Controller
 
     private function outputDebug($message)
     {
-        if($this->verbose){
+        if ($this->verbose) {
             $this->stdout($message . PHP_EOL);
         }
     }
