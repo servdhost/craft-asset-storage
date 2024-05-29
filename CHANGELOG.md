@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.8 - 2024-05-29
+
+### Fixed
+
+- Fixed a save bug which incorrectly set the Base URL field of Servd Asset Volumes to https://cdn2.assets-servd.host/ for projects running on the V3 Asset Platform
+
 ## 2.10.7 - 2024-03-12
 
 ### Fixed

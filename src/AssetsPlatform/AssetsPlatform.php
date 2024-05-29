@@ -195,7 +195,16 @@ class AssetsPlatform extends Component
             $volume = $event->volume;
             if ($volume instanceof AssetStorageVolume) {
                 $volume->hasUrls = true;
-                $volume->url = 'https://cdn2.assets-servd.host/';
+
+                $pluginInstance = Plugin::$plugin;
+                if (!empty($pluginInstance)) {
+                    $settings = $pluginInstance->getSettings();
+                    if (Settings::$CURRENT_TYPE == 'wasabi') {
+                        $volume->url = 'https://' . $settings->getProjectSlug() . '.files.svdcdn.com';
+                    } else {
+                        $volume->url = 'https://cdn2.assets-servd.host/';
+                    }
+                }
             }
         });
 
@@ -289,7 +298,7 @@ class AssetsPlatform extends Component
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
-        
+
         }else {
             $finalUrl = AssetsHelper::generateUrl($volume, $asset);
         }
