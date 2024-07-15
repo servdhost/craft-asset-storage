@@ -336,16 +336,20 @@ class AssetsPlatform extends Component
     public function handleAssetTransform(Asset $asset, $transform, $force = true)
     {
 
-        if (!ImageHelper::canManipulateAsImage(pathinfo($asset->filename, PATHINFO_EXTENSION))) {
+        // Check if the file can be handled by the Servd Asset Platform as an image
+        $extension = strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION));
+        $assetPlatformSupportedTypes = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif'];
+
+        //If the input type is gif respect the no transform flag
+        if(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
+            $assetPlatformSupportedTypes[] = 'gif';
+        }
+
+        if (!in_array($extension, $assetPlatformSupportedTypes)) {
             if ($force) {
                 return $this->getFileUrl($asset);
             }
             return;
-        }
-
-        //If the input type is gif respect the no transform flag
-        if ($this->imageTransforms->inputIsGif($asset) && !(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false)) {
-            return $this->getFileUrl($asset);
         }
 
         if (empty($transform)) {
@@ -368,7 +372,7 @@ class AssetsPlatform extends Component
 
         //If the output type is svg, no transform is occuring, just let Craft handle it
         //This should return a link to the CDN path without optimisation
-        if ($this->imageTransforms->outputWillBeSVG($asset, $transform)) {
+        if ($transform->format ?? 'auto' === 'svg') {
             return $this->getFileUrl($asset);
         }
 
