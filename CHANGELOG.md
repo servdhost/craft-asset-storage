@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.4 - 2024-07-15
+
+### Updated
+
+- Switched asset platform image manipulation availability detection from Craft's native to a custom implementation to support transforms of HEIC/HEIF files even when local ImageMagick/GD isn't able to do so.
+
 ## 4.0.3 - 2024-04-08
 
 ### Fixed
