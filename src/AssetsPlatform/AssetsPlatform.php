@@ -377,7 +377,7 @@ class AssetsPlatform extends Component
 
         //If the output type is svg, no transform is occuring, just let Craft handle it
         //This should return a link to the CDN path without optimisation
-        if ($transform->format ?? 'auto' === 'svg') {
+        if (($transform->format ?? 'auto') === 'svg') {
             return $this->getFileUrl($asset);
         }
 
