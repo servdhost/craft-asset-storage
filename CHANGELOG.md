@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.10 - 2024-07-16
+
+### Fixed
+
+- Fixed a bug which caused images to be served in their original size instead of being transformed
+
 ## 2.10.9 - 2024-07-15
 
 ### Updated
