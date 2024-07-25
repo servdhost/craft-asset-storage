@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.6 - 2024-07-25
+
+### Fixed
+
+- Fixed a bug which caused asset files with accented characters to not load properly on the V3 asset platform.
+
 ## 4.0.5 - 2024-07-16
 
 ### Fixed
