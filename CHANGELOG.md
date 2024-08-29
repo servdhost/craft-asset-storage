@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.11 - 2024-08-29
+
+### Updated
+
+- Fixed the version of the AWS PHP SDK to v3.319.4 to avoid deprecation errors breaking asset uploads.
+
 ## 2.10.10 - 2024-07-16
 
 ### Fixed
