@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.7 - 2024-09-24
+
+### Fixed
+
+- Replaced a removed twig function with an alternative
+
 ## 4.0.6 - 2024-07-25
 
 ### Fixed
