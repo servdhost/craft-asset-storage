@@ -1,10 +1,22 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.5.16 - 2024-09-24
+## 3.5.18 - 2024-09-24
 
 ### Fixed
 
 - Replaced a removed twig function with an alternative
+
+## 3.5.17 - 2024-08-29
+
+## Updated
+
+- Fixed the version of the AWS PHP SDK to v3.319.4 to avoid deprecation errors breaking asset uploads.
+
+## 3.5.16 - 2024-07-25
+
+### Fixed
+
+- Fixed a bug which caused asset files with accented characters to not load properly on the V3 asset platform.
 
 ## 3.5.15 - 2024-07-16
 
