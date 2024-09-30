@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.11 - 2024-09-30
+
+### Fixed
+
+- Added handling for image transform strings passed as an array
+
 ## 2.10.10 - 2024-07-16
 
 ### Fixed

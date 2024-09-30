@@ -298,8 +298,7 @@ class AssetsPlatform extends Component
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
-
-        }else {
+        } else {
             $finalUrl = AssetsHelper::generateUrl($volume, $asset);
         }
         return $finalUrl;
@@ -313,7 +312,7 @@ class AssetsPlatform extends Component
         $assetPlatformSupportedTypes = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif'];
 
         //If the input type is gif respect the no transform flag
-        if(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
+        if (Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
             $assetPlatformSupportedTypes[] = 'gif';
         }
 
@@ -333,7 +332,13 @@ class AssetsPlatform extends Component
         }
 
         if (\is_array($transform)) {
-            $transform = new AssetTransform($transform);
+            // If this is a transform string wrapped in an array, fall through to the next block 
+            // and treat it as a string.
+            if (isset($transform['transform']) && \is_string($transform['transform'])) {
+                $transform = $transform['transform'];
+            } else {
+                $transform = new AssetTransform($transform);
+            }
         }
 
         if (\is_string($transform)) {
