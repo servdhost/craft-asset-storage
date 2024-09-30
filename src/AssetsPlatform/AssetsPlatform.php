@@ -45,7 +45,7 @@ class AssetsPlatform extends Component
     {
         $settings = Plugin::$plugin->getSettings();
         //$info = $this->getStorageInfoFromServd();
-        if(Settings::$CURRENT_TYPE == 'wasabi'){
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
             $fullPath = '';
         } else {
             $fullPath = $settings->getProjectSlug() . '/';
@@ -88,7 +88,7 @@ class AssetsPlatform extends Component
         }
 
         $bucket = 'cdn-assets-servd-host';
-        if(Settings::$CURRENT_TYPE == 'wasabi'){
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
             $bucket = 'servd-' . $projectSlug;
         }
 
@@ -317,7 +317,6 @@ class AssetsPlatform extends Component
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
-        
         } else {
             $finalUrl = AssetsHelper::generateUrl($fs, $asset);
         }
@@ -341,7 +340,7 @@ class AssetsPlatform extends Component
         $assetPlatformSupportedTypes = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif'];
 
         //If the input type is gif respect the no transform flag
-        if(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
+        if (Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
             $assetPlatformSupportedTypes[] = 'gif';
         }
 
@@ -361,7 +360,13 @@ class AssetsPlatform extends Component
         }
 
         if (\is_array($transform)) {
-            $transform = new ImageTransform($transform);
+            // If this is a transform string wrapped in an array, fall through to the next block 
+            // and treat it as a string.
+            if (isset($transform['transform']) && \is_string($transform['transform'])) {
+                $transform = $transform['transform'];
+            } else {
+                $transform = new ImageTransform($transform);
+            }
         }
 
         if (\is_string($transform)) {
@@ -400,7 +405,6 @@ class AssetsPlatform extends Component
                     return;
                 }
             );
-
         }
     }
 }
