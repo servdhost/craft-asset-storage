@@ -366,7 +366,13 @@ class AssetsPlatform extends Component
         }
 
         if (\is_array($transform)) {
-            $transform = new ImageTransform($transform);
+            // If this is a transform string wrapped in an array, fall through to the next block 
+            // and treat it as a string.
+            if (isset($transform['transform']) && \is_string($transform['transform'])) {
+                $transform = $transform['transform'];
+            } else {
+                $transform = new ImageTransform($transform);
+            }
         }
 
         if (\is_string($transform)) {
