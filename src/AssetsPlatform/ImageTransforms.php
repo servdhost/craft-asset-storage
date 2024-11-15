@@ -38,7 +38,11 @@ class ImageTransforms
         }
 
         $params = $this->getParamsForTransform($transform, $asset);
-        $params['dm'] = $asset->dateUpdated->getTimestamp();
+        if (!empty($asset->dateUpdated)){
+            $params['dm'] = $asset->dateUpdated->getTimestamp();
+        } else {
+            $params['dm'] = 0;
+        }
 
         //Full path of asset on the CDN platform
         $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);

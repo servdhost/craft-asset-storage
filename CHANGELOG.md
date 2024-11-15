@@ -1,5 +1,9 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.9 - 2024-11-15
+
+- Speculative fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
+
 ## 4.0.8 - 2024-09-30
 
 ### Fixed
