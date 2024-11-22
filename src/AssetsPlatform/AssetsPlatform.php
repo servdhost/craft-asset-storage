@@ -9,8 +9,10 @@ use craft\elements\Asset;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\DefineHtmlEvent;
+use craft\events\DeleteElementEvent;
 use craft\events\GenerateTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\ReplaceAssetEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
@@ -45,7 +47,7 @@ class AssetsPlatform extends Component
     {
         $settings = Plugin::$plugin->getSettings();
         //$info = $this->getStorageInfoFromServd();
-        if(Settings::$CURRENT_TYPE == 'wasabi'){
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
             $fullPath = '';
         } else {
             $fullPath = $settings->getProjectSlug() . '/';
@@ -88,7 +90,7 @@ class AssetsPlatform extends Component
         }
 
         $bucket = 'cdn-assets-servd-host';
-        if(Settings::$CURRENT_TYPE == 'wasabi'){
+        if (Settings::$CURRENT_TYPE == 'wasabi') {
             $bucket = 'servd-' . $projectSlug;
         }
 
@@ -281,6 +283,47 @@ class AssetsPlatform extends Component
                 }
             );
         }
+
+        Event::on(
+            \craft\services\Assets::class,
+            \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
+            function (ReplaceAssetEvent $event) {
+                $asset = $event->asset;
+                $fs = $asset->getVolume()->getFs();
+
+                if (!($fs instanceof Fs)) {
+                    return;
+                }
+                
+                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                    'description' => 'Clear cache for asset',
+                    'elementUid' => $asset->id,
+                ]));
+            }
+        );
+
+        Event::on(
+            \craft\services\Elements::class,
+            \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
+            function (DeleteElementEvent $event) {
+                if (!is_a($event->element, Asset::class)){
+                    return;
+                } 
+                $asset = $event->element;
+                $fs = $asset->getVolume()->getFs();
+
+                if (!($fs instanceof Fs)) {
+                    return;
+                }
+                
+                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                    'description' => 'Clear cache for asset',
+                    'path' => $asset->path,
+                    'subfolder' => ($fs->_subfolder() ?? ''),
+                ]));
+            }
+        );
+
     }
 
     public function getFileUrl(Asset $asset)
@@ -292,7 +335,7 @@ class AssetsPlatform extends Component
 
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
+        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()), "/");
         $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
 
         //Special handling for videos
@@ -322,7 +365,6 @@ class AssetsPlatform extends Component
             //Apply rawurlencode to match AssetsHelper::generateUrl behaviour
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
-
         } else {
             $finalUrl = AssetsHelper::generateUrl($asset);
         }
@@ -346,7 +388,7 @@ class AssetsPlatform extends Component
         $assetPlatformSupportedTypes = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif'];
 
         //If the input type is gif respect the no transform flag
-        if(Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
+        if (Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
             $assetPlatformSupportedTypes[] = 'gif';
         }
 
@@ -411,7 +453,6 @@ class AssetsPlatform extends Component
                     return;
                 }
             );
-
         }
     }
 }

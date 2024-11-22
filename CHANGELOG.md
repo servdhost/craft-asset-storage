@@ -5,6 +5,7 @@
 ### Updated
 
 - Force image transforms to have a width and height compatible with backend transform function memory limits
+- Automatically clear caches for non-image files that are replaced or deleted within the Craft CP
 
 ## 4.0.9 - 2024-11-15
 

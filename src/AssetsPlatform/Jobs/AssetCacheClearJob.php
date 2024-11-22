@@ -11,24 +11,33 @@ use servd\AssetStorage\Plugin;
 class AssetCacheClearJob extends BaseJob
 {
     public $elementUid;
+    public $path = null;
+    public $subfolder = null;
+
     private $cacheClearUrl = 'https://app.servd.host/asset-platform-clear-cache';
 
     public function execute($queue): void
     {
-        $elements = Craft::$app->elements;
-        $element = $elements->getElementById($this->elementUid);
 
-        //Check that the element is an asset
-        if(empty($element->path)){
-            return;
+        if(!empty($this->path)){
+            $assetPath = $this->path;
+            $subfolder = $this->subfolder;
+        } else {
+            $elements = Craft::$app->elements;
+            $element = $elements->getElementById($this->elementUid);
+    
+            //Check that the element is an asset
+            if(empty($element->path)){
+                return;
+            }
+            $assetPath = $element->path;
+            $subfolder = $element->volume->getFs()->_subfolder() ?? '';
         }
 
         $settings = Plugin::$plugin->getSettings();
         $slug = $settings->getProjectSlug();
         $environment = $settings->getAssetsEnvironment();
-        $assetPath = $element->path;
         $securityKey = $settings->getSecurityKey();
-        $subfolder = $element->volume->getFs()->_subfolder() ?? '';
 
         $assetPath = '/' . trim($subfolder, '/') . '/' . trim($assetPath, '/');
 
