@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.20 - 2024-11-22
+
+### Updated
+
+- Force image transforms to have a width and height compatible with backend transform function memory limits
+
 ## 3.5.19 - 2024-09-30
 
 ### Fixed

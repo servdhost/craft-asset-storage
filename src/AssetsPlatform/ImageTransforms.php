@@ -36,6 +36,7 @@ class ImageTransforms
             return null;
         }
 
+        $transform->sanitizeProperties();
         $params = $this->getParamsForTransform($transform, $asset);
         $params['dm'] = $asset->dateUpdated->getTimestamp();
 
