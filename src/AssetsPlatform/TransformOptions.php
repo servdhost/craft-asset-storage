@@ -82,4 +82,25 @@ class TransformOptions
                 break;
         }
     }
+
+    public function sanitizeProperties() {
+
+        //Max width 4000, scaling height if needed to match
+        if (!empty($this->width) && $this->width > 4000) {
+            $orgWidth = $this->width;
+            $this->width = 4000;
+            if (!empty($this->height)) {
+                $this->height = round($this->height * (4000 / $orgWidth));
+            }
+        }
+        // Same for height
+        if (!empty($this->height) && $this->height > 4000) {
+            $orgHeight = $this->height;
+            $this->height = 4000;
+            if (!empty($this->width)) {
+                $this->width = round($this->width * (4000 / $orgHeight));
+            }
+        }
+
+    }
 }

@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.10 - 2024-11-22
+
+### Updated
+
+- Force image transforms to have a width and height compatible with backend transform function memory limits
+
 ## 4.0.9 - 2024-11-15
 
 - Speculative fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
