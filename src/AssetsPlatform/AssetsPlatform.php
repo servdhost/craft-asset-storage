@@ -2,6 +2,8 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
+use craft\events\DeleteElementEvent;
+use craft\events\ReplaceAssetEvent;
 use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Craft;
 use craft\base\Component;
@@ -281,6 +283,44 @@ class AssetsPlatform extends Component
                 }
             );
         }
+        
+        Event::on(
+            \craft\services\Assets::class,
+            \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
+            function (ReplaceAssetEvent $event) {
+                $asset = $event->asset;
+                $fs = $asset->getVolume()->getFs();
+                if (!($fs instanceof Fs)) {
+                    return;
+                }
+                
+                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                    'description' => 'Clear cache for asset',
+                    'elementUid' => $asset->id,
+                ]));
+            }
+        );
+
+        Event::on(
+            \craft\services\Elements::class,
+            \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
+            function (DeleteElementEvent $event) {
+                if (!is_a($event->element, Asset::class)){
+                    return;
+                } 
+                $asset = $event->element;
+                $fs = $asset->getVolume()->getFs();
+                if (!($fs instanceof Fs)) {
+                    return;
+                }
+                
+                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                    'description' => 'Clear cache for asset',
+                    'path' => $asset->path,
+                    'subfolder' => ($fs->_subfolder() ?? ''),
+                ]));
+            }
+        );
     }
 
     public function getFileUrl(Asset $asset)
