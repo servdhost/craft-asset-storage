@@ -10,8 +10,8 @@ use Redis;
 class Tags extends Component
 {
     const URL_HASH_LOOKUP = 'svd-url-lookup';
-    const TAG_PREFIX = 'svd-tag-';
-    const URL_PREFIX = 'svd-url-';
+    const TAG_PREFIX = 'svd-t-';
+    const URL_PREFIX = 'svd-u-';
     const SECTION_ID_PREFIX = 'sec';
     const ELEMENT_ID_PREFIX = 'el';
     const GLOBAL_SET_PREFIX = 'gs';
@@ -42,20 +42,19 @@ class Tags extends Component
     {
         Craft::beginProfile('Tags::associateCurrentRequestTagsWithUrl', __METHOD__);
         $url = $this->normaliseUrl($url);
-        $urlLongHash = md5($url);
-        $urlShortHash = substr($urlLongHash, 0, static::SHORT_HASH_LENGTH);
+        $urlHash = substr(md5($url), 0, static::SHORT_HASH_LENGTH);
 
         $uniqueTags = $this->getAllTagsForCurrentRequest();
 
         try {
             $redis = $this->getRedisConnection();
             $redisBatch = $redis->multi(Redis::PIPELINE);
-            $redis->hSet(static::URL_HASH_LOOKUP, $urlShortHash, $url);
+            $redis->hSet(static::URL_HASH_LOOKUP, $urlHash, $url);
 
             foreach ($uniqueTags as $tag) {
-                $redisBatch->sAdd(static::TAG_PREFIX . $tag, $urlShortHash);
+                $redisBatch->sAdd(static::TAG_PREFIX . $tag, $urlHash);
             }
-            $redisBatch->sAddArray(static::URL_PREFIX . $urlLongHash, $uniqueTags);
+            $redisBatch->sAddArray(static::URL_PREFIX . $urlHash, $uniqueTags);
             $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -70,8 +69,8 @@ class Tags extends Component
             $redis = $this->getRedisConnection();
             $urlHashes = $redis->sMembers(static::TAG_PREFIX . $tag);
             $urls = [];
-            foreach ($urlHashes as $hashOrUrl) {
-                $urls[] = $this->readUrl($hashOrUrl);
+            foreach ($urlHashes as $hash) {
+                $urls[] = 'http://' . $redis->hGet(static::URL_HASH_LOOKUP, $hash);
             }
             return $urls;
         } catch (Exception $e) {
@@ -90,8 +89,8 @@ class Tags extends Component
             $it = NULL;
             while (($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) && $counter < $totalSetSize) {
                 $counter += sizeof($arr_mems);
-                $callback(array_map(function($hashOrUrl) {
-                    return $this->readUrl($hashOrUrl);
+                $callback(array_map(function($hash) use ($redis) {
+                    return 'http://' . $redis->hGet(static::URL_HASH_LOOKUP, $hash);
                 }, $arr_mems));
             }
         } catch (Exception $e) {
@@ -102,21 +101,20 @@ class Tags extends Component
     public function clearTagsForUrl($url)
     {
         $url = $this->normaliseUrl($url);
-        $urlLongHash = md5($url);
-        $urlShortHash = substr($urlLongHash, 0, static::SHORT_HASH_LENGTH);
+        $urlHash = substr(md5($url), 0, static::SHORT_HASH_LENGTH);
 
         try {
             $redis = $this->getRedisConnection();
             //Get all tags for the url
-            $tags = $redis->sMembers(static::URL_PREFIX . $urlLongHash);
+            $tags = $redis->sMembers(static::URL_PREFIX . $urlHash);
             $redisBatch = $redis->multi(Redis::PIPELINE);
             foreach ($tags as $tag) {
                 //Clear the tag -> url association
-                $redisBatch->sRem(static::TAG_PREFIX . $tag, $urlShortHash);
+                $redisBatch->sRem(static::TAG_PREFIX . $tag, $urlHash);
             }
             //Clear the url -> tags associations
-            $redisBatch->unlink(static::URL_PREFIX . $urlLongHash);
-            $redisBatch->hDel(static::URL_HASH_LOOKUP, $urlShortHash);
+            $redisBatch->unlink(static::URL_PREFIX . $urlHash);
+            $redisBatch->hDel(static::URL_HASH_LOOKUP, $urlHash);
             $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -136,16 +134,7 @@ class Tags extends Component
 
     private function normaliseUrl($url)
     {
-        return str_ireplace('https://', 'http://', $url);
-    }
-
-    private function readUrl($hashOrUrl)
-    {
-        // It's a URL if it starts with http://
-        if (str_starts_with($hashOrUrl, 'http://')) {
-            return $hashOrUrl;
-        }
-        // Otherwise, it's a md5 hash and we need to read the URL from the lookup
-        return $this->getRedisConnection()->hGet(static::URL_HASH_LOOKUP, $hashOrUrl);
+        $url = str_ireplace('https://', '', $url);
+        return str_ireplace('http://', '', $url);
     }
 }
