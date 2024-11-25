@@ -17,7 +17,7 @@ class Tags extends Component
     const GLOBAL_SET_PREFIX = 'gs';
     const STRUCTURE_ID_PREFIX = 'st';
     const VOLUME_ID_PREFIX = 'vo';
-    const SHORT_HASH_LENGTH = 10;
+    const MD5_LENGTH = 10;
 
     const IGNORE_TAGS_FROM_CLASSES = [
         'craft\elements\MatrixBlock',
@@ -42,7 +42,7 @@ class Tags extends Component
     {
         Craft::beginProfile('Tags::associateCurrentRequestTagsWithUrl', __METHOD__);
         $url = $this->normaliseUrl($url);
-        $urlHash = substr(md5($url), 0, static::SHORT_HASH_LENGTH);
+        $urlHash = substr(md5($url), 0, static::MD5_LENGTH);
 
         $uniqueTags = $this->getAllTagsForCurrentRequest();
 
@@ -101,7 +101,7 @@ class Tags extends Component
     public function clearTagsForUrl($url)
     {
         $url = $this->normaliseUrl($url);
-        $urlHash = substr(md5($url), 0, static::SHORT_HASH_LENGTH);
+        $urlHash = substr(md5($url), 0, static::MD5_LENGTH);
 
         try {
             $redis = $this->getRedisConnection();
