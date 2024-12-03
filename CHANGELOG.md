@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.11 - 2024-12-03
+
+### Fixed
+
+- Another fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
+
 ## 4.0.10 - 2024-11-22
 
 ### Updated
@@ -8,6 +14,8 @@
 - Automatically clear caches for non-image files that are replaced or deleted within the Craft CP
 
 ## 4.0.9 - 2024-11-15
+
+### Fixed
 
 - Speculative fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
 
