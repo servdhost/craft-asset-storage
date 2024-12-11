@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.21 - 2024-12-11
+
+### Updated
+
+- Reduced the cache memory usage of the "Automated Tag Based Purge" option for the "Cache Clear Strategy" plugin field.
+
 ## 3.5.20 - 2024-11-22
 
 ### Updated
