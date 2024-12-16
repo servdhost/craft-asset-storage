@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.22 - 2024-12-16
+
+### Updated
+
+- Corrected v3.5.21 being tagged from the wrong branch 🤦‍♂️
+
 ## 3.5.21 - 2024-12-11
 
 ### Updated
