@@ -1,10 +1,22 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.5.21 - 2025-01-27
+## 3.5.23 - 2025-01-27
 
 ### Added
 
 - Added the `--emptyDatabase` flag for the `servd/local/pull-database` CLI command to fully empty the local DB before running the import
+
+## 3.5.22 - 2024-12-16
+
+### Updated
+
+- Corrected v3.5.21 being tagged from the wrong branch 🤦‍♂️
+
+## 3.5.21 - 2024-12-11
+
+### Updated
+
+- Reduced the cache memory usage of the "Automated Tag Based Purge" option for the "Cache Clear Strategy" plugin field.
 
 ## 3.5.20 - 2024-11-22
 

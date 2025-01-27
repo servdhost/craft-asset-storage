@@ -5,18 +5,19 @@ namespace servd\AssetStorage\StaticCache;
 use Craft;
 use craft\base\Component;
 use Exception;
-use GuzzleHttp\Exception\GuzzleException;
 use Redis;
 
 class Tags extends Component
 {
-    const TAG_PREFIX = 'svd-tag-';
-    const URL_PREFIX = 'svd-url-';
+    const URL_HASH_LOOKUP = 'svd-url-lookup';
+    const TAG_PREFIX = 'svd-t-';
+    const URL_PREFIX = 'svd-u-';
     const SECTION_ID_PREFIX = 'sec';
     const ELEMENT_ID_PREFIX = 'el';
     const GLOBAL_SET_PREFIX = 'gs';
     const STRUCTURE_ID_PREFIX = 'st';
     const VOLUME_ID_PREFIX = 'vo';
+    const MD5_LENGTH = 10;
 
     const IGNORE_TAGS_FROM_CLASSES = [
         'craft\elements\MatrixBlock',
@@ -25,19 +26,7 @@ class Tags extends Component
 
     private static $redis = null;
 
-
     public $tags = [];
-
-    private function getRedisConnection()
-    {
-        if (static::$redis === null) {
-            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
-            static::$redis = new Redis();
-            static::$redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
-            static::$redis->select($redisDb);
-        }
-        return static::$redis;
-    }
 
     public function addTagForCurrentRequest($tag)
     {
@@ -53,17 +42,19 @@ class Tags extends Component
     {
         Craft::beginProfile('Tags::associateCurrentRequestTagsWithUrl', __METHOD__);
         $url = $this->normaliseUrl($url);
-        $urlMd5 = md5($url);
+        $urlHash = substr(md5($url), 0, static::MD5_LENGTH);
 
         $uniqueTags = $this->getAllTagsForCurrentRequest();
 
         try {
             $redis = $this->getRedisConnection();
             $redisBatch = $redis->multi(Redis::PIPELINE);
+            $redis->hSet(static::URL_HASH_LOOKUP, $urlHash, $url);
+
             foreach ($uniqueTags as $tag) {
-                $redisBatch->sAdd(static::TAG_PREFIX . $tag, $url);
+                $redisBatch->sAdd(static::TAG_PREFIX . $tag, $urlHash);
             }
-            $redisBatch->sAddArray(static::URL_PREFIX . $urlMd5, $uniqueTags);
+            $redisBatch->sAddArray(static::URL_PREFIX . $urlHash, $uniqueTags);
             $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -76,7 +67,11 @@ class Tags extends Component
     {
         try {
             $redis = $this->getRedisConnection();
-            $urls = $redis->sMembers(static::TAG_PREFIX . $tag);
+            $urlHashes = $redis->sMembers(static::TAG_PREFIX . $tag);
+            $urls = [];
+            foreach ($urlHashes as $hash) {
+                $urls[] = 'http://' . $redis->hGet(static::URL_HASH_LOOKUP, $hash);
+            }
             return $urls;
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -94,7 +89,9 @@ class Tags extends Component
             $it = NULL;
             while (($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) && $counter < $totalSetSize) {
                 $counter += sizeof($arr_mems);
-                $callback($arr_mems);
+                $callback(array_map(function($hash) use ($redis) {
+                    return 'http://' . $redis->hGet(static::URL_HASH_LOOKUP, $hash);
+                }, $arr_mems));
             }
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -104,26 +101,40 @@ class Tags extends Component
     public function clearTagsForUrl($url)
     {
         $url = $this->normaliseUrl($url);
-        $urlMd5 = md5($url);
+        $urlHash = substr(md5($url), 0, static::MD5_LENGTH);
+
         try {
             $redis = $this->getRedisConnection();
             //Get all tags for the url
-            $tags = $redis->sMembers(static::URL_PREFIX . $urlMd5);
+            $tags = $redis->sMembers(static::URL_PREFIX . $urlHash);
             $redisBatch = $redis->multi(Redis::PIPELINE);
             foreach ($tags as $tag) {
                 //Clear the tag -> url association
-                $redisBatch->sRem(static::TAG_PREFIX . $tag, $url);
+                $redisBatch->sRem(static::TAG_PREFIX . $tag, $urlHash);
             }
             //Clear the url -> tags associations
-            $redisBatch->unlink(static::URL_PREFIX . $urlMd5);
+            $redisBatch->unlink(static::URL_PREFIX . $urlHash);
+            $redisBatch->hDel(static::URL_HASH_LOOKUP, $urlHash);
             $redisBatch->exec();
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
         }
     }
 
-    public function normaliseUrl($url)
+    private function getRedisConnection()
     {
-        return str_ireplace('https://', 'http://', $url);
+        if (static::$redis === null) {
+            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
+            static::$redis = new Redis();
+            static::$redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+            static::$redis->select($redisDb);
+        }
+        return static::$redis;
+    }
+
+    private function normaliseUrl($url)
+    {
+        $url = str_ireplace('https://', '', $url);
+        return str_ireplace('http://', '', $url);
     }
 }
