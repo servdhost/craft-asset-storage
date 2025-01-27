@@ -38,6 +38,7 @@ class LocalController extends Controller
     public $skipBackup = false;
     public $skipDelete = false;
     public $verbose = false;
+    public $emptyDatabase = false;
 
     private $leaveOpen = true;
     private $baseServdDomain = 'https://app.servd.host';
@@ -55,7 +56,8 @@ class LocalController extends Controller
             'servdKey',
             'skipBackup',
             'skipDelete',
-            'verbose'
+            'verbose',
+            'emptyDatabase'
         ]);
     }
 
@@ -118,6 +120,10 @@ class LocalController extends Controller
             $this->backupDatabase();
         }
 
+        if ($this->emptyDatabase) {
+            $this->stdout("--emptyDatabase is set. All existing tables and data will be deleted from the database `$localDatabase`" . PHP_EOL, Console::FG_RED);
+        }
+
         //Final confirmation
         if ($this->interactive && !$this->confirm('Ready to import. Do you want to proceed?')) {
             $this->revertRemoteDatabaseConnectivity();
@@ -125,6 +131,13 @@ class LocalController extends Controller
         }
 
         $this->stdout('Starting streaming database import' . PHP_EOL);
+
+        $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
+        if ($this->emptyDatabase) {
+            $this->stdout('Deleting and recreating database.' . PHP_EOL);
+            $command = "mysql -h $localHost --port $localPort -u $localUser $localPasswordPrompt -e 'DROP DATABASE IF EXISTS $localDatabase; CREATE DATABASE $localDatabase;'";
+            $this->runCommand($command);
+        }
 
         $skipColStat = '';
 
@@ -149,7 +162,6 @@ class LocalController extends Controller
         }
 
         //Perform a direct stream from the remote db into the local
-        $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
         $command = "mysqldump $skipColStat --no-tablespaces --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase";
         $this->runCommand($command);
 
