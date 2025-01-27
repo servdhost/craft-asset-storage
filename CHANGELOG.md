@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.10.14 - 2025-01-27
+
+### Added
+
+- Added the `--emptyDatabase` flag for the `servd/local/pull-database` CLI command to fully empty the local DB before running the import
+
 ## 2.10.13 - 2024-11-22
 
 ### Updated
