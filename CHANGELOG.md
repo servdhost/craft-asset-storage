@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.24 - 2025-02-03
+
+### Fixed
+
+- Added a fix for an update to the AWS S3 SDK which adds headers incompatible with Servd asset platform storage providers
+
 ## 3.5.23 - 2025-01-27
 
 ### Added
