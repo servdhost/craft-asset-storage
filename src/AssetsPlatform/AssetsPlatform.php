@@ -124,6 +124,8 @@ class AssetsPlatform extends Component
         $config['use_path_style_endpoint'] = true;
         $config['dual_stack'] = false;
         $config['accelerate'] = false;
+        $config['request_checksum_calculation'] = 'when_required';
+        $config['response_checksum_validation'] = 'when_required';
         $client = Craft::createGuzzleClient();
         $config['http_handler'] = new GuzzleHandler($client);
 
