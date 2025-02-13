@@ -288,6 +288,25 @@ class AssetsPlatform extends Component
 
         Event::on(
             \craft\services\Assets::class,
+            \craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET,
+            function (ReplaceAssetEvent $event) {
+                $asset = $event->asset;
+                $fs = $asset->getVolume()->getFs();
+
+                if (!($fs instanceof Fs)) {
+                    return;
+                }
+                
+                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                    'description' => 'Clear cache for asset',
+                    'path' => $asset->path,
+                    'subfolder' => ($fs->_subfolder() ?? ''),
+                ]));
+            }
+        );
+
+        Event::on(
+            \craft\services\Assets::class,
             \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
             function (ReplaceAssetEvent $event) {
                 $asset = $event->asset;
@@ -299,7 +318,8 @@ class AssetsPlatform extends Component
                 
                 \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
                     'description' => 'Clear cache for asset',
-                    'elementUid' => $asset->id,
+                    'path' => $asset->path,
+                    'subfolder' => ($fs->_subfolder() ?? ''),
                 ]));
             }
         );
