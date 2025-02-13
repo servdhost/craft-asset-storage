@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.25 - 2025-02-13
+
+### Fixed
+
+- Updated the automatic cache purging of edited assets to handle renamed assets
+
 ## 3.5.24 - 2025-02-03
 
 ### Fixed
