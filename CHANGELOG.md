@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.16 - 2025-04-19
+
+### Added
+
+- Added the "Transform SVGs" plugin setting to control how SVGs are transformed to other image formats
+
 ## 4.0.15 - 2025-02-13
 
 ### Fixed
