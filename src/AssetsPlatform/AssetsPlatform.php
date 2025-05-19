@@ -419,8 +419,9 @@ class AssetsPlatform extends Component
             $assetPlatformSupportedTypes[] = 'gif';
         }
 
-        $transformSvgs = Plugin::$plugin->getSettings()->transformSVGs;
-        if ($transformSvgs == 'yes' || ($transformSvgs == 'craft' && $generalSettings->transformSvgs)) {
+        $pluginTransformSvgs = Plugin::$plugin->getSettings()->transformSvgs;
+        $generalTransformSvgs = $generalSettings->transformSvgs ?? false;
+        if ($pluginTransformSvgs == 'yes' || ($pluginTransformSvgs == 'craft' && $generalTransformSvgs)) {
             $assetPlatformSupportedTypes[] = 'svg';
         }
 

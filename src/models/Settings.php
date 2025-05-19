@@ -29,7 +29,7 @@ class Settings extends Model
     public $fsMapsEnabled = false;
     public $fsMaps = [];
     public $imageAutoConversion = 'webp';
-    public $transformSVGs = 'no';
+    public $transformSvgs = 'no';
 
     public function checkForType()
     {
