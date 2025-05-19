@@ -109,6 +109,19 @@
         value: settings.imageAutoConversion
     }) }}
 
+    {{ forms.selectField({
+        label: "Transform SVGs",
+        instructions: "Whether SVGs should be transformable to other image formats, or whether the original SVG should be returned.",
+        options: {
+            'no' : "Don't transform SVGs",
+            'craft' : "Respect Craft's transformSvgs General Config",
+            'yes' : 'Transforms SVGs'
+        },
+        id: 'transformSVGs',
+        name: 'transformSVGs',
+        value: settings.transformSVGs
+    }) }}
+
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
