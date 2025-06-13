@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.5.26 - 2025-06-13
+
+### Added
+
+- Added the "Transform SVGs" plugin setting to control how SVGs are transformed to other image formats
+- Added the "Clear Asset CDN cache when an asset file changes" plugin setting to control how the cache purging behaviour when an asset is deleted and when file is repkaced.
+
 ## 3.5.25 - 2025-02-13
 
 ### Fixed

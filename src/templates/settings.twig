@@ -109,6 +109,19 @@
         value: settings.imageAutoConversion
     }) }}
 
+    {{ forms.selectField({
+        label: "Transform SVGs",
+        instructions: "Whether SVGs should be transformable to other image formats, or whether the original SVG should be returned.",
+        options: {
+            'no' : "Don't transform SVGs",
+            'craft' : "Respect Craft's transformSvgs General Config",
+            'yes' : 'Transforms SVGs'
+        },
+        id: 'transformSvgs',
+        name: 'transformSvgs',
+        value: settings.transformSvgs
+    }) }}
+
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
@@ -116,6 +129,14 @@
         id: 'disableTransforms',
         name: 'disableTransforms',
         on: settings.disableTransforms
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: "Clear Asset CDN cache when an asset file changes",
+        instructions: "Automatically clear assets' cached content in the Servd Asset CDN when their file changes. This includes when an asset's file is replaced or when the asset itself is deleted.",
+        id: 'clearCdnCacheWhenAssetChanges',
+        name: 'clearCdnCacheWhenAssetChanges',
+        on: settings.clearCdnCacheWhenAssetChanges
     }) }}
 
     <div class="field">
