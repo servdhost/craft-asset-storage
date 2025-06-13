@@ -131,6 +131,14 @@
         on: settings.disableTransforms
     }) }}
 
+    {{ forms.lightswitchField({
+        label: "Clear Asset CDN cache when an asset file changes",
+        instructions: "Automatically clear assets' cached content in the Servd Asset CDN when their file changes. This includes when an asset's file is replaced or when the asset itself is deleted.",
+        id: 'clearCdnCacheWhenAssetChanges',
+        name: 'clearCdnCacheWhenAssetChanges',
+        on: settings.clearCdnCacheWhenAssetChanges
+    }) }}
+
     <div class="field">
         
         {{ forms.lightswitchField({

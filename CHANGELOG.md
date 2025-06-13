@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.0.17 - 2025-06-13
+
+### Added
+
+- Added the "Clear Asset CDN cache when an asset file changes" plugin setting to control the cache purging behaviour when an asset is deleted and when it's file is replaced
+
 ## 4.0.16 - 2025-04-19
 
 ### Added

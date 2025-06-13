@@ -286,66 +286,67 @@ class AssetsPlatform extends Component
             );
         }
 
-        Event::on(
-            \craft\services\Assets::class,
-            \craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET,
-            function (ReplaceAssetEvent $event) {
-                $asset = $event->asset;
-                $fs = $asset->getVolume()->getFs();
+        if ($settings->clearCdnCacheWhenAssetChanges) {
+            Event::on(
+                \craft\services\Assets::class,
+                \craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET,
+                function (ReplaceAssetEvent $event) {
+                    $asset = $event->asset;
+                    $fs = $asset->getVolume()->getFs();
 
-                if (!($fs instanceof Fs)) {
-                    return;
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
+            );
 
-        Event::on(
-            \craft\services\Assets::class,
-            \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
-            function (ReplaceAssetEvent $event) {
-                $asset = $event->asset;
-                $fs = $asset->getVolume()->getFs();
+            Event::on(
+                \craft\services\Assets::class,
+                \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
+                function (ReplaceAssetEvent $event) {
+                    $asset = $event->asset;
+                    $fs = $asset->getVolume()->getFs();
 
-                if (!($fs instanceof Fs)) {
-                    return;
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
+            );
 
-        Event::on(
-            \craft\services\Elements::class,
-            \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
-            function (DeleteElementEvent $event) {
-                if (!is_a($event->element, Asset::class)){
-                    return;
-                } 
-                $asset = $event->element;
-                $fs = $asset->getVolume()->getFs();
+            Event::on(
+                \craft\services\Elements::class,
+                \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
+                function (DeleteElementEvent $event) {
+                    if (!is_a($event->element, Asset::class)){
+                        return;
+                    } 
+                    $asset = $event->element;
+                    $fs = $asset->getVolume()->getFs();
 
-                if (!($fs instanceof Fs)) {
-                    return;
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
-
+            );
+        }
     }
 
     public function getFileUrl(Asset $asset)

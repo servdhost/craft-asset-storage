@@ -30,6 +30,7 @@ class Settings extends Model
     public $fsMaps = [];
     public $imageAutoConversion = 'webp';
     public $transformSvgs = 'no';
+    public $clearCdnCacheWhenAssetChanges = true;
 
     public function checkForType()
     {
