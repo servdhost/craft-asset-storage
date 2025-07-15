@@ -275,7 +275,7 @@ class StaticCache extends Component
             //Associate collected tags with the url
             Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
 
-            $request = Craft::$app->getRequest();
+            $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
             if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
