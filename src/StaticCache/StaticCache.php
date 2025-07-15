@@ -13,7 +13,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\events\DefineHtmlEvent;
 use craft\events\ElementEvent;
-use craft\events\ElementStructureEvent;
 use craft\events\MoveElementEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
@@ -23,12 +22,11 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Entries;
-use craft\services\Sections;
 use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\View;
-use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
@@ -436,12 +434,10 @@ class StaticCache extends Component
             __METHOD__
         );
 
-        foreach ($updatedTags as $tag) {
-            \craft\helpers\Queue::push(new PurgeTagJob([
-                'description' => 'Purge static cache by tag',
-                'tag' => $tag
-            ]), static::purgePriority());
-        }
+        \craft\helpers\Queue::push(new PurgeTagsJob([
+            'description' => 'Purge static cache by tags',
+            'tags' => $updatedTags
+        ]), static::purgePriority());
     }
 
     private function getTagsFromElementUpdateEvent($event)
