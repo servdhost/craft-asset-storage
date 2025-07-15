@@ -37,7 +37,7 @@ trait TagPurger
         }
 
         $tagsList = array_map(function($t) {
-            return getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $t;
+            return 'env-' . getenv('ENVIRONMENT') . '-' . $t;
         }, $tags);
 
         try {
