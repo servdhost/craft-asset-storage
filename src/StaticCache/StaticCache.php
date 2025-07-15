@@ -277,7 +277,7 @@ class StaticCache extends Component
             //Associate collected tags with the url
             Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
 
-            $request = \Craft::$app->getRequest();
+            $request = Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
             if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
@@ -287,8 +287,34 @@ class StaticCache extends Component
                 'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),
                 __METHOD__
             );
+
+            if (getenv('SERVD_EDGE_CACHING') == 'true') {
+                $this->setCacheTagHeader($tags);
+            }
+
             Craft::endProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
         });
+    }
+
+    private function setCacheTagHeader(array $tags)
+    {
+        $headers = Craft::$app->getResponse()->getHeaders();
+        if ($headers->has('Cache-Tag')) { return; }
+
+        $host = Craft::$app->getRequest()->getHostName();
+        $hostHash = substr(md5($host), 0, 10);
+
+        $cacheTags = [
+            getenv('SERVD_PROJECT_SLUG'), // For clearing by project
+            getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT'), // For clearing by environment
+            getenv('SERVD_PROJECT_SLUG') . '-host-' . $hostHash, // For clearing by hostname
+        ];
+
+        foreach ($tags as $tag) {
+            $cacheTags[] = getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $tag;
+        }
+
+        $headers->add('Cache-Tag', implode(',', $cacheTags));
     }
 
     private function registerLoggedInHandlers()
