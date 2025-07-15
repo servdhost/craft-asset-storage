@@ -27,7 +27,7 @@ use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\View;
-use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
@@ -286,8 +286,32 @@ class StaticCache extends Component
                 'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),
                 __METHOD__
             );
+            if (getenv('SERVD_EDGE_CACHING') == 'true') {
+                $this->setCacheTagHeader($tags);
+            }
             Craft::endProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
         });
+    }
+
+    private function setCacheTagHeader(array $tags)
+    {
+        $headers = Craft::$app->getResponse()->getHeaders();
+        if ($headers->has('Cache-Tag')) { return; }
+
+        $host = Craft::$app->getRequest()->getHostName();
+        $hostHash = substr(md5($host), 0, 10);
+
+        $cacheTags = [
+            getenv('SERVD_PROJECT_SLUG'), // For clearing by project
+            getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT'), // For clearing by environment
+            getenv('SERVD_PROJECT_SLUG') . '-host-' . $hostHash, // For clearing by hostname
+        ];
+
+        foreach ($tags as $tag) {
+            $cacheTags[] = getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $tag;
+        }
+
+        $headers->add('Cache-Tag', implode(',', $cacheTags));
     }
 
     private function registerLoggedInHandlers()
@@ -406,12 +430,10 @@ class StaticCache extends Component
             __METHOD__
         );
 
-        foreach ($updatedTags as $tag) {
-            \craft\helpers\Queue::push(new PurgeTagJob([
-                'description' => 'Purge static cache by tag',
-                'tag' => $tag
-            ]), static::purgePriority());
-        }
+        \craft\helpers\Queue::push(new PurgeTagsJob([
+            'description' => 'Purge static cache by tags',
+            'tags' => $updatedTags
+        ]), static::purgePriority());
     }
 
     private function getTagsFromElementUpdateEvent($event)
