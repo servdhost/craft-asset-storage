@@ -586,6 +586,21 @@ class LocalController extends Controller
             throw new Exception("Error whilst contacting Servd to enable database access");
         }
 
+        if ($body['status'] != 'success') {
+            $this->stderr('Error whilst contacting Servd to enable database access' . PHP_EOL, Console::FG_RED);
+            $this->stderr($body['message'] . PHP_EOL, Console::FG_RED);
+            if (isset($body['errors'])) {
+                array_walk($body['errors'], function ($el, $key) {
+                    $this->stderr($key . ':' . PHP_EOL, Console::FG_RED);
+                    foreach ($el as $m) {
+                        $this->stderr($m . PHP_EOL, Console::FG_RED);
+                    }
+                    $this->stderr(PHP_EOL);
+                });
+            }
+            return false;
+        }
+
         $taskId = $body['task-id'] ?? null;
 
         $ready = $this->pollUntilTaskFinished($this->servdSlug, $taskId, $body['security-token'], 100);
