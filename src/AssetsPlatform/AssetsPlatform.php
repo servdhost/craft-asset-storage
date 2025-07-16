@@ -286,62 +286,64 @@ class AssetsPlatform extends Component
             );
         }
         
-        Event::on(
-            \craft\services\Assets::class,
-            \craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET,
-            function (ReplaceAssetEvent $event) {
-                $asset = $event->asset;
-                $fs = $asset->getVolume()->getFs();
-                if (!($fs instanceof Fs)) {
-                    return;
+        if ($settings->clearCdnCacheWhenAssetChanges) {
+            Event::on(
+                \craft\services\Assets::class,
+                \craft\services\Assets::EVENT_BEFORE_REPLACE_ASSET,
+                function (ReplaceAssetEvent $event) {
+                    $asset = $event->asset;
+                    $fs = $asset->getVolume()->getFs();
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
+            );
 
-        Event::on(
-            \craft\services\Assets::class,
-            \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
-            function (ReplaceAssetEvent $event) {
-                $asset = $event->asset;
-                $fs = $asset->getVolume()->getFs();
-                if (!($fs instanceof Fs)) {
-                    return;
+            Event::on(
+                \craft\services\Assets::class,
+                \craft\services\Assets::EVENT_AFTER_REPLACE_ASSET,
+                function (ReplaceAssetEvent $event) {
+                    $asset = $event->asset;
+                    $fs = $asset->getVolume()->getFs();
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
+            );
 
-        Event::on(
-            \craft\services\Elements::class,
-            \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
-            function (DeleteElementEvent $event) {
-                if (!is_a($event->element, Asset::class)){
-                    return;
-                } 
-                $asset = $event->element;
-                $fs = $asset->getVolume()->getFs();
-                if (!($fs instanceof Fs)) {
-                    return;
+            Event::on(
+                \craft\services\Elements::class,
+                \craft\services\Elements::EVENT_BEFORE_DELETE_ELEMENT,
+                function (DeleteElementEvent $event) {
+                    if (!is_a($event->element, Asset::class)){
+                        return;
+                    } 
+                    $asset = $event->element;
+                    $fs = $asset->getVolume()->getFs();
+                    if (!($fs instanceof Fs)) {
+                        return;
+                    }
+                    
+                    \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
+                        'description' => 'Clear cache for asset',
+                        'path' => $asset->path,
+                        'subfolder' => ($fs->_subfolder() ?? ''),
+                    ]));
                 }
-                
-                \craft\helpers\Queue::push(new \servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob([
-                    'description' => 'Clear cache for asset',
-                    'path' => $asset->path,
-                    'subfolder' => ($fs->_subfolder() ?? ''),
-                ]));
-            }
-        );
+            );
+        }
     }
 
     public function getFileUrl(Asset $asset)
@@ -395,14 +397,21 @@ class AssetsPlatform extends Component
 
     public function handleAssetTransform(Asset $asset, $transform, $force = true)
     {
+        $generalSettings = Craft::$app->getConfig()->getGeneral();
 
         // Check if the file can be handled by the Servd Asset Platform as an image
         $extension = strtolower(pathinfo($asset->filename, PATHINFO_EXTENSION));
         $assetPlatformSupportedTypes = ['jpg', 'jpeg', 'png', 'webp', 'heic', 'heif', 'avif'];
 
-        //If the input type is gif respect the no transform flag
-        if (Craft::$app->getConfig()->getGeneral()->transformGifs ?? false) {
+        // If the input type is gif respect the no transform flag
+        if ($generalSettings->transformGifs ?? false) {
             $assetPlatformSupportedTypes[] = 'gif';
+        }
+
+        $pluginTransformSvgs = Plugin::$plugin->getSettings()->transformSvgs;
+        $generalTransformSvgs = $generalSettings->transformSvgs ?? false;
+        if ($pluginTransformSvgs == 'yes' || ($pluginTransformSvgs == 'craft' && $generalTransformSvgs)) {
+            $assetPlatformSupportedTypes[] = 'svg';
         }
 
         if (!in_array($extension, $assetPlatformSupportedTypes)) {
