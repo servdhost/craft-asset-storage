@@ -3,9 +3,7 @@
 namespace servd\AssetStorage;
 
 use Craft;
-use craft\web\twig\variables\CraftVariable;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
-use servd\AssetStorage\AssetsPlatform\ImageTransforms;
 use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\Feedme\Feedme;
@@ -15,9 +13,8 @@ use servd\AssetStorage\LocalDev\LocalDev;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
-use servd\AssetStorage\variables\ServdVariable;
 use servd\AssetStorage\Blitz\BlitzIntegration;
-use yii\base\Event;
+use servd\AssetStorage\Ssh\SshService;
 
 class Plugin extends \craft\base\Plugin
 {
@@ -39,7 +36,6 @@ class Plugin extends \craft\base\Plugin
             $this->controllerNamespace = 'servd\\AssetStorage\\controllers';
         }
 
-        $this->registerVariables();
         $this->registerComponentsAndServices();
         $this->initialiseComponentsAndServices();
 
@@ -59,19 +55,6 @@ class Plugin extends \craft\base\Plugin
         ]);
     }
 
-    private function registerVariables()
-    {
-        Event::on(
-            CraftVariable::class,
-            CraftVariable::EVENT_INIT,
-            function (Event $event) {
-                /** @var CraftVariable $variable */
-                $variable = $event->sender;
-                $variable->set('servd', ServdVariable::class);
-            }
-        );
-    }
-
     public function registerComponentsAndServices()
     {
         $this->setComponents([
@@ -86,6 +69,7 @@ class Plugin extends \craft\base\Plugin
             'localDev' => LocalDev::class,
             'feedMe' => Feedme::class,
             'blitz' => BlitzIntegration::class,
+            'ssh' => SshService::class,
         ]);
     }
 
@@ -102,5 +86,6 @@ class Plugin extends \craft\base\Plugin
         $this->localDev;
         $this->feedMe;
         $this->blitz;
+        $this->ssh;
     }
 }
