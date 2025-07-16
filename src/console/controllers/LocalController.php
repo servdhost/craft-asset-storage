@@ -40,9 +40,10 @@ class LocalController extends Controller
     public $verbose = false;
     public $emptyDatabase = false;
 
-    private $leaveOpen = true;
     private $baseServdDomain = 'https://app.servd.host';
+    //private $baseServdDomain = 'http://host.docker.internal'; //LOCAL
     private $baseRunnerDomain = 'https://runner.servd.host';
+    //private $baseRunnerDomain = 'http://host.docker.internal:8081'; //LOCAL
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
@@ -95,6 +96,8 @@ class LocalController extends Controller
             return ExitCode::USAGE;
         }
 
+        if (!$this->checkForSsh()) return ExitCode::CONFIG;
+
         $this->outputDebug("Checking a 'from' environment has been set");
         $exit = $this->requireFrom();
         if ($exit != ExitCode::OK) {
@@ -107,12 +110,22 @@ class LocalController extends Controller
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
-        //Enable external database access on Servd
-        $remoteConfig = $this->enableRemoteDatabaseConnectivity($this->from);
-        if ($remoteConfig === false) {
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-        extract($remoteConfig);
+
+        // Get an SSH key that is unique to this dev environment
+        $sshKeyInfo = Plugin::$plugin->ssh->getKeyPair();
+        $privateKeyPath = $sshKeyInfo['privateKeyPath'];
+
+        // Send it to the dashboard to create a short lived SSH session
+        // the call should return the ssh-host for us to use in the next step
+        $sessionInfo = $this->createTemporarySshSession($sshKeyInfo, $this->from);
+        $sshString = "ssh -i $privateKeyPath -o StrictHostKeyChecking=no -p 2222 {$sessionInfo['ssh-user']}@{$sessionInfo['ssh-host']} ";
+
+        // Use it to run ssh -i /tmp/key "mysqldump blah blah"
+
+        // This will use mysqldump in the PHP pod to dump and stream the database back
+        // We can stream that into the local DB as normal
+
+        // Get the local DB connection details into scope
         extract($this->getLocalDatabaseConnectionDetails());
 
         if (!$this->skipBackup) {
@@ -121,12 +134,11 @@ class LocalController extends Controller
         }
 
         if ($this->emptyDatabase) {
-            $this->stdout("--emptyDatabase is set. All existing tables and data will be deleted from the database `$localDatabase`" . PHP_EOL, Console::FG_RED);
+            $this->stdout("--emptyDatabase is set. All existing tables and data will be deleted from the database `$localDatabase`" . PHP_EOL, Console::FG_YELLOW);
         }
 
         //Final confirmation
         if ($this->interactive && !$this->confirm('Ready to import. Do you want to proceed?')) {
-            $this->revertRemoteDatabaseConnectivity();
             return ExitCode::OK;
         }
 
@@ -135,38 +147,16 @@ class LocalController extends Controller
         $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
         if ($this->emptyDatabase) {
             $this->stdout('Deleting and recreating database.' . PHP_EOL);
-            $command = "mysql -h $localHost --port $localPort -u $localUser $localPasswordPrompt -e 'DROP DATABASE IF EXISTS $localDatabase; CREATE DATABASE $localDatabase;'";
+            $command = "mysql $localSkipSsl -h $localHost --port $localPort -u $localUser $localPasswordPrompt -e 'DROP DATABASE IF EXISTS $localDatabase; CREATE DATABASE $localDatabase;'";
             $this->runCommand($command);
         }
 
-        $skipColStat = '';
+        $dumpCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h {$sessionInfo['db-host']} --port {$sessionInfo['db-port']} -u {$sessionInfo['db-user']} -p\"{$sessionInfo['db-password']}\" {$sessionInfo['db-database']}";
+        $sshCommandPlusDump = "$sshString '$dumpCommand'";
+        $pipeIntoLocal = $sshCommandPlusDump . " | mysql $localSkipSsl -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase";
 
-        // Find out if mysqldump supports column-statistics
-        $shellCommand = new ShellCommand();
+        $resp = $this->runCommand($pipeIntoLocal);
 
-        if (stripos(PHP_OS, 'WIN') === 0) {
-            $shellCommand->setCommand('mysqldump --help | findstr "column-statistics"');
-        } else {
-            $shellCommand->setCommand('mysqldump --help | grep "column-statistics"');
-        }
-
-        if (!function_exists('proc_open') && function_exists('exec')) {
-            $shellCommand->useExec = true;
-        }
-
-        $success = $shellCommand->execute();
-
-        // if there was output, then they're running mysqldump 8.x against a 5.x database.
-        if ($success && $shellCommand->getOutput()) {
-            $skipColStat .= ' --skip-column-statistics';
-        }
-
-        //Perform a direct stream from the remote db into the local
-        $command = "mysqldump $skipColStat --no-tablespaces --add-drop-table --quick --single-transaction --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase | mysql -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase";
-        $this->runCommand($command);
-
-        //Close external database access on Servd
-        $this->revertRemoteDatabaseConnectivity();
         $this->stdout("Database pull complete." . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
@@ -181,6 +171,8 @@ class LocalController extends Controller
             return ExitCode::USAGE;
         }
 
+        if (!$this->checkForSsh()) return ExitCode::CONFIG;
+
         $exit = $this->requireTo();
         if ($exit != ExitCode::OK) {
             return $exit;
@@ -191,35 +183,33 @@ class LocalController extends Controller
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
-        //Enable external database access on Servd
-        $remoteConfig = $this->enableRemoteDatabaseConnectivity($this->to);
-        if ($remoteConfig === false) {
-            return ExitCode::UNSPECIFIED_ERROR;
-        }
-        extract($remoteConfig);
+        // Get an SSH key that is unique to this dev environment
+        $sshKeyInfo = Plugin::$plugin->ssh->getKeyPair();
+        $privateKeyPath = $sshKeyInfo['privateKeyPath'];
+
+        // Send it to the dashboard to create a short lived SSH session
+        // the call should return the ssh-host for us to use in the next step
+        $sessionInfo = $this->createTemporarySshSession($sshKeyInfo, $this->to);
+        $sshString = "ssh -i $privateKeyPath -o StrictHostKeyChecking=no -p 2222 {$sessionInfo['ssh-user']}@{$sessionInfo['ssh-host']} ";
+
         extract($this->getLocalDatabaseConnectionDetails());
 
         //Final confirmation
         if ($this->interactive && !$this->confirm('Ready to export. Do you want to proceed?')) {
-            $this->revertRemoteDatabaseConnectivity();
             return ExitCode::OK;
         }
 
         //Perform a direct stream from the remote db into the local
         $this->stdout('Starting streaming database export', Console::FG_GREEN);
         $localPasswordPrompt = empty($localPassword) ? "" : "-p\"$localPassword\"";
-        $importCommand = "mysqldump --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase | mysql --compress -h $remoteHost --port $remotePort -u $remoteUser -p\"$remotePassword\" $remoteDatabase";
-        $this->runCommand($importCommand);
 
-        if ($remoteConfig['optimize']) {
-            //Optimize the target database after the import is done
-            $this->stdout('Starting database optimization', Console::FG_GREEN);
-            $optimizeCommand = "mysqlcheck -h $remoteHost -P $remotePort -u $remoteUser -p\"$remotePassword\" -o $remoteDatabase 2>&1 >/dev/null";
-            $this->runCommand($optimizeCommand);
-        }
+        $importCommand = "mysql -h {$sessionInfo['db-host']} --port {$sessionInfo['db-port']} -u {$sessionInfo['db-user']} -p\"{$sessionInfo['db-password']}\" {$sessionInfo['db-database']}";
+        $sshCommandPlusImport = "$sshString '$importCommand'";
+        $dumpCommand = "mysqldump $localSkipSsl --no-tablespaces --add-drop-table --quick --single-transaction -h $localHost --port $localPort -u $localUser $localPasswordPrompt $localDatabase ";
+        $fullCommand = "$dumpCommand | $sshCommandPlusImport";
+        $this->runCommand($fullCommand);
 
         //Close external database access on Servd
-        $this->revertRemoteDatabaseConnectivity();
         $this->stdout("Database push complete." . PHP_EOL, Console::FG_GREEN);
 
         return ExitCode::OK;
@@ -555,19 +545,38 @@ class LocalController extends Controller
         return true;
     }
 
-
-    private function enableRemoteDatabaseConnectivity($environment)
+    private function checkForSsh()
     {
+        $shellCommand = new ShellCommand();
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            $shellCommand->setCommand('where.exe ssh');
+        } else {
+            $shellCommand->setCommand('which ssh');
+        }
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+        $success = $shellCommand->execute();
 
-        $this->stdout('Enabling remote database connectivity' . PHP_EOL, Console::FG_GREEN);
+        if (!$success || !$shellCommand->getOutput()) {
+            $this->stderr("The 'ssh' command is not available. Please install it in the environment where you are running this command to connect directly to Servd databases." . PHP_EOL, Console::FG_RED);
+            return false;
+        }
 
-        //localhost/enable-remote-database-connectivity
+        return true;
+    }
+
+    private function createTemporarySshSession($keyInfo, $dbEnv)
+    {
+        $this->stdout('Creating temporary SSH Session' . PHP_EOL, Console::FG_GREEN);
+
         $guz = Craft::createGuzzleClient();
-        $result = $guz->post($this->baseServdDomain . '/enable-remote-database-connectivity', [
+        $result = $guz->post($this->baseServdDomain . '/create-instant-ssh-session', [
             'json' => [
                 "slug" => $this->servdSlug,
                 "key" => $this->servdKey,
-                "environment" => $environment
+                "public-key" => $keyInfo['publicKey64'],
+                "db-environment" => $dbEnv,
             ]
         ]);
 
@@ -577,64 +586,50 @@ class LocalController extends Controller
             throw new Exception("Error whilst contacting Servd to enable database access");
         }
 
-        if ($body['status'] != 'success') {
-            $this->stderr('Error whilst contacting Servd to enable database access' . PHP_EOL, Console::FG_RED);
-            $this->stderr($body['message'] . PHP_EOL, Console::FG_RED);
-            if (isset($body['errors'])) {
-                array_walk($body['errors'], function ($el, $key) {
-                    $this->stderr($key . ':' . PHP_EOL, Console::FG_RED);
-                    foreach ($el as $m) {
-                        $this->stderr($m . PHP_EOL, Console::FG_RED);
-                    }
-                    $this->stderr(PHP_EOL);
-                });
-            }
-            return false;
+        $taskId = $body['task-id'] ?? null;
+
+        $ready = $this->pollUntilTaskFinished($this->servdSlug, $taskId, $body['security-token'], 100);
+
+        if (!$ready) {
+            throw new Exception("Error whilst waiting for SSH access to be enabled");
         }
 
-        $this->leaveOpen = $body['leave-open'];
+        // Gives the load balancer a sec to get updated
+        sleep(5);
 
-        if (!empty($body['task-id'])) {
-            //Poll for success
-            $ready = $this->pollUntilTaskFinished($this->servdSlug, $body['task-id'], $body['security-token'], 100);
-            if (!$ready) {
-                return false;
-            }
-        }
-
-        return [
-            'remoteHost' => $body['host'],
-            'remotePort' => $body['port'],
-            'remoteUser' => $body['user'],
-            'remotePassword' => $body['password'],
-            'remoteDatabase' => $body['database'],
-            'optimize' => $body['optimize'] == true
-        ];
-    }
-
-    private function revertRemoteDatabaseConnectivity()
-    {
-        //Do nothing if it was open anyway
-        if ($this->leaveOpen) {
-            return;
-        }
-
-        $this->stdout('Reverting remote database connectivity' . PHP_EOL, Console::FG_GREEN);
-
-        $guz = Craft::createGuzzleClient();
-        $result = $guz->post($this->baseServdDomain . '/disable-remote-database-connectivity', [
-            'json' => [
-                "slug" => $this->servdSlug,
-                "key" => $this->servdKey,
-            ]
-        ]);
+        // Save the private key to a temporary file
+        return $body;
     }
 
     private function getLocalDatabaseConnectionDetails()
     {
+
+        // Find out if local mysql has SSL issues
+        $shellCommand = new ShellCommand();
+
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            $shellCommand->setCommand('mysql --help | findstr "skip-ssl"');
+        } else {
+            $shellCommand->setCommand('mysql --help | grep "skip-ssl"');
+        }
+
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $shellCommand->useExec = true;
+        }
+
+        $success = $shellCommand->execute();
+
+        // if there was output, then they're running mysqldump 8.x against a 5.x database.
+        if ($success && $shellCommand->getOutput()) {
+            $skipSsl = ' --skip-ssl';
+        } else {
+            $skipSsl = ' --ssl=0';
+        }
+
         $dbConfig = App::dbConfig();
         $dsn = $dbConfig['dsn'];
         return [
+            'localSkipSsl' => $skipSsl,
             'localHost' => Db::parseDsn($dsn, 'host'),
             'localPort' => empty(Db::parseDsn($dsn, 'port')) ? '3306' : Db::parseDsn($dsn, 'port'),
             'localUser' => $dbConfig['username'],
