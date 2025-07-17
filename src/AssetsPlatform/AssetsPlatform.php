@@ -319,12 +319,6 @@ class AssetsPlatform extends Component
             $assetPlatformSupportedTypes[] = 'gif';
         }
 
-        $pluginTransformSvgs = Plugin::$plugin->getSettings()->transformSvgs;
-        $generalTransformSvgs = $generalSettings->transformSvgs ?? false;
-        if ($pluginTransformSvgs == 'yes' || ($pluginTransformSvgs == 'craft' && $generalTransformSvgs)) {
-            $assetPlatformSupportedTypes[] = 'svg';
-        }
-
         if (!in_array($extension, $assetPlatformSupportedTypes)) {
             if ($force) {
                 return $this->getFileUrl($asset);

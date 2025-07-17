@@ -98,7 +98,7 @@ class LocalController extends Controller
 
         $this->outputDebug("Checking a 'from' environment has been set");
         $exit = $this->requireFrom();
-        if ($exit != ExitCode::OK) {
+        if ($exit != 0) {
             $this->outputDebug("Exiting");
             return $exit;
         }
