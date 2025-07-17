@@ -26,8 +26,7 @@ class ImageTransforms
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $volume = $asset->getVolume();
-        $fs = $volume->getFs();
+        $fs = $asset->getVolume()->getFs();
 
         if (get_class($fs) !== Fs::class) {
             return null;
@@ -56,8 +55,6 @@ class ImageTransforms
         $params['s'] = $signingKey;
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
-        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
 
         // Use a custom URL template if one has been provided
         $customPattern = App::parseEnv($fs->optimiseUrlPattern);
@@ -66,7 +63,7 @@ class ImageTransforms
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $this->encodeFilenameInFilePath($normalizedSubpath . $asset->getPath()),
+                "filePath" => $this->encodeFilenameInFilePath($asset->getPath()),
                 "params" => '?' . http_build_query($params),
             ];
             $finalUrl = $customPattern;
@@ -116,14 +113,10 @@ class ImageTransforms
             return;
         }
 
-        $volume = $asset->getVolume();
         /** @var \servd\AssetStorage\AssetsPlatform\Fs */
-        $fs = $volume->getFs();
+        $fs = $asset->getVolume()->getFs();
 
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
-        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
-
-        $filePath = $this->encodeFilenameInFilePath($normalizedSubpath . $asset->getPath());
+        $filePath = $this->encodeFilenameInFilePath($asset->getPath());
 
         $base = rtrim($fs->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');

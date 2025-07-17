@@ -1,7 +1,7 @@
 {
     "name": "servd/craft-asset-storage",
     "description": "Servd Asset Storage and Helpers integration for Craft CMS",
-    "version": "4.1.0",
+    "version": "3.6.0",
     "type": "craft-plugin",
     "keywords": [
         "cms",
@@ -23,9 +23,10 @@
         "docs": "https://github.com/servdhost/craft-asset-storage"
     },
     "require": {
-        "php": "^8.2",
-        "craftcms/cms": "^5.0.0-alpha.1",
-        "craftcms/flysystem": "^2.0.0",
+        "php": "^8.0.2",
+        "aws/aws-sdk-php": "3.319.4",
+        "craftcms/cms": "^4.0.0-beta.2",
+        "craftcms/flysystem": "^1.0.0",
         "league/flysystem-aws-s3-v3": "^3.0.0",
         "yiisoft/yii2-redis": "^2.0.0"
     },
