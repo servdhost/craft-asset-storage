@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.1.0 - 2025-07-17
+
+### Updated
+
+- Switched database push/pull CLI commands to use SSH Session tunnelling 
+
 ## 4.0.17 - 2025-06-13
 
 ### Added
