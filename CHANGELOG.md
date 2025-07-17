@@ -1,198 +1,102 @@
 # Release Notes for Servd Assets and Helpers
 
-## 4.1.0 - 2025-07-17
+## 2.11.0 - 2025-07-17
 
 ### Updated
 
 - Switched database push/pull CLI commands to use SSH Session tunnelling 
 
-## 4.0.17 - 2025-06-13
-
-### Added
-
-- Added the "Clear Asset CDN cache when an asset file changes" plugin setting to control the cache purging behaviour when an asset is deleted and when it's file is replaced
-
-## 4.0.16 - 2025-04-19
-
-### Added
-
-- Added the "Transform SVGs" plugin setting to control how SVGs are transformed to other image formats
-
-## 4.0.15 - 2025-02-13
-
-### Fixed
-
-- Updated the automatic cache purging of edited assets to handle renamed assets
-
-## 4.0.14 - 2025-02-03
+## 2.10.15 - 2025-02-03
 
 ### Fixed
 
 - Added a fix for an update to the AWS S3 SDK which adds headers incompatible with Servd asset platform storage providers
 
-## 4.0.13 - 2025-01-27
+## 2.10.14 - 2025-01-27
 
 ### Added
 
 - Added the `--emptyDatabase` flag for the `servd/local/pull-database` CLI command to fully empty the local DB before running the import
 
-## 4.0.12 - 2024-12-11
-
-### Updated
-
-- Reduced the cache memory usage of the "Automated Tag Based Purge" option for the "Cache Clear Strategy" plugin field.
-
-## 4.0.11 - 2024-12-03
-
-### Fixed
-
-- Another fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
-
-## 4.0.10 - 2024-11-22
+## 2.10.13 - 2024-11-22
 
 ### Updated
 
 - Force image transforms to have a width and height compatible with backend transform function memory limits
-- Automatically clear caches for non-image files that are replaced or deleted within the Craft CP
 
-## 4.0.9 - 2024-11-15
-
-### Fixed
-
-- Speculative fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
-
-## 4.0.8 - 2024-09-30
+## 2.10.12 - 2024-09-30
 
 ### Fixed
 
 - Added handling for image transform strings passed as an array
 
-## 4.0.7 - 2024-09-24
+## 2.10.11 - 2024-08-29
 
-### Fixed
+### Updated
 
-- Replaced a removed twig function with an alternative
+- Fixed the version of the AWS PHP SDK to v3.319.4 to avoid deprecation errors breaking asset uploads.
 
-## 4.0.6 - 2024-07-25
-
-### Fixed
-
-- Fixed a bug which caused asset files with accented characters to not load properly on the V3 asset platform.
-
-## 4.0.5 - 2024-07-16
+## 2.10.10 - 2024-07-16
 
 ### Fixed
 
 - Fixed a bug which caused images to be served in their original size instead of being transformed
 
-## 4.0.4 - 2024-07-15
+## 2.10.9 - 2024-07-15
 
 ### Updated
 
 - Switched asset platform image manipulation availability detection from Craft's native to a custom implementation to support transforms of HEIC/HEIF files even when local ImageMagick/GD isn't able to do so.
 
-## 4.0.3 - 2024-04-08
+## 2.10.8 - 2024-05-29
 
 ### Fixed
 
-- Update class references in StaticCache to match Craft 5 deprecations
-- Removed a reference to a composer package which is  no longer installed with Craft 5
+- Fixed a save bug which incorrectly set the Base URL field of Servd Asset Volumes to https://cdn2.assets-servd.host/ for projects running on the V3 Asset Platform
 
-## 4.0.2 - 2024-03-29
-
-### Added
-
-- Support for Craft 5 volume subpaths
-
-### Updated
-
-- Moved image do-not-upscale logic over to asset platform
-- Merged recent v3.x plugin changes
+## 2.10.7 - 2024-03-12
 
 ### Fixed
 
 - Fixed a bug when purging static cache URLs with no defined path
 
-## 4.0.1 - 2024-03-08
-
-### Fixed
-
-- Fixed a call to a method which has changed signature in Craft 5
-
-## 4.0.0 - 2024-02-14
-
-### Added
-
-- Preliminary Craft 5 Support. Happy valentines day 💕
-
-## 3.5.11 - 2024-03-11
+## 2.10.6 - 2024-02-13
 
 ### Updated
 
 - Added rawurlencoding to custom file pattern URLs to match non-custom handling
 
-## 3.5.10 - 2024-02-13
+## 2.10.5 - 2024-02-13
 
 ### Fixed
 
 - Fixed an issue where parentheses in v3 asset filenames would cause the image to fail to load.
 
-## 3.5.9 - 2024-01-25
-
-### Fixed
-
-- Fixed a bug with the ImagerX integration
-
-## 3.5.8 - 2024-01-24
-
-### Added
-
-- Respect image upscaling settings in Craft general settings and directly on transforms
-
-## 3.5.7 - 2023-12-18
-
-### Added
-
-- Added some useful debugging info for failed dynamicInclude calls
-
-## 3.5.6 - 2023-11-30
+## 2.10.4 - 2023-11-30
 
 ### Fixed
 
 - Fixed an order of execution bug when integrating the Servd Plugin with Blitz
 
-## 3.5.5 - 2023-11-20
+## 2.10.3 - 2023-11-20
 
 ### Added
 
 - Added a CLI command to convert accent modifier characters in asset filenames in the database to their equivalent absolute accented characters as is used by the S3 protocol.
 
-## 3.5.4 - 2023-11-07
+## 2.10.2 - 2023-11-07
 
 ### Updated
 
 - Normalise any accent modifier characters in asset filenames which upset our Asset Platform storage provider's API
 
-## 3.5.3 - 2023-11-02
-
-### Added
-
-- Added a new `./craft servd-asset-storage/command` command which can be used to run Craft console commands in a Servd environment.
-
-## 3.5.2 - 2023-10-27
-
-### Added
-
-- Added validation to the Servd Filesystem's CDN URL Pattern field to prevent the `{{params}}` placeholder from being added.
-- Added validation to the Servd Filesystem's Image Transform URL Pattern field to check the `{{params}}` placeholder is present.
-
-## 3.5.1 - 2023-10-26
+## 2.10.1 - 2023-10-26
 
 ### Fixed
 
 - Ampersands in filenames of assets are now encoded to prevent security token hash mismatches
 
-## 3.5.0 - 2023-09-19
+## 2.10.0 - 2023-09-19
 
 > [!IMPORTANT]
 > If you are using `{% dynamicInclude %}` twig tags, you will need to clear any static caches to regenerate their HTML with this update.
@@ -201,349 +105,206 @@
 
 - Improve security of dynamic include calls
 
-## 3.4.11 - 2023-08-25
+## 2.9.8 - 2023-09-14
 
-### Fixed
+### Updated
 
-- Fix for an issue where the URLs for non-Servd assets were getting handled when the disable transforms setting was enabled.
+- Increased the timeout when contacting the Servd Asset Platform to obtain a token
+- Removed a url encoding which would break asset urls with a rev query param
 
-## 3.4.10 - 2023-08-24
 
-### Added
-
-- A `--wait` option to the `./craft servd-asset-storage/clone` command that polls the Servd task runner until completion.
-
-### Fixed
-
-- Relaxed environment constraint for where the `./craft servd-asset-storage/clone` command could be run from.
-
-## 3.4.9 - 2023-08-23
-
-### Added
-
-- It's now possible to trigger clones between remote Servd environments using the `./craft servd-asset-storage/clone` console command.
-- The database optimisation step performed by the `./craft servd-asset-storage/local/push-database` command is now controlled by an internal back-end config setting, and only run when determined by the Servd task runner.
-- Non-transformed file URLs now get a `dm` query parameter appended to allow for cache busting if the underlying asset changes.
-
-## 3.4.8 - 2023-07-31
+## 2.9.7 - 2023-07-31
 
 ### Fixed
 
 - Fixed an incompatibility between Asset Platform V3 and ImagerX integration when Imager is passed a URL as a string (like it is when retcon is transforming images)
 
-## 3.4.7 - 2023-06-13
+## 2.9.6 - 2023-06-13
 
 ### Fixed
 
 - Fixed a reference to a const which has recently been removed which broke the ImagerX storage adapter
 
-## 3.4.6 - 2023-06-06
-
-### Updated
-
-- Removed an instance of urlencoding for non-image assets which was causing problems when interacting with some other plugins which also urlencoded URLs
-
-## 3.4.5 - 2023-05-24
+## 2.9.5 - 2023-05-25
 
 ### Fixed
 
-- Craft does not adhere to its own `addTrailingSlashesToUrls` setting for some multisite URLs. That is now handled when purging static cache URLs
+- A little fix to handle an unexpected code path when a Servd Volume is instantiated before Craft has bootstrapped
 
-## 3.4.4 - 2023-05-22
+## 2.9.4 - 2023-05-22
 
 ### Fixed
 
 - Fixed a couple of bugs when syncing assets between asset platform V3 and the local filesystem
 
-## 3.4.3 - 2023-05-15
+## 2.9.3 - 2023-05-15
 
 ### Added
 
 - Added additional request validation for dynamicInclude endpoint to prevent annoying exceptions being thrown by bots
 
-## 3.4.2 - 2023-05-03
+## 2.9.2 - 2023-05-03
 
 ### Fixed
 
 - Removed all URL encoding in transform URLs, it was upsetting things
 
-## 3.4.1 - 2023-05-03
+## 2.9.1 - 2023-05-03
 
 ### Fixed
 
 - Fixed a URL encoding issue involving `@` characters in asset file names which caused 401 security token errors to be returned.
 
-## 3.4.0 - 2023-04-29
+## 2.9.0 - 2023-04-29
 
 ### Added
 
 - [Asset Platform V3 Support](https://servd.host/blog/asset-platform-v3)
 
-## 3.3.3 - 2023-04-24
-
-### Added
-
-- Fix for missing "Purge Product URL(s)" buttons on Craft Commerce product pages.
-
-## 3.3.2 - 2023-04-16
+## 2.8.6 - 2023-04-16
 
 ### Added
 
 - Support for fillmax image transform mode
 
-## 3.3.1 - 2023-04-13
+## 2.8.5 - 2023-04-13
 
 ### Fixed
 
 - Fix a bug when pulling or pushing the database but the local DB's password is empty
 
-## 3.3.0 - 2023-03-17
-
-### Added
-
-- Support for 'letterbox' image cropping in Craft 4.4
-
-## 3.2.11 - 2023-02-20
-
-### Fixed
-
-- Fixed a missing change from the previous commit
-
-## 3.2.10 - 2023-02-20
-
-### Added
-
-- Added a `-v` flag for the CLI commands to provide verbose output to help track down errors
-
-## 3.2.9 - 2023-02-20
+## 2.8.4 - 2023-02-20
 
 ### Fixed
 
 - Fix for the cookie SERVD_LOGGED_IN_STATUS was not cleared as expected when using a wildcard cookie domain.
 
-## 3.2.8 - 2023-02-13
+## 2.8.3 - 2023-02-14
 
 ### Updated
 
 - The plugin's CSRF token and dynamic content injection JS functions can now be deferred and executed manually to avoid collisions with other ajax requests which might run on intial page load (causing csrf session issues).
 
-## 3.2.7 - 2023-02-10
-
-### Added
-
-- The priority of the static cache purge job can now be controlled by setting an optional SERVD_PURGE_PRIORITY environment variable to an integer value. By default, the priority is set to 1025.
-
-## 3.2.6 - 2023-02-08
-
-### Fixed
-
-- Introduced batching to the code that purges specific URLs from the static cache. The batch size can be controlled by setting a SERVD_PURGE_BATCH_SIZE environment variable to an integer value.
-
-## 3.2.5 - 2023-02-03
-
-### Fixed
-
-- Added a fix for when an owner entry can't be located when attempting to get tags for a draft/revision entry.
-
-## 3.2.4 - 2022-12-21
-
-### Fixed
-
-- Fixed the fix which didn't fix the thing the fix was supposed to fix
-
-## 3.2.3 - 2022-12-20
-
-### Fixed
-
-- Fixed compatibility with Imager-X's Imgix transformer when using Servd's Asset Platform for storage
-
-## 3.2.2 - 2022-12-19
+## 2.8.2 - 2022-12-19
 
 ### Added
 
 - Servd's Imager-X integration will now play nicely with RetCon modified `img` tags, including srcset
 
-## 3.2.1 - 2022-12-14
+## 2.8.1 - 2022-12-14
 
 ### Fixed
 
 - Fixed an edge case which could result in static cache purges getting stuck in a redirect loop
 
-## 3.2.0 - 2022-12-05
+## 2.8.0 - 2022-12-05
 
 ### Added
 
 - You can now disable automatic image format conversion if webp isn't treating your images nicely
 - Alternatively, you can now use AVIF as your auto-format of choice (check the plugin's settings for the new option)
 
-## 3.1.8 - 2022-11-08
-
-### Fixed
-
-- Yet more fixes for the changes in Craft 4.3 which broke asset URL generations. This change stops Craft from generating image transforms unnecessarily
-
-## 3.1.7 - 2022-11-01
-
-### Fixed
-
-- More fixes for the changes in Craft 4.3 which broke asset URL generations
-
-## 3.1.6 - 2022-11-01
+## 2.7.7 - 2022-11-01
 
 ### Fixed
 
 - Set the `$handled` property on asset url events to prevent Craft undoing our good work
 
-## 3.1.5 - 2022-10-21
+## 2.7.6 - 2022-10-21
 
 ### Fixed
 
 - Use correct action URLs when a site is using a subfolder basepath
 
-## 3.1.4 - 2022-10-12
+## 2.7.5 - 2022-10-12
 
 ### Fixed
 
 - Detection of video files updated to work when custom filetype definitions are included in general.php
 
-## 3.1.3 - 2022-10-05
+## 2.7.4 - 2022-10-05
 
 ### Updated
 
 - Cleaned up some static cache busting code which was no longer needed
 
-## 3.1.2 - 2022-09-14
+## 2.7.3 - 2022-09-15
 
 ### Fixed
 
-- Auto detect the Servd 'development' environment when determining the current assets environment
+- Avoid purging URLs via Ledge that don't have a recognisable hosts.
 
-## 3.1.1 - 2022-08-16
+## 2.7.2 - 2022-09-15
 
 ### Fixed
 
-- Added some protection to stop the Blitz cache purger from running when developing locally
+- Skip purging null URLs
 
-## 3.1.0 - 2022-08-16
+## 2.7.1 - 2022-09-14
+
+### Fixed
+
+- Added the 'development' environment to the list of valid Servd environments for pushing/pulling databases and assets
+
+## 2.7.0 - 2022-08-17
 
 ### Added
 
-- Added an integration with Blitx to allow it to make use Servd's static cache as a caching reverse proxy. This allows you to use the speed and throughput of the Static Caching layer, whilst keeping all of your cache configuration and functionality within Blitz. [Servd + Blitz Docs](https://servd.host/docs/caching-with-blitz)
+- Added an integration with Blitz to allow it to make use Servd's static cache as a caching reverse proxy. This allows you to use the speed and throughput of the Static Caching layer, whilst keeping all of your cache configuration and functionality within Blitz. [Servd + Blitz Docs](https://servd.host/docs/caching-with-blitz)
 
-## 3.0.6 - 2022-08-06
+## 2.6.6 - 2022-08-06
 
 ### Added
 
 - Added a tweak to Yii's Redis session management to make it work in the way everyone expects. The PHP session's TTL is now reset whenever is is opened, which prevents the session from expiring after a specific length of time. It now expires after a specific period of user inactivity which will also shortly be configurable via the Servd dashboard.
 
-## 3.0.5 - 2022-08-04
-
-### Fixed
-
-- We didn't noticed that the cache clear buttons which we embed in the sidebar of Entry Edit pages had disappeared! It's back now 👌
-
-## 3.0.4 - 2022-07-06
+## 2.6.5 - 2022-07-06
 
 ### Fixed
 
 - Fixed a bug when rendering a non-image file with the Image Optimize integration.
 
-## 3.0.3 - 2022-06-28
-
-### Fixed
-
-- Fixed a bug when moving assets between folders
-
-## 3.0.2 - 2022-06-20
+## 2.6.4 - 2022-06-20
 
 ### Fixed
 
 - Fixed a bug when manually clearing the static cache using a Commerce Product's 'tag'
 
-## 3.0.1 - 2022-06-17
-
-### Fixed
-
-- Fixed incorrect function defs for ImageOptimize integration
-
-
-## 3.0.0 - 2022-06-03
+## 2.6.3 - 2022-06-03
 
 ### Fixed
 
 - Fixed a bug when using an environment variable as the 'subfolder' on a Servd Volume
 
-## 3.0.0-beta.12 - 2022-05-30
-
-### Fixed
-
-- ImagerX function typings
-
-## 3.0.0-beta.11 - 2022-05-26
+## 2.6.2 - 2022-05-26
 
 ### Fixed
 
 - Fallback to the [defaultImageQuality](https://craftcms.com/docs/3.x/config/config-settings.html#defaultimagequality) config variable if no image quality is specified when defining a transformation.
 
-## 3.0.0-beta.10 - 2022-05-26
+## 2.6.1 - 2022-05-26
 
 ### Fixed
 
 - Apply stricter checks when hydrating dynamicInclude contexts
 
-## 3.0.0-beta.9 - 2022-05-22
-
-### Fixed
-
-- Added return codes to all CLI commands
-
-## 3.0.0-beta.8 - 2022-05-19
+## 2.6.0 - 2022-05-19
 
 ### Updated
 
 - Feed Me logs now work as originally intended, browsable in the Craft CP, even when running on a load balanced infra or in an isolated task runner
 
-## 3.0.0-beta.7 - 2022-05-13
+## 2.5.5 - 2022-05-01
 
 ### Fixed
 
-- Some fun with static const overloading. Should they be public? Should they be private? No-one knows.
-- Typo
+- Fixed a bug which could cause an infinite loop when clearing tagged urls from the static cache
 
-## 3.0.0-beta.6 - 2022-05-12
-
-### Fixed
-
-- Fixed Feed Me logs integration by adding some typings
-
-## 3.0.0-beta.5 - 2022-05-04
-
-### Updated
-
-- Merge master 2.5.5
-
-## 3.0.0-beta.4 - 2022-05-02
-
-### Fixed
-
-- Tentative fix for a bug with the plugin's Flysystem S3 tweaks
-
-## 3.0.0-beta.3 - 2022-04-20
+## 2.5.4 - 2022-04-20
 
 ### Added
 
 - The local db push command now runs a MySQL optimize command to fix any indexes that were corrupted during the import
-
-## 3.0.0-beta.2 - 2022-04-15
-
-### Updated
-
-- Craft 4 compatibility, including:
-- Complete rework of Volume and the new Filesystem objects
-- Rewrite of pull and push-asset commands to support filesystems
-- Allow mapping of Servd Filesystems to Local Folder filesystems to allow copy of assets between them
-- Loads of changes to ImageTransforms and related Events
-- A few changes to support the new craft-flysystem package
 
 ## 2.5.3 - 2022-04-11
 
@@ -789,7 +550,6 @@
 ### Updated
 
 - Improved warnings and error messages for problems with Servd's asset platform
-- [Enterprise Hosting for Craft CMS](https://servd.host/solutions/enterprise)
 
 ## 2.1.14 - 2021-03-02
 

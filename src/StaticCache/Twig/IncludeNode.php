@@ -169,7 +169,7 @@ class IncludeNode extends Node implements NodeOutputInterface
             $compiler->subcompile($this->getNode('variables'));
             $compiler->raw(')');
         } else {
-            $compiler->raw('twig_array_merge([], ');
+            $compiler->raw('twig_to_array(');
             $compiler->subcompile($this->getNode('variables'));
             $compiler->raw(')');
         }

@@ -3,8 +3,7 @@
 namespace servd\AssetStorage\AssetsPlatform;
 
 use craft\elements\Asset;
-use craft\models\ImageTransform;
-use Craft;
+use craft\models\AssetTransform;
 
 class TransformOptions
 {
@@ -22,9 +21,8 @@ class TransformOptions
     public $fpx = null;
     public $fpy = null;
     public $auto = null;
-    public $upscale = null;
 
-    public function fillFromCraftTransform(Asset $asset, ImageTransform $transform)
+    public function fillFromCraftTransform(Asset $asset, AssetTransform $transform)
     {
         $auto = [];
 
@@ -32,7 +30,6 @@ class TransformOptions
         $this->height = $transform->height;
         $this->quality = $transform->quality;
         $this->format = $transform->format;
-        $this->upscale = $transform->upscale ?? Craft::$app->getConfig()->getGeneral()->upscaleImages ?? true;
 
         if (empty($this->format)) {
             $auto[] = 'format';

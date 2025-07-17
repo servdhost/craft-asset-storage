@@ -14,7 +14,7 @@ use craft\events\RegisterTemplateRootsEvent;
 class BlitzIntegration extends Component
 {
 
-    public function init(): void
+    public function init()
     {
         if (!class_exists('\putyourlightson\blitz\Blitz')) {
             return;

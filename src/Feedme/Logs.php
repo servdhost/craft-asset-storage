@@ -17,7 +17,7 @@ class Logs extends \craft\feedme\services\Logs
     private $maxLogLines;
     private $maxLogRetentionSeconds;
 
-    public function init(): void
+    public function init()
     {
         parent::init();
         $redisDb = intval(getenv('REDIS_DB'));
@@ -30,7 +30,7 @@ class Logs extends \craft\feedme\services\Logs
         $this->maxLogRetentionSeconds = 3600 * 24 * 7 ;
     }
 
-    public function log($method, $message, array $params = [], array $options = []): void
+    public function log($method, $message, $params = [], $options = [])
     {
         $dateTime = new DateTime();
         $type = explode('::', $method)[1];
@@ -120,7 +120,7 @@ class Logs extends \craft\feedme\services\Logs
     }
 
 
-    private function _canLog($type): bool
+    private function _canLog($type)
     {
         $logging = Plugin::$plugin->service->getConfig('logging');
 
@@ -136,7 +136,7 @@ class Logs extends \craft\feedme\services\Logs
         return true;
     }
 
-    public function clear(): void
+    public function clear()
     {
         $this->redisCon->zremrangebyrank($this->redisLogsKey, 0, -1);
     }

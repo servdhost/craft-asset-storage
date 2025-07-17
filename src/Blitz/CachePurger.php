@@ -30,36 +30,27 @@ class CachePurger extends BaseCachePurger
     // Public Methods
     // =========================================================================
 
-    /**
-     * @inheritdoc
-     */
-    public function purgeUrisWithProgress(array $siteUris, callable $setProgressHandler = null): void
+    public function purgeUris(array $siteUris)
     {
-        $count = 0;
-        $total = count($siteUris);
-        $label = 'Purging {total} pages.';
+        $event = new RefreshCacheEvent(['siteUris' => $siteUris]);
+        $this->trigger(self::EVENT_BEFORE_PURGE_CACHE, $event);
 
-        if (is_callable($setProgressHandler)) {
-            $progressLabel = Craft::t('blitz', $label, ['total' => $total]);
-            call_user_func($setProgressHandler, $count, $total, $progressLabel);
+        if (!$event->isValid) {
+            return;
         }
 
-        if($this->isRunningInServd() && $this->isStaticCachingEnabled()) {  
-            Ledge::purgeUrls(SiteUriHelper::getUrlsFromSiteUris($siteUris));
+        if(!$this->isRunningInServd() || !$this->isStaticCachingEnabled()) {
+            return;
         }
 
-        $count = $total;
+        Ledge::purgeUrls(SiteUriHelper::getUrlsFromSiteUris($siteUris));
 
-        if (is_callable($setProgressHandler)) {
-            $progressLabel = Craft::t('blitz', $label, ['total' => $total]);
-            call_user_func($setProgressHandler, $count, $total, $progressLabel);
+        if ($this->hasEventHandlers(self::EVENT_AFTER_PURGE_CACHE)) {
+            $this->trigger(self::EVENT_AFTER_PURGE_CACHE, $event);
         }
     }
 
-    /**
-     * @inheritdoc
-     */
-    public function purgeAll(callable $setProgressHandler = null, bool $queue = true): void
+    public function purgeAll()
     {
         $event = new RefreshCacheEvent();
         $this->trigger(self::EVENT_BEFORE_PURGE_ALL_CACHE, $event);
@@ -90,7 +81,7 @@ class CachePurger extends BaseCachePurger
     /**
      * @inheritdoc
      */
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('servd-blitz/settings', [
             'purger' => $this,

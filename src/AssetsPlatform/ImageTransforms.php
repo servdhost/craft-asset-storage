@@ -4,10 +4,9 @@ namespace servd\AssetStorage\AssetsPlatform;
 
 use Craft;
 use craft\elements\Asset;
-use craft\helpers\App;
-use craft\helpers\ImageTransforms as HelpersImageTransforms;
 use servd\AssetStorage\models\Settings;
 use servd\AssetStorage\Plugin;
+use servd\AssetStorage\Volume;
 
 class ImageTransforms
 {
@@ -27,9 +26,8 @@ class ImageTransforms
 
         $settings = Plugin::$plugin->getSettings();
         $volume = $asset->getVolume();
-        $fs = $volume->getFs();
 
-        if (get_class($fs) !== Fs::class) {
+        if (get_class($volume) !== Volume::class) {
             return null;
         }
 
@@ -38,7 +36,7 @@ class ImageTransforms
         }
 
         $transform->sanitizeProperties();
-        $params = $this->getParamsForTransform($transform, $asset);
+        $params = $this->getParamsForTransform($transform);
         if (!empty($asset->dateUpdated)){
             $params['dm'] = $asset->dateUpdated->getTimestamp();
         } else {
@@ -55,18 +53,16 @@ class ImageTransforms
 
         $params['s'] = $signingKey;
 
-        $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
-        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
 
         // Use a custom URL template if one has been provided
-        $customPattern = App::parseEnv($fs->optimiseUrlPattern);
+        $customPattern = Craft::parseEnv($volume->optimiseUrlPattern);
+        $normalizedCustomSubfolder = Craft::parseEnv($volume->customSubfolder);
         if (!empty($customPattern)) {
             $variables = [
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $this->encodeFilenameInFilePath($normalizedSubpath . $asset->getPath()),
+                "filePath" => $this->encodeFilenameInFilePath($asset->getPath()),
                 "params" => '?' . http_build_query($params),
             ];
             $finalUrl = $customPattern;
@@ -116,16 +112,12 @@ class ImageTransforms
             return;
         }
 
+        /** @var \servd\AssetStorage\Volume */
         $volume = $asset->getVolume();
-        /** @var \servd\AssetStorage\AssetsPlatform\Fs */
-        $fs = $volume->getFs();
 
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()) , "/");
-        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
+        $filePath = $this->encodeFilenameInFilePath($asset->getPath());
 
-        $filePath = $this->encodeFilenameInFilePath($normalizedSubpath . $asset->getPath());
-
-        $base = rtrim($fs->_subfolder(), '/') . '/';
+        $base = rtrim($volume->_subfolder(), '/') . '/';
         $base = ltrim($base, '/');
 
         // Fix ampersands
@@ -140,7 +132,7 @@ class ImageTransforms
         return $baseAndPath . "?" . http_build_query($params);
     }
 
-    public function getParamsForTransform(TransformOptions $transform, Asset $asset)
+    public function getParamsForTransform(TransformOptions $transform)
     {
 
         $settings = Plugin::$plugin->getSettings();
@@ -148,26 +140,12 @@ class ImageTransforms
         $params = [];
         $autoParams = [];
 
-        $targetWidth = $transform->width;
-        $targetHeight = $transform->height;
-
-        if (!$transform->upscale) {
-            if ($transform->fit === 'crop') {
-                $transform->fit = 'min';
-            }
-            if ($transform->fit === 'clip') {
-                $transform->fit = 'max';
-            }
-            if ($transform->fit === 'fill') {
-                $transform->fit = 'fillmax';
-            }
+        if (!empty($transform->width)) {
+            $params['w'] = $transform->width;
         }
 
-        if (!empty($targetWidth)) {
-            $params['w'] = $targetWidth;
-        }
-        if (!empty($targetHeight)) {
-            $params['h'] = $targetHeight;
+        if (!empty($transform->height)) {
+            $params['h'] = $transform->height;
         }
 
         if (!empty($transform->quality)) {
@@ -229,7 +207,8 @@ class ImageTransforms
     public function outputWillBeSVG($asset, $transform)
     {
         if (empty($transform->format)) {
-            $autoFormat = HelpersImageTransforms::detectTransformFormat($asset);
+            $assetTransforms = Craft::$app->getAssetTransforms();
+            $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
             if ('svg' == $autoFormat) {
                 return true;
             }
@@ -242,7 +221,8 @@ class ImageTransforms
 
     public function inputIsGif($asset)
     {
-        $autoFormat = HelpersImageTransforms::detectTransformFormat($asset);
+        $assetTransforms = Craft::$app->getAssetTransforms();
+        $autoFormat = $assetTransforms->detectAutoTransformFormat($asset);
         return 'gif' == $autoFormat;
         return false;
     }

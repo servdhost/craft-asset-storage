@@ -4,6 +4,7 @@ namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
 use Aws\S3\S3Client;
+use Composer\Util\Platform;
 use Craft;
 use craft\console\Controller;
 use craft\db\Query;
@@ -17,12 +18,12 @@ use yii\console\ExitCode;
 use mikehaertl\shellcommand\Command as ShellCommand;
 use craft\errors\ShellCommandException;
 use craft\helpers\FileHelper;
-use craft\fs\Local as LocalFs;
+use craft\volumes\Local;
 use Exception;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
-use servd\AssetStorage\AssetsPlatform\Fs;
 use servd\AssetStorage\models\Settings;
+use servd\AssetStorage\Volume;
 
 class LocalController extends Controller
 {
@@ -31,8 +32,6 @@ class LocalController extends Controller
 
     public $to;
     public $from;
-    public $servdFs;
-    public $localFs;
     public $servdSlug;
     public $servdKey;
     public $skipBackup = false;
@@ -47,7 +46,7 @@ class LocalController extends Controller
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
-    public function options($actionID): array
+    public function options($actionID)
     {
         $options = parent::options($actionID);
         return array_merge($options, [
@@ -84,7 +83,6 @@ class LocalController extends Controller
     {
         $this->stdout("Servd Local Dev\n\n", Console::BOLD);
         $this->stdout("The following commands allow you to sync your database and assets between your local and remote environments.\n\n");
-        return ExitCode::OK;
     }
 
     /**
@@ -158,8 +156,6 @@ class LocalController extends Controller
         $resp = $this->runCommand($pipeIntoLocal);
 
         $this->stdout("Database pull complete." . PHP_EOL, Console::FG_GREEN);
-
-        return ExitCode::OK;
     }
 
     /**
@@ -174,7 +170,7 @@ class LocalController extends Controller
         if (!$this->checkForSsh()) return ExitCode::CONFIG;
 
         $exit = $this->requireTo();
-        if ($exit != ExitCode::OK) {
+        if ($exit != 0) {
             return $exit;
         }
 
@@ -211,8 +207,6 @@ class LocalController extends Controller
 
         //Close external database access on Servd
         $this->stdout("Database push complete." . PHP_EOL, Console::FG_GREEN);
-
-        return ExitCode::OK;
     }
 
     /**
@@ -220,60 +214,41 @@ class LocalController extends Controller
      */
     public function actionPullAssets()
     {
-
-        $fsService = \Craft::$app->fs;
-
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
-
-        $fsMapsEnabled = false;
-        if (Craft::$app->getIsInstalled(true)) {
-            $settings = Plugin::$plugin->getSettings();
-            $fsMapsEnabled = $settings->fsMapsEnabled;
-        }
 
         $exit = $this->requireFrom();
-        if ($exit != ExitCode::OK) {
+        if ($exit != 0) {
             return $exit;
         }
 
-        if ($fsMapsEnabled) {
-            //Copying to local filesystem directories
-            //Check all filesystem handles still exist and are of the correct type
-            foreach (array_keys($settings->fsMaps) as $handle) {
-                $fs = $fsService->getFilesystemByHandle($handle);
-                if (empty($fs) || !is_a($fs, Fs::class)) {
-                    $this->stdout("Mapped filesystem $handle does not exist or is not of the expected type " . Fs::class . PHP_EOL, Console::FG_RED);
-                    return ExitCode::USAGE;
-                }
-            }
+        $useLocalVolumes = false;
+        if (Craft::$app->getIsInstalled(true)) {
+            $settings = Plugin::$plugin->getSettings();
+            $useLocalVolumes = $settings->useLocalVolumes;
+        }
 
-            foreach (array_values($settings->fsMaps) as $handle) {
-                $fs = $fsService->getFilesystemByHandle($handle);
-                if (empty($fs) || !is_a($fs, LocalFs::class)) {
-                    $this->stdout("Mapped filesystem $handle does not exist or is not of the expected type " . LocalFs::class . PHP_EOL, Console::FG_RED);
-                    return ExitCode::USAGE;
-                }
-            }
+        $this->checkServdCreds();
 
-            //We'll loop over all the servd filesystems and perform a sync to the linked local filesystem
-            $this->stdout("Local filesystem maps are enabled. This command will sync the following content down from the Servd Asset platform:" . PHP_EOL, Console::FG_YELLOW);
-            foreach ($settings->fsMaps as $servdHandle => $localHandle) {
-                $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
-                $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                $remotePath = $this->from . '/' . $servdFsObject->customSubfolder;
-                $localPath = FileHelper::normalizePath(App::parseEnv($localFsObject->path));
-                $this->stdout("  $remotePath -> $localPath" . PHP_EOL, Console::FG_YELLOW);
-            }
+        if ($this->interactive && !$this->confirm('Ready. This will replace all of your existing \'local\' assets. Continue?')) {
+            return ExitCode::OK;
+        }
 
-            if ($this->interactive && !$this->confirm("Ready. This will replace all of the files on your local filesystem under the above paths. Continue?")) {
-                return ExitCode::OK;
-            }
+        if ($useLocalVolumes) {
+            //If the plugin is set up to use local volumes we need to pull all of the assets down into those
+            $this->stdout("Starting assets sync from '$this->from' to local filesystem" . PHP_EOL);
+            $query = (new Query())
+                ->select([
+                    'id', 'name', 'handle', 'url', 'type', 'settings', 'uid'
+                ])
+                ->from([Table::VOLUMES])
+                ->orderBy(['sortOrder' => SORT_ASC]);
+            $query->where(['type' => Volume::class]);
+            $results = $query->all();
 
             $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if (Settings::$CURRENT_TYPE == 'wasabi') {
+            if(Settings::$CURRENT_TYPE == 'wasabi'){
                 $projectBasePath = 's3://' . $config['bucket'] . '/';
                 $remotePrefixBase = '';
             } else {
@@ -281,98 +256,70 @@ class LocalController extends Controller
                 $remotePrefixBase = $this->servdSlug . '/';
             }
 
-            foreach ($settings->fsMaps as $servdHandle => $localHandle) {
-                $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
-                $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-
-                $remotePath = $projectBasePath . $this->from . "/" . $servdFsObject->customSubfolder;
-                $remotePathPrefix = $remotePrefixBase . $this->from . "/" . $servdFsObject->customSubfolder;
-                $localPath = rtrim(FileHelper::normalizePath(App::parseEnv($localFsObject->path)), '/') . '/';
-                $this->stdout("Syncing filesystem $servdFsObject->handle to $localFsObject->handle" . PHP_EOL);
-                $this->stdout("  $remotePathPrefix -> $localPath" . PHP_EOL);
+            foreach ($results as $v) {
+                $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
+                $s = json_decode($v['settings'], true);
+                $remotePath = $projectBasePath . $this->from . "/" . $s['customSubfolder'];
+                $remotePathPrefix = $remotePrefixBase . $this->from . "/" . $s['customSubfolder'];
+                $localPath = rtrim(FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/')), '/') . '/';
                 if (!is_dir($localPath)) {
-                    $this->stdout("Directory $localPath does not exist. Trying to create it..." . PHP_EOL, Console::FG_YELLOW);
                     mkdir($localPath, 0775, true);
                 }
                 $this->syncS3Down($remotePath, $localPath, $remotePathPrefix);
             }
+            $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
         } else {
-            //Just copying between directories on the Servd asset platform
-            $this->stdout("Local filesystem maps are not enabled. This command will sync assets into the 'local' directory on the Servd Asset Platform" . PHP_EOL);
-            if ($this->interactive && !$this->confirm("Ready. This will replace all of your existing 'local' assets. Continue?")) {
-                return ExitCode::OK;
-            }
+            //If not, we only need to perform a clone from one remote directory into another
             $this->stdout("Starting assets clone task from '$this->from' to 'local'" . PHP_EOL);
             $result = $this->cloneAssets($this->from, 'local');
             if (!$result) {
-                $this->stderr("Sync task failed or timed out. Please check the Servd dashboard for task logs." . PHP_EOL, Console::FG_RED);
-                return ExitCode::SOFTWARE;
+                $this->stderr("Clone task failed or timed out. Please check the Servd dashboard for task logs." . PHP_EOL, Console::FG_RED);
+            } else {
+                $this->stdout("Clone complete." . PHP_EOL, Console::FG_GREEN);
             }
         }
-        $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
-
-        return ExitCode::OK;
     }
 
     /**
-     * Syncs the 'local' env's assets with another env.
+     * Syncs the 'local' env on the Servd Asset Platform with a remote env.
      */
     public function actionPushAssets()
     {
-
-        $fsService = \Craft::$app->fs;
-
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
-
-        $fsMapsEnabled = false;
-        if (Craft::$app->getIsInstalled(true)) {
-            $settings = Plugin::$plugin->getSettings();
-            $fsMapsEnabled = $settings->fsMapsEnabled;
-        }
 
         $exit = $this->requireTo();
-        if ($exit != ExitCode::OK) {
+        if ($exit != 0) {
             return $exit;
         }
 
-        if ($fsMapsEnabled) {
-            //Copying from local filesystem directories
-            //Check all filesystem handles still exist and are of the correct type
-            foreach (array_keys($settings->fsMaps) as $handle) {
-                $fs = $fsService->getFilesystemByHandle($handle);
-                if (empty($fs) || !is_a($fs, Fs::class)) {
-                    $this->stdout("Mapped filesystem $handle does not exist or is not of the expected type " . Fs::class . PHP_EOL, Console::FG_RED);
-                    return ExitCode::USAGE;
-                }
-            }
+        $useLocalVolumes = false;
+        if (Craft::$app->getIsInstalled(true)) {
+            $settings = Plugin::$plugin->getSettings();
+            $useLocalVolumes = $settings->useLocalVolumes;
+        }
 
-            foreach (array_values($settings->fsMaps) as $handle) {
-                $fs = $fsService->getFilesystemByHandle($handle);
-                if (empty($fs) || !is_a($fs, LocalFs::class)) {
-                    $this->stdout("Mapped filesystem $handle does not exist or is not of the expected type " . LocalFs::class . PHP_EOL, Console::FG_RED);
-                    return ExitCode::USAGE;
-                }
-            }
+        $this->checkServdCreds();
 
-            //We'll loop over all the servd filesystems and perform a sync from the linked local filesystem
-            $this->stdout("Local filesystem maps are enabled. This command will sync the following content up to the Servd Asset platform:" . PHP_EOL, Console::FG_YELLOW);
-            foreach ($settings->fsMaps as $servdHandle => $localHandle) {
-                $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
-                $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                $remotePath = $this->to . '/' . $servdFsObject->customSubfolder;
-                $localPath = FileHelper::normalizePath(App::parseEnv($localFsObject->path));
-                $this->stdout("  $localPath -> $remotePath" . PHP_EOL, Console::FG_YELLOW);
-            }
+        if ($this->interactive && !$this->confirm("Ready. This will replace all of your existing '$this->to' assets. Continue?")) {
+            return ExitCode::OK;
+        }
 
-            if ($this->interactive && !$this->confirm("Ready. This will replace all of your existing '$this->to' assets under the above paths. Continue?")) {
-                return ExitCode::OK;
-            }
+        if ($useLocalVolumes) {
+            //If the plugin is set up to use local volumes we need to pull all of the assets down into those
+            $this->stdout("Starting assets sync from local filesystem to '$this->to'" . PHP_EOL);
+            $query = (new Query())
+                ->select([
+                    'id', 'name', 'handle', 'url', 'type', 'settings', 'uid'
+                ])
+                ->from([Table::VOLUMES])
+                ->orderBy(['sortOrder' => SORT_ASC]);
+            $query->where(['type' => Volume::class]);
+            $results = $query->all();
 
             $config = Plugin::$plugin->assetsPlatform->getS3ConfigArray($this->servdSlug, $this->servdKey);
-            if (Settings::$CURRENT_TYPE == 'wasabi') {
+            if(Settings::$CURRENT_TYPE == 'wasabi'){
                 $projectBasePath = 's3://' . $config['bucket'] . '/';
                 $remotePrefixBase = '';
             } else {
@@ -380,36 +327,28 @@ class LocalController extends Controller
                 $remotePrefixBase = $this->servdSlug . '/';
             }
 
-            foreach ($settings->fsMaps as $servdHandle => $localHandle) {
-                $servdFsObject = $fsService->getFilesystemByHandle($servdHandle);
-                $localFsObject = $fsService->getFilesystemByHandle($localHandle);
-                $remotePath = $projectBasePath . $this->to . "/" . $servdFsObject->customSubfolder;
-                $remotePathPrefix = $remotePrefixBase . $this->to . "/" . $servdFsObject->customSubfolder;
-                $localPath = rtrim(FileHelper::normalizePath(App::parseEnv($localFsObject->path)), '/') . '/';
-                $this->stdout("Syncing filesystem $localFsObject->handle to $servdFsObject->handle" . PHP_EOL);
-                $this->stdout("  $localPath -> $remotePathPrefix" . PHP_EOL);
+            foreach ($results as $v) {
+                $this->stdout("Syncing volume '" . $v['handle'] . "'" . PHP_EOL);
+                $s = json_decode($v['settings'], true);
+                $remotePath = $projectBasePath . $this->to . '/' . $s['customSubfolder'];
+                $remotePathPrefix = $remotePrefixBase . $this->to . "/" . $s['customSubfolder'];
+                $localPath = rtrim(FileHelper::normalizePath(Craft::parseEnv("@webroot/servd-volumes/" . $v['handle'] . '/')), '/') . '/';
                 if (!is_dir($localPath)) {
-                    $this->stdout("Directory $localPath does not exist. Skipping." . PHP_EOL, Console::FG_RED);
-                    continue;
+                    mkdir($localPath, 0775, true);
                 }
                 $this->syncS3Up($localPath, $remotePath, $remotePathPrefix);
+                $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
             }
         } else {
-            //Just copying between directories on the Servd asset platform
-            $this->stdout("Local filesystem maps are not enabled. This command will sync assets from the 'local' directory on the Servd Asset Platform" . PHP_EOL);
-            if ($this->interactive && !$this->confirm("Ready. This will replace all of your existing '$this->to' assets. Continue?")) {
-                return ExitCode::OK;
-            }
+            //If not, we only need to perform a clone from one remote directory into another
             $this->stdout("Starting assets clone task from 'local' to '$this->to'" . PHP_EOL);
             $result = $this->cloneAssets('local', $this->to);
             if (!$result) {
                 $this->stderr("Clone task failed or timed out. Please check the Servd dashboard for task logs." . PHP_EOL, Console::FG_RED);
-                return ExitCode::SOFTWARE;
+            } else {
+                $this->stdout("Clone complete." . PHP_EOL, Console::FG_GREEN);
             }
         }
-        $this->stdout("Sync complete." . PHP_EOL, Console::FG_GREEN);
-
-        return ExitCode::OK;
     }
 
 
@@ -446,7 +385,7 @@ class LocalController extends Controller
                 return ExitCode::USAGE;
             }
         }
-        return ExitCode::OK;
+        return 0;
     }
 
     private function requireFrom()
@@ -469,7 +408,7 @@ class LocalController extends Controller
                 return ExitCode::USAGE;
             }
         }
-        return ExitCode::OK;
+        return 0;
     }
 
     private function checkServdCreds()

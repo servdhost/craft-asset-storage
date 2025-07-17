@@ -8,7 +8,7 @@ use servd\AssetStorage\AssetsPlatform\Jobs\AssetCacheClearJob;
 
 class AssetsPlatformController extends Controller
 {
-    protected array|bool|int $allowAnonymous = false;
+    protected $allowAnonymous = false;
 
     public function actionClearCache()
     {

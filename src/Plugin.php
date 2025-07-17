@@ -3,9 +3,7 @@
 namespace servd\AssetStorage;
 
 use Craft;
-use craft\base\Model;
 use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
-use servd\AssetStorage\Blitz\BlitzIntegration;
 use servd\AssetStorage\CPAlerts\CPAlerts;
 use servd\AssetStorage\CsrfInjection\CsrfInjection;
 use servd\AssetStorage\Feedme\Feedme;
@@ -15,15 +13,16 @@ use servd\AssetStorage\LocalDev\LocalDev;
 use servd\AssetStorage\RedisDebug\RedisDebug;
 use servd\AssetStorage\StaticCache\StaticCache;
 use servd\AssetStorage\StaticCache\Tags;
+use servd\AssetStorage\Blitz\BlitzIntegration;
 use servd\AssetStorage\Ssh\SshService;
 
 class Plugin extends \craft\base\Plugin
 {
-    public string $schemaVersion = '3.0.0';
+    public $schemaVersion = '2.0.5';
     public static $plugin;
-    public bool $hasCpSettings = true;
+    public $hasCpSettings = true;
 
-    public function init():void
+    public function init()
     {
         parent::init();
         self::$plugin = $this;
@@ -43,12 +42,12 @@ class Plugin extends \craft\base\Plugin
 
     }
 
-    protected function createSettingsModel() : ?Model
+    protected function createSettingsModel()
     {
         return new \servd\AssetStorage\models\Settings();
     }
 
-    protected function settingsHtml() : ?string
+    protected function settingsHtml()
     {
         $settings = $this->getSettings();
         return \Craft::$app->getView()->renderTemplate('servd-asset-storage/settings', [

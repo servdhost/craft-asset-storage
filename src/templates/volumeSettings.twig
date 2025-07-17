@@ -1,0 +1,37 @@
+{% import "_includes/forms" as forms %}
+
+{{ forms.autosuggestField({
+    label: "Subfolder"|t('servd-asset-storage'),
+    instructions: "The plugin will automatically differentiate between local, staging and production data, but if you want to use a further subfolder, specify the path to use here.<br><strong>⚠ Required when using multiple Servd asset volumes in a single project ⚠</strong>"|t('servd-asset-storage'),
+    id: 'customSubfolder',
+    class: 'ltr',
+    name: 'customSubfolder',
+    suggestEnvVars: true,
+    value: volume.customSubfolder,
+    errors: volume.getErrors('customSubfolder'),
+    placeholder: "path/"|t('servd-asset-storage')
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Custom CDN URL Pattern"|t('servd-asset-storage'),
+    id: 'cdnUrlPattern',
+    name: 'cdnUrlPattern',
+    suggestEnvVars: true,
+    value: volume.cdnUrlPattern,
+    errors: volume.getErrors('cdnUrlPattern'),
+    class: '',
+    instructions: 'A custom pattern to use for the URLs created by the plugin for asset source files. You will need to create your own URL translation logic to map this to Servd’s expected format. <a target="_blank" ref="noopener" href="https://servd.host/docs/can-i-use-my-own-domain-for-assets">Read More</a>',
+    placeholder: "https://files.yourdomain.com/{{environment}}/{{subfolder}}/{{filePath}}"
+}) }}
+
+{{ forms.autosuggestField({
+    label: "Custom Image Optimise URL Pattern"|t('servd-asset-storage'),
+    id: 'optimiseUrlPattern',
+    name: 'optimiseUrlPattern',
+    suggestEnvVars: true,
+    value: volume.optimiseUrlPattern,
+    errors: volume.getErrors('optimiseUrlPattern'),
+    class: '',
+    instructions: 'A custom pattern to use for the URLs created by the plugin for transformed and optimised images. You will need to create your own URL translation logic to map this to Servd’s expected format. <a target="_blank" ref="noopener" href="https://servd.host/docs/can-i-use-my-own-domain-for-assets">Read More</a>',
+    placeholder: "https://images.yourdomain.com/{{environment}}/{{subfolder}}/{{filePath}}{{params}}"
+}) }}

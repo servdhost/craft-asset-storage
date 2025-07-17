@@ -14,7 +14,7 @@ class PurgeUrlsJob extends BaseJob
     public $urls;
     public $triggers;
 
-    public function execute($queue): void
+    public function execute($queue)
     {
         $tags = Plugin::$plugin->get('tags');
 
@@ -26,6 +26,7 @@ class PurgeUrlsJob extends BaseJob
             try {
                 Ledge::purgeUrls($chunk);
                 foreach ($chunk as $url) {
+                    if (is_null($url)) { continue; }
                     $tags->clearTagsForUrl($url);
                 }
             } catch (\Exception $e) {
@@ -34,7 +35,7 @@ class PurgeUrlsJob extends BaseJob
         }
     }
 
-    protected function defaultDescription(): ?string
+    protected function defaultDescription()
     {
         return 'Purge static cache';
     }

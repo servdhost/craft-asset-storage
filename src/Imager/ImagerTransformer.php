@@ -6,7 +6,7 @@ use Craft;
 
 use craft\base\Component;
 use craft\elements\Asset;
-use craft\helpers\App;
+use craft\models\AssetTransform;
 use spacecatninja\imagerx\models\ConfigModel;
 use spacecatninja\imagerx\models\ImgixSettings;
 use spacecatninja\imagerx\models\ImgixTransformedImageModel;
@@ -15,9 +15,9 @@ use spacecatninja\imagerx\exceptions\ImagerException;
 use spacecatninja\imagerx\helpers\ImgixHelpers;
 
 use Imgix\UrlBuilder;
-use servd\AssetStorage\AssetsPlatform\Fs;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
 use servd\AssetStorage\Plugin;
+use servd\AssetStorage\Volume;
 use spacecatninja\imagerx\transformers\TransformerInterface;
 
 class ImagerTransformer extends Component implements TransformerInterface
@@ -37,7 +37,7 @@ class ImagerTransformer extends Component implements TransformerInterface
      * @return array|null
      * @throws ImagerException
      */
-    public function transform(Asset|string $image, array $transforms): ?array
+    public function transform($image, $transforms)
     {
         $transformedImages = [];
 
@@ -49,20 +49,19 @@ class ImagerTransformer extends Component implements TransformerInterface
                 $assets = Asset::find()->filename($filename)->all();
                 if (sizeof($assets) == 1) {
                     $asset = $assets[0];
-                    $assetFs = $asset->getVolume()->getFs();
-                    if (get_class($assetFs) == Fs::class) {
+                    $volume = $asset->getVolume();
+                    if (get_class($volume) == Volume::class) {
                         $image = $asset;
                     }
                 } else {
                     foreach ($assets as $asset) {
-                        $assetFs = $asset->getVolume()->getFs();
-
-                        if (get_class($assetFs) !== Fs::class) {
+                        $volume = $asset->getVolume();
+                        if (get_class($volume) !== Volume::class) {
                             continue; //Not a servd asset platform asset
                         }
 
                         $fullPath = '/';
-                        $trimmedSubfolder = trim(App::parseEnv($assetFs->customSubfolder), '/');
+                        $trimmedSubfolder = trim(Craft::parseEnv($volume->customSubfolder), '/');
                         if (!empty($trimmedSubfolder)) {
                             $fullPath .= $trimmedSubfolder . '/';
                         }
@@ -94,9 +93,9 @@ class ImagerTransformer extends Component implements TransformerInterface
             $image = $image->source;
         }
 
-        $fs = $image->getVolume()->getFs();
+        $volume = $image->getVolume();
 
-        if (get_class($fs) !== Fs::class) {
+        if (get_class($volume) !== Volume::class) {
             return null;
         }
 
@@ -110,7 +109,7 @@ class ImagerTransformer extends Component implements TransformerInterface
     private function getTransformedImage($image, $transform): ImagerTransformedImageModel
     {
         $transformOptions = $this->imagerTransformToTransformOptions($image, $transform);
-        $params = Plugin::$plugin->assetsPlatform->imageTransforms->getParamsForTransform($transformOptions, $image);
+        $params = Plugin::$plugin->assetsPlatform->imageTransforms->getParamsForTransform($transformOptions);
         $url = Plugin::$plugin->assetsPlatform->imageTransforms->transformUrl($image, $transformOptions);
         return new ImagerTransformedImageModel($url, $image, $params);
     }
@@ -176,7 +175,18 @@ class ImagerTransformer extends Component implements TransformerInterface
             $transformOptions->fpy = ((float)$top) / 100;
         }
 
-        $transformOptions->upscale = $config->getSetting('allowUpscale', $transform) ?? false;
+        //Don't allow upscaling based on imager settings
+        if (!empty($transformOptions->fit) && !$config->getSetting('allowUpscale', $transform)) {
+            if ($transformOptions->fit === 'crop') {
+                $transformOptions->fit = 'min';
+            }
+            if ($transformOptions->fit === 'clip') {
+                $transformOptions->fit = 'max';
+            }
+            if ($transformOptions->fit === 'fill') {
+                $transformOptions->fit = 'fillmax';
+            }
+        }
 
         return $transformOptions;
     }

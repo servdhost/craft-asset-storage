@@ -4,13 +4,14 @@ namespace servd\AssetStorage\ImageOptimize;
 
 use Craft;
 use nystudio107\imageoptimize\imagetransforms\ImageTransform;
-use craft\models\ImageTransform as CraftImageTransformModel;
+use craft\models\AssetTransform;
 use craft\elements\Asset;
 use Exception;
 use servd\AssetStorage\AssetsPlatform\TransformOptions;
 use servd\AssetStorage\Plugin;
 use yii\base\InvalidConfigException;
 use craft\helpers\Image as ImageHelper;
+use servd\AssetStorage\AssetsPlatform\AssetsPlatform;
 
 class ImageOptimizeTransformer extends ImageTransform
 {
@@ -20,7 +21,15 @@ class ImageOptimizeTransformer extends ImageTransform
         return 'Servd';
     }
 
-    public function getTransformUrl(Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string
+    /**
+     * @param Asset               $asset
+     * @param AssetTransform|null $transform
+     *
+     * @return string|null
+     * @throws \yii\base\Exception
+     * @throws \yii\base\InvalidConfigException
+     */
+    public function getTransformUrl(Asset $asset, $transform)
     {
         $assetsPlatform = Plugin::$plugin->assetsPlatform;
         $transformOptions = new TransformOptions();
@@ -36,7 +45,14 @@ class ImageOptimizeTransformer extends ImageTransform
         return $assetsPlatform->imageTransforms->transformUrl($asset, $transformOptions);
     }
 
-    public function getWebPUrl(string $url, Asset $asset, CraftImageTransformModel|string|array|null $transform): ?string
+    /**
+     * @param string              $url
+     * @param Asset               $asset
+     * @param AssetTransform|null $transform
+     *
+     * @return string
+     */
+    public function getWebPUrl(string $url, Asset $asset, $transform): string
     {
         if ($transform) {
             $transform->format = 'webp';
@@ -52,14 +68,14 @@ class ImageOptimizeTransformer extends ImageTransform
         return $webPUrl ?? '';
     }
 
-    public function getSettingsHtml(): ?string
+    public function getSettingsHtml()
     {
         return Craft::$app->getView()->renderTemplate('servd-asset-storage/imageOptimiseSettings', [
             'imageTransform' => $this,
         ]);
     }
 
-    public function rules(): array
+    public function rules()
     {
         $rules = parent::rules();
         return $rules;

@@ -34,6 +34,7 @@ class Ledge
         $hosts = [];
         foreach ($urls as $url) {
             $urlParts = parse_url($url);
+            if (!array_key_exists('host', $urlParts)) { continue; }
             $urlHost = $urlParts['host'];
             if (!isset($hosts[$urlHost])) {
                 $hosts[$urlHost] = [];

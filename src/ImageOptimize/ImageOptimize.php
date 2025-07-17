@@ -11,7 +11,7 @@ use yii\base\Event;
 class ImageOptimize extends Component
 {
 
-    public function init() : void
+    public function init()
     {
         if (!class_exists('\nystudio107\imageoptimize\ImageOptimize')) {
             return;

@@ -86,7 +86,7 @@
 	<h2>Asset Platform</h2>
 
 	{{ forms.autosuggestField({
-        label: "Force Assets Environment",
+        label: "Assets Volume Environment",
         id: 'assetsEnvironment',
         name: 'assetsEnvironment',
         suggestEnvVars: true,
@@ -109,70 +109,24 @@
         value: settings.imageAutoConversion
     }) }}
 
-    {{ forms.selectField({
-        label: "Transform SVGs",
-        instructions: "Whether SVGs should be transformable to other image formats, or whether the original SVG should be returned.",
-        options: {
-            'no' : "Don't transform SVGs",
-            'craft' : "Respect Craft's transformSvgs General Config",
-            'yes' : 'Transforms SVGs'
-        },
-        id: 'transformSvgs',
-        name: 'transformSvgs',
-        value: settings.transformSvgs
-    }) }}
-
 	{{ forms.lightswitchField({
         label: "Disable Asset Platform image transforms / optimisations",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
-        "This makes the Servd asset platform act in the same way as a standard S3 storage filesystem.",
+        "This makes the Servd asset platform act in the same way as a standard S3 storage volume.",
         id: 'disableTransforms',
         name: 'disableTransforms',
         on: settings.disableTransforms
     }) }}
 
-    {{ forms.lightswitchField({
-        label: "Clear Asset CDN cache when an asset file changes",
-        instructions: "Automatically clear assets' cached content in the Servd Asset CDN when their file changes. This includes when an asset's file is replaced or when the asset itself is deleted.",
-        id: 'clearCdnCacheWhenAssetChanges',
-        name: 'clearCdnCacheWhenAssetChanges',
-        on: settings.clearCdnCacheWhenAssetChanges
-    }) }}
-
-    <div class="field">
-        
-        {{ forms.lightswitchField({
-            label: "Enable Local Filesystem Links",
-            instructions: "Link your Servd FileSystem objects to Local Filesystem objects to enable local asset pull and push commands.<br>" ~ 
-            "To use this feature, <i>all</i> Servd filesystems must be mapped to different local filesystems.",
-            id: 'fsMapsEnabled',
-            name: 'fsMapsEnabled',
-            on: settings.fsMapsEnabled
+	{% if craft35 %}
+		{{ forms.lightswitchField({
+            label: "Use Local Volumes During Dev",
+            instructions: 'Force the use of local filesystem volumes when working outside of Servd.',
+            id: 'useLocalVolumes',
+            name: 'useLocalVolumes',
+            on: settings.useLocalVolumes,
         }) }}
-
-
-        {% for servdFs in settings.getServdFilesystems() %}
-            <div style="display:flex; align-items: center; margin-left:-4px;margin-right:-4px;margin-bottom:4px;margin-top:4px;">
-                <div style="padding-left:4px;padding-right:4px;width:30%;font-weight:bold;">
-                    {{ servdFs.name }}
-                </div>
-                <div style="padding-left:4px;padding-right:4px;width:30%;">
-                    {{ forms.selectField({
-                        label: null,
-                        instructions: null,
-                        options: settings.getLocalFsAsOptions(),
-                        id: 'fsMaps['~servdFs.handle~']',
-                        name: 'fsMaps['~servdFs.handle~']',
-                        value: settings.fsMaps[servdFs.handle] ?? ''
-                    }) }}
-                </div>
-            </div>
-        {% endfor %}
-
-        <div>
-            {{ forms.errorList(settings.getErrors('fsMaps')) }}
-        </div>
-    </div>
+	{% endif %}
 
 </fieldset>
 

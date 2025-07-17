@@ -8,7 +8,7 @@ use craft\web\Request;
 
 class DynamicContentController extends Controller
 {
-    protected array|bool|int $allowAnonymous = true;
+    protected $allowAnonymous = true;
     public $enableCsrfValidation = false;
 
     public function actionGetContent()
@@ -16,7 +16,7 @@ class DynamicContentController extends Controller
         /** @var Request $req */
         $req = Craft::$app->getRequest();
         if ($req->getIsCpRequest()) {
-            return $this->asFailure('Not to be used with control panel requests');
+            return $this->asErrorJson('Not to be used with control panel requests');
         }
 
         $seomatic = Craft::$app->plugins->getPlugin('seomatic');
@@ -61,7 +61,7 @@ class DynamicContentController extends Controller
             //Make sure the request has a blocks query param
             $blocks = $req->getQueryParam('blocks');
             if (empty($blocks)) {
-                return $this->asFailure('No blocks specified');
+                return $this->asErrorJson('No blocks specified');
             }
 
             $blocks = unserialize(gzuncompress(base64_decode($blocks)));

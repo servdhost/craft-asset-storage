@@ -13,8 +13,6 @@ use craft\db\Query;
 
 class HelpersController extends Controller
 {
-    use ControllerTrait;
-
     public $defaultAction = 'index';
 
     public $environment;

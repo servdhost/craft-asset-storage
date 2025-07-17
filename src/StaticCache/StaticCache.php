@@ -4,33 +4,38 @@ namespace servd\AssetStorage\StaticCache;
 
 use Craft;
 use craft\base\Component;
+use craft\helpers\FileHelper;
 use Exception;
 use Redis;
 use servd\AssetStorage\Plugin;
+use yii\base\ErrorException;
 use yii\base\Event;
 use craft\base\Element;
 use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
-use craft\events\DefineHtmlEvent;
+use craft\events\DeleteTemplateCachesEvent;
 use craft\events\ElementEvent;
 use craft\events\ElementStructureEvent;
 use craft\events\MoveElementEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
+use craft\events\RegisterUrlRulesEvent;
 use craft\events\SectionEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
-use craft\services\Entries;
 use craft\services\Sections;
 use craft\services\Structures;
+use craft\services\TemplateCaches;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
+use craft\web\UrlManager;
 use craft\web\View;
+use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
 use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
-use yii\base\InvalidConfigException;
+use yii\base\View as BaseView;
 use yii\web\View as WebView;
 
 class StaticCache extends Component
@@ -39,14 +44,7 @@ class StaticCache extends Component
     public static $esiBlocks = [];
     public static $dynamicBlocksAdded = false;
 
-    public static function purgePriority(): int
-    {
-        return is_numeric(getenv('SERVD_PURGE_PRIORITY'))
-            ? intval(getenv('SERVD_PURGE_PRIORITY'))
-            : 1025;
-    }
-
-    public function init(): void
+    public function init()
     {
         $this->registerTwigExtension();
 
@@ -357,10 +355,7 @@ class StaticCache extends Component
         Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Element::class, Structures::EVENT_AFTER_INSERT_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Element::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
+        Event::on(Element::class, Element::EVENT_AFTER_MOVE_IN_STRUCTURE, function ($event) {
             $this->handleUpdateEvent($event);
         });
         Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, function ($event) {
@@ -369,7 +364,7 @@ class StaticCache extends Component
         Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Entries::class, Entries::EVENT_AFTER_SAVE_SECTION, function ($event) {
+        Event::on(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function ($event) {
             $this->handleUpdateEvent($event);
         });
     }
@@ -414,7 +409,7 @@ class StaticCache extends Component
             \craft\helpers\Queue::push(new PurgeTagJob([
                 'description' => 'Purge static cache by tag',
                 'tag' => $tag
-            ]), static::purgePriority());
+            ]), 1025);
         }
     }
 
@@ -428,26 +423,21 @@ class StaticCache extends Component
             if (in_array(get_class($event->element), Tags::IGNORE_TAGS_FROM_CLASSES)) {
                 return [];
             }
-
-            try {
-                if (ElementHelper::isDraftOrRevision($event->element)) {
-                    return [];
-                }
-            } catch (InvalidConfigException $e) {
-                return []; // Handles when the owner element can't be located in the database
+            if (ElementHelper::isDraftOrRevision($event->element)) {
+                return [];
             }
-
             if (property_exists($event->element, 'resaving') && $event->element->resaving === true) {
                 return [];
             }
 
+
             if ($event->element instanceof \craft\elements\GlobalSet && is_string($event->element->handle)) {
                 $tags[] = Tags::GLOBAL_SET_PREFIX . $event->element->handle;
             } elseif ($event->element instanceof \craft\elements\Asset && $event->isNew) {
-                // Required if a new asset is created in case anything has looped over the volume contents
+                // Required if a new asset is created in case anything has looped over the volume contents 
                 $tags[] = Tags::VOLUME_ID_PREFIX . (string)$event->element->volumeId;
             } else {
-                // Required if an entry is activated added to a section.
+                // Required if an entry is activated added to a section. 
                 // Needs to refresh any index pages which may have looped the section contents
                 if (isset($event->element->sectionId)) {
                     $tags[] = Tags::SECTION_ID_PREFIX . $event->element->sectionId;
@@ -462,7 +452,7 @@ class StaticCache extends Component
             $tags[] = Tags::SECTION_ID_PREFIX . $event->section->id;
         }
 
-        if ($event instanceof MoveElementEvent) {
+        if ($event instanceof MoveElementEvent or $event instanceof ElementStructureEvent) {
             $tags[] = Tags::STRUCTURE_ID_PREFIX . $event->structureId;
         }
 
@@ -507,40 +497,32 @@ class StaticCache extends Component
     {
         $request = Craft::$app->getRequest();
         if ($request->getIsCpRequest() && !$request->getIsConsoleRequest()) {
-            Event::on(
-                Entry::class,
-                Entry::EVENT_DEFINE_SIDEBAR_HTML,
-                static function (DefineHtmlEvent $event) {
-                    $settings = Plugin::$plugin->getSettings();
-                    $entry = $event->sender;
-                    $url = $entry->getUrl();
-                    if (!empty($url)) {
-                        $html = Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
-                            'entryId' => $entry->id,
-                            'showTagPurge' => $settings->cacheClearMode == 'tags'
-                        ]);
-                        $event->html .= $html;
-                    }
-                    return;
-                }
-            );
-            if (class_exists("\\craft\\commerce\\elements\\Product")) {
-                Craft::$app->getView()->hook('cp.commerce.product.edit.details', [$this, '_commerceProductHook']);
-            }
-        }
-    }
 
-    public function _commerceProductHook(array $context)
-    {
-        $settings = Plugin::$plugin->getSettings();
-        $product = $context['product'];
-        $url = $product->getUrl();
-        if (!empty($url)) {
-            return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
-                'productId' => $product->id,
-                'showTagPurge' => $settings->cacheClearMode == 'tags'
-            ]);
+            Craft::$app->view->hook('cp.entries.edit.details', function (array &$context) {
+                $settings = Plugin::$plugin->getSettings();
+                $entry = $context['entry'];
+                $url = $entry->getUrl();
+                if (!empty($url)) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        'entryId' => $entry->id,
+                        'showTagPurge' => $settings->cacheClearMode == 'tags'
+                    ]);
+                }
+                return '';
+            });
+
+            Craft::$app->view->hook('cp.commerce.product.edit.details', function (array &$context) {
+                $settings = Plugin::$plugin->getSettings();
+                $product = $context['product'];
+                $url = $product->getUrl();
+                if (!empty($url)) {
+                    return Craft::$app->view->renderTemplate('servd-asset-storage/cp-extensions/static-cache-clear.twig', [
+                        'productId' => $product->id,
+                        'showTagPurge' => $settings->cacheClearMode == 'tags'
+                    ]);
+                }
+                return '';
+            });
         }
-        return '';
     }
 }
