@@ -28,6 +28,7 @@ class SshService
      */
     public function getKeyPair(): array
     {
+
         $publicKeyPath = $this->keyDirectory . '/' . $this->defaultKeyName . '.pub';
         $privateKeyPath = $this->keyDirectory . '/' . $this->defaultKeyName;
 
@@ -38,6 +39,32 @@ class SshService
                 'publicKeyPath' => $publicKeyPath,
                 'privateKeyPath' => $privateKeyPath,
                 'isNew' => false,
+            ];
+        }
+
+        // Ensure the key directory exists
+        if (!is_dir($this->keyDirectory)) {
+            mkdir($this->keyDirectory, 0700, true);
+        }
+
+        $privateKeyEnv = getenv('SERVD_SSH_PRIVATE_KEY_B64');
+        $publicKeyEnv = getenv('SERVD_SSH_PUBLIC_KEY_B64');
+
+        if (!empty($privateKeyEnv) && !empty($publicKeyEnv)) {
+            // Base64 decode and store, then return
+            $privateKey = base64_decode($privateKeyEnv);
+            $publicKey = base64_decode($publicKeyEnv);
+            file_put_contents($privateKeyPath, $privateKey);
+            file_put_contents($publicKeyPath, $publicKey);
+            chmod($privateKeyPath, 0600);
+            chmod($publicKeyPath, 0644);
+
+            return [
+                'publicKey64' => base64_encode($publicKey),
+                'privateKey64' => base64_encode($privateKey),
+                'publicKeyPath' => $publicKeyPath,
+                'privateKeyPath' => $privateKeyPath,
+                'isNew' => true,
             ];
         }
 
@@ -61,11 +88,6 @@ class SshService
 
         $privateKeyPath = $this->keyDirectory . '/' . $this->defaultKeyName;
         $publicKeyPath = $this->keyDirectory . '/' . $this->defaultKeyName . '.pub';
-
-        // Ensure the key directory exists
-        if (!is_dir($this->keyDirectory)) {
-            mkdir($this->keyDirectory, 0700, true);
-        }
 
         // Save keys to the filesystem
         file_put_contents($privateKeyPath, $privateKey);
