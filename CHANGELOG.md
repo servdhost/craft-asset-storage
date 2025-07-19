@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.1.1 - 2025-07-19
+
+### Updated
+
+- Store SSH keys in runtime directory to prevent git trying to commit them
+
 ## 4.1.0 - 2025-07-17
 
 ### Updated
