@@ -17,7 +17,7 @@ class SshService
         if ($keyDirectory !== null) {
             $this->keyDirectory = $keyDirectory;
         } else {
-            $this->keyDirectory = Craft::$app->path->getStoragePath() . '/servd-ssh-keys';
+            $this->keyDirectory = Craft::$app->path->getStoragePath() . '/runtime/servd-ssh-keys';
         }
     }
 
