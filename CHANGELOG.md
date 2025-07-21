@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.6.2 - 2025-07-21
+
+### Fixed
+
+- Added support for local mysql client CLI v8.4 to database push/pull commands
+
 ## 3.6.1 - 2025-07-19
 
 ### Updated
