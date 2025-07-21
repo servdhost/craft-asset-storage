@@ -559,25 +559,39 @@ class LocalController extends Controller
     {
 
         // Find out if local mysql has SSL issues
-        $shellCommand = new ShellCommand();
-
-        if (stripos(PHP_OS, 'WIN') === 0) {
-            $shellCommand->setCommand('mysql --help | findstr "skip-ssl"');
-        } else {
-            $shellCommand->setCommand('mysql --help | grep "skip-ssl"');
-        }
-
+        $skipSslCommand = new ShellCommand();
         if (!function_exists('proc_open') && function_exists('exec')) {
-            $shellCommand->useExec = true;
+            $skipSslCommand->useExec = true;
         }
-
-        $success = $shellCommand->execute();
-
-        // if there was output, then they're running mysqldump 8.x against a 5.x database.
-        if ($success && $shellCommand->getOutput()) {
-            $skipSsl = ' --skip-ssl';
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            $skipSslCommand->setCommand('mysql --help | findstr "skip-ssl"');
         } else {
-            $skipSsl = ' --ssl=0';
+            $skipSslCommand->setCommand('mysql --help | grep "skip-ssl"');
+        }
+        $skipSslSuccess = $skipSslCommand->execute();
+        
+        $sslModeCommand = new ShellCommand();
+        if (!function_exists('proc_open') && function_exists('exec')) {
+            $sslModeCommand->useExec = true;
+        }
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            $sslModeCommand->setCommand('mysql --help | findstr "ssl-mode"');
+        } else {
+            $sslModeCommand->setCommand('mysql --help | grep "ssl-mode"');
+        }
+        $sslModeSuccess = $sslModeCommand->execute();
+
+        $skipSsl = '';
+        // If ssl-mode is available, we're mysql 8 and don't need to do anything special
+        // So only set alternatives it it returned an error or empty output
+        if (!$sslModeSuccess || !$sslModeCommand->getOutput()) {
+            // If skip-ssl is available, we can use that
+            if ($skipSslSuccess && $skipSslCommand->getOutput()) {
+                $skipSsl = ' --skip-ssl';
+            } else {
+                // We're mariadb on a version pre skip-ssl
+                $skipSsl = ' --ssl=0';
+            }
         }
 
         $dbConfig = App::dbConfig();
