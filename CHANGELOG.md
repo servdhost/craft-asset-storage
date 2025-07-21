@@ -1,6 +1,6 @@
 # Release Notes for Servd Assets and Helpers
 
-## 4.1.2 - 2025-07-11
+## 4.1.2 - 2025-07-21
 
 ### Fixed
 
