@@ -195,11 +195,11 @@ class ImageTransforms
 
         $params['crop'] = $transform->crop;
         if ($transform->crop == 'focalpoint') {
-            if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
+            if (is_numeric($transform->fpx)) {
                 $params['fp-x'] = $transform->fpx;
             }
 
-            if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
+            if (is_numeric($transform->fpy)) {
                 $params['fp-y'] = $transform->fpy;
             }
         }
