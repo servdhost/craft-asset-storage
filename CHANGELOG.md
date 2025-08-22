@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.1.3 - 2025-08-22
+
+### Fixed
+
+- Fixed a bug that prevented the focal point coordinates from being passed to the Servd transformer if either the X or Y values were set to zero.
+
 ## 4.1.2 - 2025-07-21
 
 ### Fixed
