@@ -13,7 +13,6 @@ use craft\elements\db\ElementQuery;
 use craft\elements\Entry;
 use craft\events\DefineHtmlEvent;
 use craft\events\ElementEvent;
-use craft\events\ElementStructureEvent;
 use craft\events\MoveElementEvent;
 use craft\events\PopulateElementEvent;
 use craft\events\RegisterCacheOptionsEvent;
@@ -23,7 +22,6 @@ use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
 use craft\services\Entries;
-use craft\services\Sections;
 use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
@@ -32,6 +30,8 @@ use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class StaticCache extends Component
 {
@@ -207,14 +207,11 @@ class StaticCache extends Component
                     },
                 ];
 
-                /***
-                 * Deprecated cli key
-                 */
                 $event->options[] = [
-                    'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache (Deprecated)'),
+                    'key' => 'servd-edge-caches',
+                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
                     'action' => function () {
-                        $this->clearStaticCache();
+                        $this->clearEdgeCaches();
                     },
                 ];
             }
@@ -500,6 +497,28 @@ class StaticCache extends Component
             $redis->close();
         } catch (Exception $e) {
             //Do nothing - this is expected most of the time
+        }
+    }
+
+    public function clearEdgeCaches()
+    {
+        $settings = Plugin::$plugin->getSettings();
+
+        $url = 'https://app.servd.host/clear-all-cdn-caches';
+        if (!empty(getenv('SERVD_CDN_CACHE_CLEAR_URL'))) {
+            $url = getenv('SERVD_CDN_CACHE_CLEAR_URL');
+        }
+
+        try {
+            $client = new Client();
+            $client->post($url, [
+                'json' => [
+                    'slug' => $settings->getProjectSlug(),
+                    'key' => $settings->getSecurityKey()
+                ]
+            ]);
+        } catch (GuzzleException $e) {
+            throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
         }
     }
 
