@@ -1,5 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.0 - 2025-09-17
+
+### Added
+
+- Added `clear-caches/servd-edge-caches` CLI command.
+
+### Removed
+
+- Removed deprecated `clear-caches/servd-asset-storage` CLI command.
+
+
 ## 3.6.3 - 2025-08-22
 
 ### Fixed
