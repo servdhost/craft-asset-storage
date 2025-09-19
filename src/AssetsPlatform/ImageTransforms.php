@@ -135,6 +135,7 @@ class ImageTransforms
         if (Settings::$CURRENT_TYPE == 'wasabi') {
             $baseAndPath = str_replace('(', '%28', $baseAndPath);
             $baseAndPath = str_replace(')', '%29', $baseAndPath);
+            $baseAndPath = str_replace(',', '%2C', $baseAndPath);
         }
 
         return $baseAndPath . "?" . http_build_query($params);

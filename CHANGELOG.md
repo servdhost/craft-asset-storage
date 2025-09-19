@@ -2,6 +2,10 @@
 
 ## 4.2.0 - 2025-09-17
 
+### Fixed
+
+- Encoding issue with commas in filenames.
+
 ### Added
 
 - Added `clear-caches/servd-edge-caches` CLI command.
