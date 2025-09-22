@@ -501,9 +501,13 @@ class StaticCache extends Component
     {
         $settings = Plugin::$plugin->getSettings();
 
-        $url = 'https://app.servd.host/clear-all-cdn-caches';
-        if (!empty(getenv('SERVD_CDN_CACHE_CLEAR_URL'))) {
-            $url = getenv('SERVD_CDN_CACHE_CLEAR_URL');
+        $url = 'https://app.servd.host/clear-edge-caches';
+        if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
+            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+        }
+
+        if (!getenv('ENVIRONMENT')) {
+            throw new Exception("No ENVIRONMENT environment variable detected");
         }
 
         try {
@@ -511,7 +515,8 @@ class StaticCache extends Component
             $client->post($url, [
                 'json' => [
                     'slug' => $settings->getProjectSlug(),
-                    'key' => $settings->getSecurityKey()
+                    'key' => $settings->getSecurityKey(),
+                    'environment' => getenv('ENVIRONMENT')
                 ]
             ]);
         } catch (GuzzleException $e) {
