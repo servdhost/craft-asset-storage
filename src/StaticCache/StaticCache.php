@@ -522,6 +522,8 @@ class StaticCache extends Component
         } catch (GuzzleException $e) {
             throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
         }
+
+        Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()
