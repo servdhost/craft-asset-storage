@@ -1,5 +1,19 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.0 - 2025-09-17
+
+### Fixed
+
+- Encoding issue with commas in filenames.
+
+### Added
+
+- Added `clear-caches/servd-edge-caches` CLI command.
+
+### Removed
+
+- Removed deprecated `clear-caches/servd-asset-storage` CLI command.
+
 ## 4.1.3 - 2025-08-22
 
 ### Fixed
