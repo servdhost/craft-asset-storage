@@ -3,11 +3,10 @@
 namespace servd\AssetStorage\StaticCache\Jobs;
 
 use craft\queue\BaseJob;
+use servd\AssetStorage\Plugin;
 
 class PurgeTagsJob extends BaseJob
 {
-    use TagPurger;
-
     public $tags;
     public $triggers;
 
@@ -17,11 +16,11 @@ class PurgeTagsJob extends BaseJob
 
         for ($i = 0; $i < $numberOfTags; $i++) {
             $this->setProgress($queue, $i / $numberOfTags);
-            $this->purgeUrlsForTag($this->tags[$i]);
+            Plugin::$plugin->staticCache->purgeUrlsForTag($this->tags[$i]);
         }
         
         if (getenv('SERVD_EDGE_CACHING') == 'true') {
-            $this->clearEdgeCache($this->tags);            
+            Plugin::$plugin->staticCache->clearEdgeCaches($this->tags);            
         }
     }
 

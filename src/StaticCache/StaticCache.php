@@ -33,6 +33,8 @@ use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use servd\AssetStorage\StaticCache\Ledge;
+
 class StaticCache extends Component
 {
 
@@ -519,32 +521,51 @@ class StaticCache extends Component
         }
     }
 
-    public function clearEdgeCaches()
+    public static function clearEdgeCachesUrl()
     {
-        $settings = Plugin::$plugin->getSettings();
-
-        $url = 'https://app.servd.host/clear-edge-caches';
         if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
-            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+            return getenv('SERVD_CLEAR_EDGE_CACHES_URL');
         }
+        return 'https://app.servd.host/clear-edge-caches';
+    }
 
+    public function purgeUrlsForTag($tag): void
+    {
+        $tags = Plugin::$plugin->get('tags');
+        $tags->iterateUrlsForTag($tag, function ($urls) use ($tags) {
+            try {
+                Ledge::purgeUrls($urls);
+                foreach ($urls as $url) {
+                    $tags->clearTagsForUrl($url);
+                }
+            } catch (Exception $e) {
+                throw new Exception("Failed to purge all urls: " . $e->getMessage());
+            }
+        });
+    }
+
+    public function clearEdgeCaches($tags)
+    {
         if (!getenv('ENVIRONMENT')) {
             throw new Exception("No ENVIRONMENT environment variable detected");
         }
 
+        $settings = Plugin::$plugin->getSettings();
+        $payload = [
+            'slug' => $settings->getProjectSlug(),
+            'environment' => getenv('ENVIRONMENT'),
+            'key' => $settings->getSecurityKey()
+        ];
+        if (!is_null($tags)) {
+            $payload['tags'] = implode(',', $tags);
+        }
+
         try {
             $client = new Client();
-            $client->post($url, [
-                'json' => [
-                    'slug' => $settings->getProjectSlug(),
-                    'key' => $settings->getSecurityKey(),
-                    'environment' => getenv('ENVIRONMENT')
-                ]
-            ]);
+            $client->post(static::clearEdgeCachesUrl(), ['json' => $payload]);
         } catch (GuzzleException $e) {
             throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
         }
-
         Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
