@@ -11,8 +11,10 @@ use craft\elements\Asset;
 use craft\events\DefineAssetThumbUrlEvent;
 use craft\events\DefineAssetUrlEvent;
 use craft\events\DefineHtmlEvent;
+use craft\events\DeleteElementEvent;
 use craft\events\GenerateTransformEvent;
 use craft\events\RegisterComponentTypesEvent;
+use craft\events\ReplaceAssetEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
 use craft\helpers\Image as ImageHelper;
@@ -385,11 +387,15 @@ class AssetsPlatform extends Component
         }
 
         // Append dm query parameter to allow cache busting if the underlying asset changes
+        $dmTimestamp = 0;
+        if (!empty($asset->dateUpdated)){
+            $dmTimestamp = $asset->dateUpdated->getTimestamp();
+        }
         $finalUrlQuery = parse_url($finalUrl, PHP_URL_QUERY);
         if ($finalUrlQuery) {
-            $finalUrl .= '&dm=' . $asset->dateUpdated->getTimestamp();
+            $finalUrl .= '&dm=' . $dmTimestamp;
         } else {
-            $finalUrl .= '?dm=' . $asset->dateUpdated->getTimestamp();
+            $finalUrl .= '?dm=' . $dmTimestamp;
         }
 
         return $finalUrl;

@@ -31,7 +31,8 @@ use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 class StaticCache extends Component
 {
 
@@ -206,14 +207,11 @@ class StaticCache extends Component
                     },
                 ];
 
-                /***
-                 * Deprecated cli key
-                 */
                 $event->options[] = [
-                    'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache (Deprecated)'),
+                    'key' => 'servd-edge-caches',
+                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
                     'action' => function () {
-                        $this->clearStaticCache();
+                        $this->clearEdgeCaches();
                     },
                 ];
             }
@@ -519,6 +517,35 @@ class StaticCache extends Component
         } catch (Exception $e) {
             //Do nothing - this is expected most of the time
         }
+    }
+
+    public function clearEdgeCaches()
+    {
+        $settings = Plugin::$plugin->getSettings();
+
+        $url = 'https://app.servd.host/clear-edge-caches';
+        if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
+            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+        }
+
+        if (!getenv('ENVIRONMENT')) {
+            throw new Exception("No ENVIRONMENT environment variable detected");
+        }
+
+        try {
+            $client = new Client();
+            $client->post($url, [
+                'json' => [
+                    'slug' => $settings->getProjectSlug(),
+                    'key' => $settings->getSecurityKey(),
+                    'environment' => getenv('ENVIRONMENT')
+                ]
+            ]);
+        } catch (GuzzleException $e) {
+            throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
+        }
+
+        Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()

@@ -38,7 +38,11 @@ class ImageTransforms
 
         $transform->sanitizeProperties();
         $params = $this->getParamsForTransform($transform, $asset);
-        $params['dm'] = $asset->dateUpdated->getTimestamp();
+        if (!empty($asset->dateUpdated)){
+            $params['dm'] = $asset->dateUpdated->getTimestamp();
+        } else {
+            $params['dm'] = 0;
+        }
 
         //Full path of asset on the CDN platform
         $fullPath = $this->getFullPathForAssetAndTransform($asset, $params);
@@ -124,6 +128,7 @@ class ImageTransforms
         if (Settings::$CURRENT_TYPE == 'wasabi') {
             $baseAndPath = str_replace('(', '%28', $baseAndPath);
             $baseAndPath = str_replace(')', '%29', $baseAndPath);
+            $baseAndPath = str_replace(',', '%2C', $baseAndPath);
         }
 
         return $baseAndPath . "?" . http_build_query($params);
@@ -191,11 +196,11 @@ class ImageTransforms
 
         $params['crop'] = $transform->crop;
         if ($transform->crop == 'focalpoint') {
-            if (!empty($transform->fpx) && is_numeric($transform->fpx)) {
+            if (is_numeric($transform->fpx)) {
                 $params['fp-x'] = $transform->fpx;
             }
 
-            if (!empty($transform->fpy) && is_numeric($transform->fpy)) {
+            if (is_numeric($transform->fpy)) {
                 $params['fp-y'] = $transform->fpy;
             }
         }

@@ -1,5 +1,44 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.0 - 2025-09-17
+
+### Fixed
+
+- Encoding issue with commas in filenames.
+
+### Added
+
+- Added `clear-caches/servd-edge-caches` CLI command.
+
+### Removed
+
+- Removed deprecated `clear-caches/servd-asset-storage` CLI command.
+
+
+## 3.6.3 - 2025-08-22
+
+### Fixed
+
+- Fixed a bug that prevented the focal point coordinates from being passed to the Servd transformer if either the X or Y values were set to zero.
+
+## 3.6.2 - 2025-07-21
+
+### Fixed
+
+- Added support for local mysql client CLI v8.4 to database push/pull commands
+
+## 3.6.1 - 2025-07-19
+
+### Updated
+
+- Store SSH keys in runtime directory to prevent git trying to commit them
+
+## 3.6.0 - 2025-07-17
+
+### Updated
+
+- Switched database push/pull CLI commands to use SSH Session tunnelling 
+
 ## 3.5.26 - 2025-06-13
 
 ### Added
