@@ -293,7 +293,6 @@ class AssetsPlatform extends Component
                 function (ReplaceAssetEvent $event) {
                     $asset = $event->asset;
                     $fs = $asset->getVolume()->getFs();
-
                     if (!($fs instanceof Fs)) {
                         return;
                     }
@@ -312,7 +311,6 @@ class AssetsPlatform extends Component
                 function (ReplaceAssetEvent $event) {
                     $asset = $event->asset;
                     $fs = $asset->getVolume()->getFs();
-
                     if (!($fs instanceof Fs)) {
                         return;
                     }
@@ -334,7 +332,6 @@ class AssetsPlatform extends Component
                     } 
                     $asset = $event->element;
                     $fs = $asset->getVolume()->getFs();
-
                     if (!($fs instanceof Fs)) {
                         return;
                     }
