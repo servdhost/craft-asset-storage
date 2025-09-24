@@ -2,8 +2,6 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use craft\events\DeleteElementEvent;
-use craft\events\ReplaceAssetEvent;
 use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Craft;
 use craft\base\Component;
@@ -287,7 +285,7 @@ class AssetsPlatform extends Component
                 }
             );
         }
-        
+
         if ($settings->clearCdnCacheWhenAssetChanges) {
             Event::on(
                 \craft\services\Assets::class,

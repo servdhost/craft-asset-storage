@@ -13,10 +13,12 @@ class AssetCacheClearJob extends BaseJob
     public $elementUid;
     public $path = null;
     public $subfolder = null;
+
     private $cacheClearUrl = 'https://app.servd.host/asset-platform-clear-cache';
 
     public function execute($queue): void
     {
+
         if(!empty($this->path)){
             $assetPath = $this->path;
             $subfolder = $this->subfolder;
