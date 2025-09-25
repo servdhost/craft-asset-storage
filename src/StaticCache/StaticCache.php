@@ -298,17 +298,14 @@ class StaticCache extends Component
         $headers = Craft::$app->getResponse()->getHeaders();
         if ($headers->has('Cache-Tag')) { return; }
 
-        $host = Craft::$app->getRequest()->getHostName();
-        $hostHash = substr(md5($host), 0, 10);
+        $settings = Plugin::$plugin->getSettings();
+        $projectSlug = $settings->getProjectSlug();
 
-        $cacheTags = [
-            getenv('SERVD_PROJECT_SLUG'), // For clearing by project
-            getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT'), // For clearing by environment
-            getenv('SERVD_PROJECT_SLUG') . '-host-' . $hostHash, // For clearing by hostname
-        ];
+        $prefix = sprintf('%x', crc32($projectSlug . getenv('ENVIRONMENT')));
 
+        $cacheTags = [$prefix];
         foreach ($tags as $tag) {
-            $cacheTags[] = getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $tag;
+            $cacheTags[] = $prefix . ':' . $tag;
         }
 
         $headers->add('Cache-Tag', implode(',', $cacheTags));
