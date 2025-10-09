@@ -1,10 +1,16 @@
 # Release Notes for Servd Assets and Helpers
 
-## 2.11.3 - 2025-10-09
+## 2.11.4 - 2025-10-09
 
 ### Fixed
 
 - Fixed a bug where static cache pages would not be purged when content is updated
+
+## 2.11.3 - 2025-08-22
+
+### Fixed
+
+- Fixed a bug that prevented the focal point coordinates from being passed to the Servd transformer if either the X or Y values were set to zero.
 
 ## 2.11.2 - 2025-07-21
 
@@ -22,7 +28,7 @@
 
 ### Updated
 
-- Switched database push/pull CLI commands to use SSH Session tunnelling 
+- Switched database push/pull CLI commands to use SSH Session tunnelling
 
 ## 2.10.15 - 2025-02-03
 
