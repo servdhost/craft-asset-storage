@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.3 - 2025-10-09
+
+### Fixed
+
+- Fixed a bug where static cache pages would not be purged when content is updated
+
 ## 2.11.2 - 2025-07-21
 
 ### Fixed

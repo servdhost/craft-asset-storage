@@ -65,6 +65,9 @@ class Tags extends Component
         try {
             $redis = $this->getRedisConnection();
             $urls = $redis->sMembers(static::TAG_PREFIX . $tag);
+            array_walk($urls, function ($url) {
+                return 'http://' . $url;
+            });
             return $urls;
         } catch (Exception $e) {
             Craft::error($e->getMessage(), __METHOD__);
@@ -82,6 +85,10 @@ class Tags extends Component
             $it = NULL;
             while (($arr_mems = $redis->sScan(static::TAG_PREFIX . $tag, $it)) && $counter < $totalSetSize) {
                 $counter += sizeof($arr_mems);
+                //Add http:// back to the urls
+                array_walk($arr_mems, function (&$url) {
+                    $url = 'http://' . $url;
+                });
                 $callback($arr_mems);
             }
         } catch (Exception $e) {
