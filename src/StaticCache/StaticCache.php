@@ -306,7 +306,8 @@ class StaticCache extends Component
                         'expires' => $expire,
                         'path' => '/',
                         'domain' => $domain,
-                        'samesite' => null
+                        'samesite' => null,
+                        'secure' => true
                     ]);
                 } else {
                     setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
