@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.5 - 2025-11-07
+
+### Updated
+
+- Set SERVD_LOGGED_IN_STATUS cookie to be 'secure' by default
+
 ## 2.11.4 - 2025-10-09
 
 ### Fixed
