@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.2 - 2025-11-18
+
+### Added
+
+- Added the "Disable SERVD_LOGGED_IN_STATUS cookie" plugin setting. Note that enabling this setting will prevent the "Logged in users skip the cache" static caching setting from working.
+
 ## 4.2.1 - 2025-11-07
 
 ### Updated

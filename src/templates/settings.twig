@@ -39,7 +39,7 @@
 	<h2>Static Caching</h2>
 
 	{{ forms.lightswitchField({
-        label: "Inject CSRF tokens using AJAX",
+        label: "Inject CSRF Tokens Using AJAX",
         instructions: "Allows CSRF tokens to be used on statically cached pages. This can collide with similar functionality in other plugins.",
         id: 'injectCors',
         name: 'injectCors',
@@ -72,11 +72,19 @@
     }) }}
 
 	{{ forms.lightswitchField({
-        label: "Disable dynamic content includes",
+        label: "Disable Dynamic Content Includes",
         instructions: "Render all {% dynamicInclude %} tags as normal {% include %} tags. This can be useful for testing.",
         id: 'disableDynamic',
         name: 'disableDynamic',
         on: settings.disableDynamic
+    }) }}
+
+    {{ forms.lightswitchField({
+        label: "Disable SERVD_LOGGED_IN_STATUS cookie",
+        instructions: 'Disable the SERVD_LOGGED_IN_STATUS cookie from being set. This will prevent the "Logged in users skip the cache" static caching setting from working.',
+        id: 'disableLoggedInCookie',
+        name: 'disableLoggedInCookie',
+        on: settings.disableLoggedInCookie
     }) }}
 </fieldset>
 
@@ -123,7 +131,7 @@
     }) }}
 
 	{{ forms.lightswitchField({
-        label: "Disable Asset Platform image transforms / optimisations",
+        label: "Disable Asset Platform Image Transforms & Optimisations For All Asset Filesystems",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
         "This makes the Servd asset platform act in the same way as a standard S3 storage filesystem.",
         id: 'disableTransforms',
@@ -132,7 +140,7 @@
     }) }}
 
     {{ forms.lightswitchField({
-        label: "Clear Asset CDN cache when an asset file changes",
+        label: "Clear Asset CDN Cache When An Asset File Changes",
         instructions: "Automatically clear assets' cached content in the Servd Asset CDN when their file changes. This includes when an asset's file is replaced or when the asset itself is deleted.",
         id: 'clearCdnCacheWhenAssetChanges',
         name: 'clearCdnCacheWhenAssetChanges',
@@ -182,7 +190,8 @@
 	<h2>Interaction with other plugins</h2>
 
 	{{ forms.lightswitchField({
-        label: "Send Feed Me logs to Craft's standard log output so that they can be collected and displayed by Servd.",
+        label: "Send FeedMe Logs To Servd's Logging Platform",
+        instructions: "Pipe Craft's standard log output to Servd's logging platform so log lines can be collected and displayed in the Servd dashboard",
         id: 'adjustFeedmeLogs',
         name: 'adjustFeedmeLogs',
         on: settings.adjustFeedmeLogs
