@@ -786,6 +786,7 @@ class LocalController extends Controller
         $existingFiles    = [];
         foreach ($iterator as $file) {
             if (!$file->isDir()) {
+                $this->outputDebug('Found ' . $file->getPathname() . ' locally');
                 $existingFiles[$file->getPathname()] = 1;
             }
         }
@@ -803,6 +804,7 @@ class LocalController extends Controller
         $toDownload = \Aws\map($toDownload, function ($obj) use ($fullS3Prefix, $dest, &$existingFiles) {
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
             $localPath = $dest . $sansPrefix;
+            $this->outputDebug('Local file ' . $localPath . ' has a matching remote file, skipping deletion for this file');
             unset($existingFiles[$localPath]);
             return $obj;
         });
@@ -810,6 +812,7 @@ class LocalController extends Controller
             $sansPrefix = str_ireplace($fullS3Prefix, "", $obj['Key']);
             $localPath = $dest . $sansPrefix;
             if (!file_exists($localPath)) {
+                $this->outputDebug('No local file found for ' . $localPath . ', lets download it');
                 return true;
             }
             // FIXME: This does not handle multipart uploads
