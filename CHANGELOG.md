@@ -1,6 +1,6 @@
 # Release Notes for Servd Assets and Helpers
 
-## 3.7.2 - 2025-11-18
+## 3.7.2 - 2025-11-28
 
 ### Added
 
