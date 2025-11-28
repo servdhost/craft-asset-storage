@@ -9,19 +9,13 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\flysystem\base\FlysystemFs;
-use craft\behaviors\EnvAttributeParserBehavior;
 use craft\helpers\App;
-use League\Flysystem\AdapterInterface;
-use League\Flysystem\AwsS3V3\AwsS3V3Adapter;
-use servd\AssetStorage\assetsPlatform\AssetsPlatform;
 use servd\AssetStorage\AssetsPlatform\AwsS3Adapter;
 use servd\AssetStorage\Plugin;
 use League\Flysystem\FilesystemAdapter;
-use League\Flysystem\AwsS3V3\PortableVisibilityConverter;
 use League\Flysystem\Visibility;
 use servd\AssetStorage\models\Settings;
 
@@ -35,6 +29,7 @@ class Fs extends FlysystemFs
     public $securityKey = '';
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
+    public $disableTransforms = false;
 
     public $subfolder = ''; //Required for compatibility with Imager-X + Imgix
 
