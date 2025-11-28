@@ -15,7 +15,6 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Image as ImageHelper;
 use craft\models\ImageTransform;
 use craft\services\Assets;
 use Exception;
@@ -230,7 +229,11 @@ class AssetsPlatform extends Component
                     if ($fs instanceof Fs) {
                         $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        }
                     }
                 }
             );
@@ -249,17 +252,19 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $width = $event->width;
-                        $height = $event->height;
-
-                        $transform = new ImageTransform([
-                            'height' => $height,
-                            'width' => $width,
-                            'interlace' => 'line',
-                        ]);
-
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, false);
+
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $transform = new ImageTransform([
+                                'height' => $event->height,
+                                'width' => $event->width,
+                                'interlace' => 'line',
+                            ]);
+                            $event->url = $this->handleAssetTransform($asset, $transform, false);
+                            $event->url = $this->handleAssetTransform($asset, $transform, false);
+                        }
                     }
                 }
             );
@@ -278,9 +283,12 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $event->transform, true);
+                        }
                     }
                 }
             );

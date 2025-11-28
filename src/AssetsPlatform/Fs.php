@@ -35,6 +35,7 @@ class Fs extends FlysystemFs
     public $securityKey = '';
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
+    public $disableTransforms = false;
 
     public $subfolder = ''; //Required for compatibility with Imager-X + Imgix
 

@@ -5,6 +5,7 @@
 ### Added
 
 - Added the "Disable SERVD_LOGGED_IN_STATUS cookie" plugin setting. Note that enabling this setting will prevent the "Logged in users skip the cache" static caching setting from working.
+- Added a setting for Servd Asset Storage filesystems which allows transforms and optimisations to be disabled for specific filesystems.
 
 ## 4.2.1 - 2025-11-07
 
