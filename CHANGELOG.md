@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.3 - 2026-01-06
+
+### Removed
+
+- Removed composer dependency on v3.319.4 of the aws/aws-sdk-php composer package due to the PKSA-dxyf-6n16-t87m security advisory.
+
 ## 3.7.2 - 2025-11-28
 
 ### Added
