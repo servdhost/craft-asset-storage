@@ -2,7 +2,8 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
+use Aws\Handler\GuzzleV6\GuzzleHandler as GuzzleHandlerV6;
+use Aws\Handler\Guzzle\GuzzleHandler;
 use Craft;
 use craft\base\Component;
 use craft\elements\Asset;
@@ -126,7 +127,11 @@ class AssetsPlatform extends Component
         $config['request_checksum_calculation'] = 'when_required';
         $config['response_checksum_validation'] = 'when_required';
         $client = Craft::createGuzzleClient();
-        $config['http_handler'] = new GuzzleHandler($client);
+        if (class_exists(GuzzleHandler::class)) {
+            $config['http_handler'] = new GuzzleHandler($client);
+        } else {
+            $config['http_handler'] = new GuzzleHandlerV6($client);
+        }
 
         return $config;
     }

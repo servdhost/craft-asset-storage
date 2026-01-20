@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.3 - 2026-01-20
+
+### Fixed
+
+- Fixed an class reference issue introduced by an update to the AWS SDK Package
+
 ## 4.2.2 - 2025-11-28
 
 ### Added

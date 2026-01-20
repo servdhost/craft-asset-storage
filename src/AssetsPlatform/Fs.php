@@ -9,7 +9,6 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\flysystem\base\FlysystemFs;
