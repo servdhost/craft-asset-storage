@@ -257,19 +257,17 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $event->handled = true;
-
                         if ($fs->disableTransforms) {
-                            $event->url = $this->getFileUrl($asset);
-                        } else {
-                            $transform = new ImageTransform([
-                                'height' => $event->height,
-                                'width' => $event->width,
-                                'interlace' => 'line',
-                            ]);
-                            $event->url = $this->handleAssetTransform($asset, $transform, false);
-                            $event->url = $this->handleAssetTransform($asset, $transform, false);
+                            return;
                         }
+
+                        $event->handled = true;
+                        $transform = new ImageTransform([
+                            'height' => $event->height,
+                            'width' => $event->width,
+                            'interlace' => 'line',
+                        ]);
+                        $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
             );
