@@ -25,6 +25,7 @@ class Settings extends Model
     public $useLocalVolumes = false; // Removed in Craft 4 (kept to prevent model hydration errors)
     public $disableDynamic = false;
     public $disableLoggedInCookie = false;
+    public $disablePushCommands = false;
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
     public $fsMapsEnabled = false;

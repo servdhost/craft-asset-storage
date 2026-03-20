@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.4 - 2026-03-20
+
+### Added
+
+- Added "Disable Push Console Commands" plugin setting to disable local/push-database and local/push-assets console commands.
+
 ## 4.2.3 - 2026-01-20
 
 ### Fixed

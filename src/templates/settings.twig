@@ -86,6 +86,14 @@
         name: 'disableLoggedInCookie',
         on: settings.disableLoggedInCookie
     }) }}
+
+    {{ forms.lightswitchField({
+        label: "Disable Push Console Commands",
+        instructions: 'Disable the local/push-database and local/push-assets console commands to avoid any accidental mishaps.',
+        id: 'disablePushCommands',
+        name: 'disablePushCommands',
+        on: settings.disablePushCommands
+    }) }}
 </fieldset>
 
 <hr>

@@ -167,6 +167,12 @@ class LocalController extends Controller
      */
     public function actionPushDatabase()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->disablePushCommands) {
+            $this->stdout('This command has been disabled by the "Disable Push Console Commands" Servd plugin setting.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
@@ -319,6 +325,11 @@ class LocalController extends Controller
      */
     public function actionPushAssets()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->disablePushCommands) {
+            $this->stdout('This command has been disabled by the "Disable Push Console Commands" Servd plugin setting.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
 
         $fsService = \Craft::$app->fs;
 
