@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.4.1 - 2026-03-20
+
+### Updated
+
+- Moved the "Disable Push Console Commands" setting to a more appropriate place
+
 ## 4.2.4 - 2026-03-20
 
 ### Added
