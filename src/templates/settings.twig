@@ -86,6 +86,14 @@
         name: 'disableLoggedInCookie',
         on: settings.disableLoggedInCookie
     }) }}
+
+    {{ forms.lightswitchField({
+        label: "Disable Push Console Commands",
+        instructions: 'Disable the clone, local/push-database and local/push-assets console commands. Helps to avoid any accidental mishaps.',
+        id: 'disablePushCommands',
+        name: 'disablePushCommands',
+        on: settings.disablePushCommands
+    }) }}
 </fieldset>
 
 <hr>
@@ -131,7 +139,7 @@
     }) }}
 
 	{{ forms.lightswitchField({
-        label: "Disable Asset Platform Image Transforms & Optimisations For All Asset Filesystems",
+        label: "Disable Asset Platform Image Transforms & Optimizations For All Asset Filesystems",
         instructions: "Disabled all asset platform transforms and optimisations, falling back to Craft's default transform mechanism. " ~
         "This makes the Servd asset platform act in the same way as a standard S3 storage filesystem.",
         id: 'disableTransforms',

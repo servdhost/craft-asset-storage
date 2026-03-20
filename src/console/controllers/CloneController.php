@@ -7,6 +7,7 @@ use craft\helpers\Console;
 use yii\console\ExitCode;
 use craft\console\Controller;
 use Exception;
+use servd\AssetStorage\Plugin;
 
 class CloneController extends Controller
 {
@@ -62,6 +63,17 @@ class CloneController extends Controller
 
     public function actionIndex()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->disablePushCommands) {
+            $this->stdout('This command has been disabled by the "Disable Push Console Commands" Servd plugin setting.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         $this->outputDebug("Checking a 'from' environment has been set");
         $exit = $this->requireFrom();
         if ($exit != ExitCode::OK) {
@@ -112,11 +124,6 @@ class CloneController extends Controller
             return ExitCode::USAGE;
         }
 
-        // Test servd key and secret
-        if (!$this->checkServdCreds()) {
-            return ExitCode::CONFIG;
-        }
-
         $this->stdout('Triggering a clone from ' . $this->from . ' to ' . $this->to . '...' . PHP_EOL, Console::FG_GREEN);
 
         $guz = Craft::createGuzzleClient();
@@ -162,20 +169,17 @@ class CloneController extends Controller
     private function requireTo()
     {
         //Check --to is set properly
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->to)) {
             if ($this->interactive) {
-                $this->to = $this->select('Which environment would you like to clone to?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production'
-                ]);
+                $this->to = $this->select('Which environment would you like to clone to?', $servdEnvironments);
             } else {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
             if (!in_array($this->to, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
@@ -184,20 +188,17 @@ class CloneController extends Controller
 
     private function requireFrom()
     {
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->from)) {
             if ($this->interactive) {
-                $this->from = $this->select('Which environment would you like to clone from?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production',
-                ]);
+                $this->from = $this->select('Which environment would you like to clone from?', $servdEnvironments);
             } else {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--from must be set to an active source environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->from, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->from, array_keys($servdEnvironments), true)) {
+                $this->stderr('--from must be set to an active source environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
