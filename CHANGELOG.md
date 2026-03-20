@@ -10,6 +10,10 @@
 
 - Updated the pull and push commands to get an up-to-date list of active environments
 
+### Fixed
+
+- Fixed a bug where a non-image asset is used as a thumbnail image when the disable transforms setting is enabled on it's filesystem.
+
 ## 4.2.3 - 2026-01-20
 
 ### Fixed
