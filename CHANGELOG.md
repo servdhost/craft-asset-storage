@@ -1,5 +1,19 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.5 - 2026-03-20
+
+### Added
+
+- Added "Disable Push Console Commands" plugin setting to disable local/push-database and local/push-assets console commands.
+
+### Updated
+
+- Updated the pull and push commands to get an up-to-date list of active environments
+
+### Fixed
+
+- Fixed a bug where a non-image asset is used as a thumbnail image when the disable transforms setting is enabled on it's filesystem.
+
 ## 3.7.4 - 2026-01-20
 
 ### Fixed
@@ -7,6 +21,7 @@
 - Fixed an class reference issue introduced by an update to the AWS SDK Package
 
 ## 3.7.3 - 2026-01-06
+
 
 ### Removed
 

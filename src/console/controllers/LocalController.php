@@ -3,19 +3,14 @@
 namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
-use Aws\S3\S3Client;
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use servd\AssetStorage\Plugin;
 use yii\console\ExitCode;
 use mikehaertl\shellcommand\Command as ShellCommand;
-use craft\errors\ShellCommandException;
 use craft\helpers\FileHelper;
 use craft\fs\Local as LocalFs;
 use Exception;
@@ -92,6 +87,11 @@ class LocalController extends Controller
      */
     public function actionPullDatabase()
     {
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
@@ -105,8 +105,6 @@ class LocalController extends Controller
             return $exit;
         }
 
-        //Test servd key and secret
-        if (!$this->checkServdCreds()) return ExitCode::CONFIG;
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
@@ -167,6 +165,17 @@ class LocalController extends Controller
      */
     public function actionPushDatabase()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->disablePushCommands) {
+            $this->stdout('This command has been disabled by the "Disable Push Console Commands" Servd plugin setting.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
@@ -178,8 +187,6 @@ class LocalController extends Controller
             return $exit;
         }
 
-        //Test servd key and secret
-        if (!$this->checkServdCreds()) return ExitCode::CONFIG;
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
@@ -220,14 +227,16 @@ class LocalController extends Controller
      */
     public function actionPullAssets()
     {
-
-        $fsService = \Craft::$app->fs;
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
 
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
 
+        $fsService = \Craft::$app->fs;
         $fsMapsEnabled = false;
         if (Craft::$app->getIsInstalled(true)) {
             $settings = Plugin::$plugin->getSettings();
@@ -319,13 +328,22 @@ class LocalController extends Controller
      */
     public function actionPushAssets()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if ($settings->disablePushCommands) {
+            $this->stdout('This command has been disabled by the "Disable Push Console Commands" Servd plugin setting.' . PHP_EOL, Console::FG_RED);
+            return ExitCode::USAGE;
+        }
+
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
 
         $fsService = \Craft::$app->fs;
 
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
 
         $fsMapsEnabled = false;
         if (Craft::$app->getIsInstalled(true)) {
@@ -419,7 +437,8 @@ class LocalController extends Controller
 
     private function checkOnlyLocal()
     {
-        $ok = !in_array(getenv('ENVIRONMENT'), ['development', 'staging', 'production']);
+        $servdEnvironments = $this->fetchEnvironments();
+        $ok = !in_array(getenv('ENVIRONMENT'), array_keys($servdEnvironments));
         if (!$ok) {
             $this->stderr("You should only run local dev commands in a local dev environment." . PHP_EOL, Console::FG_RED);
         }
@@ -429,20 +448,17 @@ class LocalController extends Controller
     private function requireTo()
     {
         //Check --to is set properly
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->to)) {
             if ($this->interactive) {
-                $this->to = $this->select('Which environment would you like to push to?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production'
-                ]);
+                $this->to = $this->select('Which environment would you like to push to?', $servdEnvironments);
             } else {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->to, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->to, array_keys($servdEnvironments), true)) {
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
@@ -452,20 +468,17 @@ class LocalController extends Controller
     private function requireFrom()
     {
         //Check --from is set properly
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->from)) {
             if ($this->interactive) {
-                $this->from = $this->select('Which environment would you like to pull from?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production',
-                ]);
+                $this->from = $this->select('Which environment would you like to pull from?', $servdEnvironments);
             } else {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--from must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->from, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->from, array_keys($servdEnvironments), true)) {
+                $this->stderr('--from must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
