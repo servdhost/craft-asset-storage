@@ -31,6 +31,14 @@
         name: 'suppressWarnings',
         on: settings.suppressWarnings,
     }) }}
+
+    {{ forms.lightswitchField({
+        label: "Disable Push Console Commands",
+        instructions: 'Disable the clone, local/push-database and local/push-assets console commands. Helps to avoid any accidental mishaps.',
+        id: 'disablePushCommands',
+        name: 'disablePushCommands',
+        on: settings.disablePushCommands
+    }) }}
 </fieldset>
 
 <hr>
@@ -85,14 +93,6 @@
         id: 'disableLoggedInCookie',
         name: 'disableLoggedInCookie',
         on: settings.disableLoggedInCookie
-    }) }}
-
-    {{ forms.lightswitchField({
-        label: "Disable Push Console Commands",
-        instructions: 'Disable the clone, local/push-database and local/push-assets console commands. Helps to avoid any accidental mishaps.',
-        id: 'disablePushCommands',
-        name: 'disablePushCommands',
-        on: settings.disablePushCommands
     }) }}
 </fieldset>
 
