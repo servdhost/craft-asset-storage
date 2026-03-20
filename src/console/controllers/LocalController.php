@@ -3,19 +3,14 @@
 namespace servd\AssetStorage\console\controllers;
 
 use Aws\S3\BatchDelete;
-use Aws\S3\S3Client;
 use Craft;
 use craft\console\Controller;
-use craft\db\Query;
-use craft\db\Table;
 use craft\helpers\App;
 use craft\helpers\Console;
 use craft\helpers\Db;
-use craft\helpers\StringHelper;
 use servd\AssetStorage\Plugin;
 use yii\console\ExitCode;
 use mikehaertl\shellcommand\Command as ShellCommand;
-use craft\errors\ShellCommandException;
 use craft\helpers\FileHelper;
 use craft\fs\Local as LocalFs;
 use Exception;
@@ -44,6 +39,9 @@ class LocalController extends Controller
     //private $baseServdDomain = 'http://host.docker.internal'; //LOCAL
     private $baseRunnerDomain = 'https://runner.servd.host';
     //private $baseRunnerDomain = 'http://host.docker.internal:8081'; //LOCAL
+
+    // Variable for caching active environments
+    private $_environments;
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
@@ -430,7 +428,8 @@ class LocalController extends Controller
 
     private function checkOnlyLocal()
     {
-        $ok = !in_array(getenv('ENVIRONMENT'), ['development', 'staging', 'production']);
+        $servdEnvironments = $this->fetchEnvironments();
+        $ok = !in_array(getenv('ENVIRONMENT'), array_keys($servdEnvironments));
         if (!$ok) {
             $this->stderr("You should only run local dev commands in a local dev environment." . PHP_EOL, Console::FG_RED);
         }
@@ -440,20 +439,17 @@ class LocalController extends Controller
     private function requireTo()
     {
         //Check --to is set properly
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->to)) {
             if ($this->interactive) {
-                $this->to = $this->select('Which environment would you like to push to?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production'
-                ]);
+                $this->to = $this->select('Which environment would you like to push to?', $servdEnvironments);
             } else {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->to, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--to must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->to, array_keys($servdEnvironments), true)) {
+                $this->stderr('--to must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
@@ -463,20 +459,17 @@ class LocalController extends Controller
     private function requireFrom()
     {
         //Check --from is set properly
+        $servdEnvironments = $this->fetchEnvironments();
         if (empty($this->from)) {
             if ($this->interactive) {
-                $this->from = $this->select('Which environment would you like to pull from?', [
-                    'development' => 'Development',
-                    'staging' => 'Staging',
-                    'production' => 'Production',
-                ]);
+                $this->from = $this->select('Which environment would you like to pull from?', $servdEnvironments);
             } else {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+                $this->stderr('--from must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         } else {
-            if (!in_array($this->from, ['development', 'staging', 'production'], true)) {
-                $this->stderr('--from must be set to a target environment. [development|staging|production]' . PHP_EOL, Console::FG_RED);
+            if (!in_array($this->from, array_keys($servdEnvironments), true)) {
+                $this->stderr('--from must be set to an active target environment.' . PHP_EOL, Console::FG_RED);
                 return ExitCode::USAGE;
             }
         }
@@ -926,5 +919,41 @@ class LocalController extends Controller
         if ($this->verbose) {
             $this->stdout($message . PHP_EOL);
         }
+    }
+
+    private function fetchEnvironments()
+    {
+        if (!is_null($this->_environments)) {
+            return $this->_environments;
+        }
+
+        $this->_environments = [
+            'development' => 'Development',
+            'staging' => 'Staging',
+            'production' => 'Production'
+        ];
+
+        $url = 'https://app.servd.host/environments';
+        if (!empty(getenv('SERVD_ENVIRONMENTS_URL'))) {
+            $url = getenv('SERVD_ENVIRONMENTS_URL');
+        }
+
+        try {
+            $client = Craft::createGuzzleClient();
+            $response = $client->get($url);
+            $data = json_decode((string) $response->getBody(), true);
+            $environments = [];
+            foreach ($data as $env) {
+                $environments[$env['slug']] = $env['name'];
+            }
+            if (!empty($environments)) {
+                $this->_environments = $environments;
+            }
+        } catch (Exception $e) {
+            $this->outputDebug("Failed to fetch active environments");
+            $this->outputDebug((string) $e);
+        }
+
+        return $this->_environments;
     }
 }

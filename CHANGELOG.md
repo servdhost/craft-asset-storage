@@ -6,6 +6,10 @@
 
 - Added "Disable Push Console Commands" plugin setting to disable local/push-database and local/push-assets console commands.
 
+### Updated
+
+- Updated the pull and push commands to get an up-to-date list of active environments
+
 ## 4.2.3 - 2026-01-20
 
 ### Fixed
