@@ -40,9 +40,6 @@ class LocalController extends Controller
     private $baseRunnerDomain = 'https://runner.servd.host';
     //private $baseRunnerDomain = 'http://host.docker.internal:8081'; //LOCAL
 
-    // Variable for caching active environments
-    private $_environments;
-
     const S3_BUCKET = 'cdn-assets-servd-host';
 
     public function options($actionID): array
@@ -90,6 +87,11 @@ class LocalController extends Controller
      */
     public function actionPullDatabase()
     {
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
@@ -103,8 +105,6 @@ class LocalController extends Controller
             return $exit;
         }
 
-        //Test servd key and secret
-        if (!$this->checkServdCreds()) return ExitCode::CONFIG;
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
@@ -171,6 +171,11 @@ class LocalController extends Controller
             return ExitCode::USAGE;
         }
 
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
@@ -182,8 +187,6 @@ class LocalController extends Controller
             return $exit;
         }
 
-        //Test servd key and secret
-        if (!$this->checkServdCreds()) return ExitCode::CONFIG;
         //Test local database connection details
         if (!$this->checkLocalDBCreds()) return ExitCode::CONFIG;
 
@@ -224,14 +227,16 @@ class LocalController extends Controller
      */
     public function actionPullAssets()
     {
-
-        $fsService = \Craft::$app->fs;
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
 
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
 
+        $fsService = \Craft::$app->fs;
         $fsMapsEnabled = false;
         if (Craft::$app->getIsInstalled(true)) {
             $settings = Plugin::$plugin->getSettings();
@@ -329,12 +334,16 @@ class LocalController extends Controller
             return ExitCode::USAGE;
         }
 
+        // Test servd key and secret
+        if (!$this->checkServdCreds()) {
+            return ExitCode::CONFIG;
+        }
+
         $fsService = \Craft::$app->fs;
 
         if (!$this->checkOnlyLocal()) {
             return ExitCode::USAGE;
         }
-        $this->checkServdCreds();
 
         $fsMapsEnabled = false;
         if (Craft::$app->getIsInstalled(true)) {
@@ -919,41 +928,5 @@ class LocalController extends Controller
         if ($this->verbose) {
             $this->stdout($message . PHP_EOL);
         }
-    }
-
-    private function fetchEnvironments()
-    {
-        if (!is_null($this->_environments)) {
-            return $this->_environments;
-        }
-
-        $this->_environments = [
-            'development' => 'Development',
-            'staging' => 'Staging',
-            'production' => 'Production'
-        ];
-
-        $url = 'https://app.servd.host/environments';
-        if (!empty(getenv('SERVD_ENVIRONMENTS_URL'))) {
-            $url = getenv('SERVD_ENVIRONMENTS_URL');
-        }
-
-        try {
-            $client = Craft::createGuzzleClient();
-            $response = $client->get($url);
-            $data = json_decode((string) $response->getBody(), true);
-            $environments = [];
-            foreach ($data as $env) {
-                $environments[$env['slug']] = $env['name'];
-            }
-            if (!empty($environments)) {
-                $this->_environments = $environments;
-            }
-        } catch (Exception $e) {
-            $this->outputDebug("Failed to fetch active environments");
-            $this->outputDebug((string) $e);
-        }
-
-        return $this->_environments;
     }
 }
