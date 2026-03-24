@@ -21,6 +21,7 @@ use servd\AssetStorage\models\Settings;
 
 class LocalController extends Controller
 {
+    use ControllerTrait;
 
     public $defaultAction = 'index';
 
@@ -34,11 +35,6 @@ class LocalController extends Controller
     public $skipDelete = false;
     public $verbose = false;
     public $emptyDatabase = false;
-
-    private $baseServdDomain = 'https://app.servd.host';
-    //private $baseServdDomain = 'http://host.docker.internal'; //LOCAL
-    private $baseRunnerDomain = 'https://runner.servd.host';
-    //private $baseRunnerDomain = 'http://host.docker.internal:8081'; //LOCAL
 
     const S3_BUCKET = 'cdn-assets-servd-host';
 
@@ -483,63 +479,6 @@ class LocalController extends Controller
             }
         }
         return ExitCode::OK;
-    }
-
-    private function checkServdCreds()
-    {
-        //Ensure the project has access to some Servd credentials
-        //If the project is installed these might be in the plugin settings
-
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            if (Craft::$app->getIsInstalled(true)) {
-                $settings = Plugin::$plugin->getSettings();
-                $this->servdSlug = $settings->getProjectSlug();
-                $this->servdKey = $settings->getSecurityKey();
-            }
-        }
-
-        //If not they might be in environment variables
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            $this->servdSlug = getenv('SERVD_PROJECT_SLUG');
-            $this->servdKey = getenv('SERVD_SECURITY_KEY');
-        }
-
-        //If neither we can ask for them
-        if (empty($this->servdSlug) || empty($this->servdKey)) {
-            $this->stdout('Could not reliably determine a Servd project slug and security key automatically.' . PHP_EOL, Console::FG_YELLOW);
-
-            if (!$this->interactive) {
-                //No way to determine Servd creds
-                $this->stderr('Please use the --servdSlug and --servdKey flags to provide authentication credentials.' . PHP_EOL, Console::FG_RED);
-                return false;
-            }
-
-            $this->servdSlug = $this->prompt('Servd project slug:', [
-                'default' => $this->servdSlug ?: null,
-                'validator' => function (string $input): bool {
-                    if (empty($input)) {
-                        $this->stderr('Please supply a project slug.' . PHP_EOL, Console::FG_RED);
-                        return false;
-                    }
-                    return true;
-                },
-            ]);
-
-            $this->servdKey = $this->prompt('Servd project security key:', [
-                'default' => $this->servdKey ?: null,
-                'validator' => function (string $input): bool {
-                    if (empty($input)) {
-                        $this->stderr('Please supply a security key.' . PHP_EOL, Console::FG_RED);
-                        return false;
-                    }
-                    return true;
-                },
-            ]);
-        } else {
-            $this->stdout('Servd project slug and key found' . PHP_EOL, Console::FG_GREEN);
-        }
-
-        return true;
     }
 
     private function checkLocalDBCreds()

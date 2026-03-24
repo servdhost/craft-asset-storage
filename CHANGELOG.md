@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.4.2 - 2026-03-24
+
+### Updated
+
+- Fixed `Calling unknown method servd\AssetStorage\console\controllers\LocalController::fetchEnvironments()` error
+
 ## 4.2.4.1 - 2026-03-20
 
 ### Updated
