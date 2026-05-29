@@ -4,8 +4,6 @@ namespace servd\AssetStorage\StaticCache;
 
 use Craft;
 use craft\base\Component;
-use Exception;
-use Redis;
 use servd\AssetStorage\Plugin;
 use yii\base\Event;
 use craft\base\Element;
@@ -20,18 +18,21 @@ use craft\events\SectionEvent;
 use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
+use craft\helpers\Queue;
 use craft\services\Elements;
 use craft\services\Sections;
 use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\View;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEdgeCachesForEnvironmentJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEdgeCachesForTagsJob;
 use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEnvironmentJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
-use GuzzleHttp\Client;
-use GuzzleHttp\Exception\GuzzleException;
+
 class StaticCache extends Component
 {
 
@@ -199,7 +200,7 @@ class StaticCache extends Component
                     'key' => 'servd-static-cache',
                     'label' => Craft::t('servd-asset-storage', 'Servd Static Cache'),
                     'action' => function () {
-                        $this->clearStaticCache();
+                        Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
                     },
                 ];
 
@@ -207,7 +208,7 @@ class StaticCache extends Component
                     'key' => 'servd-edge-caches',
                     'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
                     'action' => function () {
-                        $this->clearEdgeCaches();
+                        Queue::push(new PurgeEdgeCachesForEnvironmentJob(), StaticCache::purgePriority());
                     },
                 ];
             }
@@ -400,7 +401,12 @@ class StaticCache extends Component
                 Element::STATUS_ENABLED == $element->getStatus()
                 || Entry::STATUS_LIVE == $element->getStatus()
             ) {
-                $this->clearStaticCache($event);
+                if (getenv('SERVD_CACHE_ENABLED') == 'true') {
+                    Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
+                }
+                if (getenv('SERVD_EDGE_CACHING') == 'true') {
+                    Queue::push(new PurgeEdgeCachesForEnvironmentJob(), StaticCache::purgePriority());
+                }
             }
             return;
         }
@@ -421,10 +427,13 @@ class StaticCache extends Component
             __METHOD__
         );
 
-        \craft\helpers\Queue::push(new PurgeTagsJob([
-            'description' => 'Purge static cache by tags',
-            'tags' => $updatedTags
-        ]), static::purgePriority());
+        if (getenv('SERVD_CACHE_ENABLED') == 'true') {
+            Queue::push(new PurgeTagsJob(['tags' => $updatedTags]), static::purgePriority());
+        }
+
+        if (getenv('SERVD_EDGE_CACHING') == 'true') {
+            Queue::push(new PurgeEdgeCachesForTagsJob(['tags' => $updatedTags]), static::purgePriority());
+        }
     }
 
     private function getTagsFromElementUpdateEvent($event)
@@ -478,67 +487,14 @@ class StaticCache extends Component
         return $tags;
     }
 
-
     public function clearStaticCache(Event $event = null)
     {
-        //Clear the cache
-        $this->clearRedisBasedCache();
-    }
-
-    private function clearRedisBasedCache()
-    {
-        try {
-            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
-            $redis = new Redis();
-
-            //Clear out content
-            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'), 5);
-            $redis->select($redisDb);
-            $redis->flushDb(true);
-            $redis->close();
-        } catch (Exception $e) {
-            Craft::error($e->getMessage(), __METHOD__);
+        if (getenv('SERVD_CACHE_ENABLED') == 'true') {
+            Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
         }
-
-        try {
-            //Clear out metadata - ledge stores cached redirects here
-            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
-            $redis->connect($qlessHost, getenv('REDIS_PORT'), 5);
-            $redis->select($redisDb);
-            $redis->flushDb(true);
-            $redis->close();
-        } catch (Exception $e) {
-            //Do nothing - this is expected most of the time
+        if (getenv('SERVD_EDGE_CACHING') == 'true') {
+            Queue::push(new PurgeEdgeCachesForEnvironmentJob(), StaticCache::purgePriority());
         }
-    }
-
-    public function clearEdgeCaches()
-    {
-        $settings = Plugin::$plugin->getSettings();
-
-        $url = 'https://app.servd.host/clear-edge-caches';
-        if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
-            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
-        }
-
-        if (!getenv('ENVIRONMENT')) {
-            throw new Exception("No ENVIRONMENT environment variable detected");
-        }
-
-        try {
-            $client = new Client();
-            $client->post($url, [
-                'json' => [
-                    'slug' => $settings->getProjectSlug(),
-                    'key' => $settings->getSecurityKey(),
-                    'environment' => getenv('ENVIRONMENT')
-                ]
-            ]);
-        } catch (GuzzleException $e) {
-            throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
-        }
-
-        Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()

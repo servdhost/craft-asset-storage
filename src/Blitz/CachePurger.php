@@ -5,14 +5,11 @@ namespace servd\AssetStorage\Blitz;
 use putyourlightson\blitz\drivers\purgers\BaseCachePurger;
 use putyourlightson\blitz\events\RefreshCacheEvent;
 use putyourlightson\blitz\helpers\SiteUriHelper;
-use putyourlightson\blitz\models\SiteUriModel;
 use Craft;
-use craft\behaviors\EnvAttributeParserBehavior;
-use craft\events\RegisterTemplateRootsEvent;
-use craft\web\View;
-use servd\AssetStorage\Plugin;
 use servd\AssetStorage\StaticCache\Ledge;
-use yii\base\Event;
+use craft\helpers\Queue;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEnvironmentJob;
+use servd\AssetStorage\StaticCache\StaticCache;
 
 class CachePurger extends BaseCachePurger
 {
@@ -72,7 +69,7 @@ class CachePurger extends BaseCachePurger
             return;
         }
 
-        Plugin::$plugin->staticCache->clearStaticCache();
+        Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_PURGE_ALL_CACHE)) {
             $this->trigger(self::EVENT_AFTER_PURGE_ALL_CACHE, $event);

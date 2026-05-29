@@ -2,12 +2,10 @@
 
 namespace servd\AssetStorage\StaticCache\Jobs;
 
-use craft\queue\BaseJob;
 use Exception;
-use servd\AssetStorage\Plugin;
-use servd\AssetStorage\StaticCache\Ledge;
+use craft\queue\BaseJob;
 
-class PurgeUrlsJob extends BaseJob
+class PurgeEdgeCachesForUrlsJob extends BaseJob
 {
     use Purger;
 
@@ -15,18 +13,13 @@ class PurgeUrlsJob extends BaseJob
 
     public function execute($queue): void
     {
-        $tagsService = Plugin::$plugin->get('tags');
-
         $chunks = array_chunk($this->urls, 50);
         $totalLength = sizeof($chunks);
 
         foreach ($chunks as $i => $chunk) {
             $this->setProgress($queue, $i / $totalLength);
             try {
-                Ledge::purgeUrls($chunk);
-                foreach ($chunk as $url) {
-                    $tagsService->clearTagsForUrl($url);
-                }
+                $this->purgeEdgeCacheForUrls($chunk);
             } catch (Exception $e) {
                 throw new Exception("Failed to purge all urls: " . $e->getMessage());
             }
@@ -35,6 +28,6 @@ class PurgeUrlsJob extends BaseJob
 
     protected function defaultDescription(): ?string
     {
-        return 'Purge Servd static origin cache for URLs';
+        return 'Purge Servd static edge caches for URLs';
     }
 }

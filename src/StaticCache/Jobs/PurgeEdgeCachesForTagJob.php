@@ -4,7 +4,7 @@ namespace servd\AssetStorage\StaticCache\Jobs;
 
 use craft\queue\BaseJob;
 
-class PurgeTagJob extends BaseJob
+class PurgeEdgeCachesForTagJob extends BaseJob
 {
     use Purger;
 
@@ -12,11 +12,11 @@ class PurgeTagJob extends BaseJob
 
     public function execute($queue): void
     {
-        $this->purgeUrlsForTag($this->tag);
+        $this->purgeEdgeCacheForTags([$this->tag]);
     }
 
     protected function defaultDescription(): ?string
     {
-        return 'Purge Servd static origin cache for tag';
+        return 'Purge Servd static edge caches for tag';
     }
 }

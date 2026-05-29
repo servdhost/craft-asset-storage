@@ -8,7 +8,7 @@ use servd\AssetStorage\StaticCache\Ledge;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 
-trait TagPurger
+trait Purger
 {
     protected $cacheClearUrl = 'https://app.servd.host/clear-edge-cache';
 
@@ -27,7 +27,22 @@ trait TagPurger
         });
     }
 
-    private function clearEdgeCache(array $tags)
+    private function purgeEdgeCacheForEnvironment()
+    {
+        return $this->sendEdgeCacheRequest();
+    }
+
+    private function purgeEdgeCacheForTags(array $tags)
+    {
+        return $this->sendEdgeCacheRequest(['tags' => implode(',', $tags)]);
+    }
+
+    private function purgeEdgeCacheForUrls(array $urls)
+    {
+        return $this->sendEdgeCacheRequest(['urls' => implode(',', $urls)]);
+    }
+
+    private function sendEdgeCacheRequest($payload = [])
     {
         $settings = Plugin::$plugin->getSettings();
 
@@ -39,12 +54,11 @@ trait TagPurger
         try {
             $client = new Client();
             $client->post($url, [
-                'json' => [
+                'json' => array_merge($payload, [
                     'slug' => $settings->getProjectSlug(),
                     'environment' => $settings->getAssetsEnvironment(),
-                    'key' => $settings->getSecurityKey(),
-                    'tags' => implode(',', $tags)
-                ]
+                    'key' => $settings->getSecurityKey()
+                ])
             ]);
         } catch (GuzzleException $e) {
             throw new Exception("Failed to contact Servd edge cache clear endpoint: " . $e->getMessage());
