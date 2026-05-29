@@ -1,123 +1,182 @@
 # Release Notes for Servd Assets and Helpers
 
-## 4.0.17 - 2025-06-13
+## 3.7.5.1 - 2026-03-24
+
+### Updated
+
+- Fixed `Calling unknown method servd\AssetStorage\console\controllers\LocalController::fetchEnvironments()` error
+
+
+## 3.7.5 - 2026-03-20
 
 ### Added
 
-- Added the "Clear Asset CDN cache when an asset file changes" plugin setting to control the cache purging behaviour when an asset is deleted and when it's file is replaced
+- Added "Disable Push Console Commands" plugin setting to disable local/push-database and local/push-assets console commands.
 
-## 4.0.16 - 2025-04-19
+### Updated
+
+- Updated the pull and push commands to get an up-to-date list of active environments
+
+### Fixed
+
+- Fixed a bug where a non-image asset is used as a thumbnail image when the disable transforms setting is enabled on it's filesystem.
+
+## 3.7.4 - 2026-01-20
+
+### Fixed
+
+- Fixed an class reference issue introduced by an update to the AWS SDK Package
+
+## 3.7.3 - 2026-01-06
+
+
+### Removed
+
+- Removed composer dependency on v3.319.4 of the aws/aws-sdk-php composer package due to the PKSA-dxyf-6n16-t87m security advisory.
+
+## 3.7.2 - 2025-11-28
+
+### Added
+
+- Added the "Disable SERVD_LOGGED_IN_STATUS cookie" plugin setting. Note that enabling this setting will prevent the "Logged in users skip the cache" static caching setting from working.
+- Added a setting for Servd Asset Storage filesystems which allows transforms and optimisations to be disabled for specific filesystems.
+
+## 3.7.1 - 2025-11-07
+
+### Updated
+
+- Set SERVD_LOGGED_IN_STATUS cookie to be 'secure' by default
+
+## 3.7.0 - 2025-09-17
+
+### Fixed
+
+- Encoding issue with commas in filenames.
+
+### Added
+
+- Added `clear-caches/servd-edge-caches` CLI command.
+
+### Removed
+
+- Removed deprecated `clear-caches/servd-asset-storage` CLI command.
+
+
+## 3.6.3 - 2025-08-22
+
+### Fixed
+
+- Fixed a bug that prevented the focal point coordinates from being passed to the Servd transformer if either the X or Y values were set to zero.
+
+## 3.6.2 - 2025-07-21
+
+### Fixed
+
+- Added support for local mysql client CLI v8.4 to database push/pull commands
+
+## 3.6.1 - 2025-07-19
+
+### Updated
+
+- Store SSH keys in runtime directory to prevent git trying to commit them
+
+## 3.6.0 - 2025-07-17
+
+### Updated
+
+- Switched database push/pull CLI commands to use SSH Session tunnelling 
+
+## 3.5.26 - 2025-06-13
 
 ### Added
 
 - Added the "Transform SVGs" plugin setting to control how SVGs are transformed to other image formats
+- Added the "Clear Asset CDN cache when an asset file changes" plugin setting to control how the cache purging behaviour when an asset is deleted and when file is repkaced.
 
-## 4.0.15 - 2025-02-13
+## 3.5.25 - 2025-02-13
 
 ### Fixed
 
 - Updated the automatic cache purging of edited assets to handle renamed assets
 
-## 4.0.14 - 2025-02-03
+## 3.5.24 - 2025-02-03
 
 ### Fixed
 
 - Added a fix for an update to the AWS S3 SDK which adds headers incompatible with Servd asset platform storage providers
 
-## 4.0.13 - 2025-01-27
+## 3.5.23 - 2025-01-27
 
 ### Added
 
 - Added the `--emptyDatabase` flag for the `servd/local/pull-database` CLI command to fully empty the local DB before running the import
 
-## 4.0.12 - 2024-12-11
+## 3.5.22 - 2024-12-16
+
+### Updated
+
+- Corrected v3.5.21 being tagged from the wrong branch 🤦‍♂️
+
+## 3.5.21 - 2024-12-11
 
 ### Updated
 
 - Reduced the cache memory usage of the "Automated Tag Based Purge" option for the "Cache Clear Strategy" plugin field.
 
-## 4.0.11 - 2024-12-03
-
-### Fixed
-
-- Another fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
-
-## 4.0.10 - 2024-11-22
+## 3.5.20 - 2024-11-22
 
 ### Updated
 
 - Force image transforms to have a width and height compatible with backend transform function memory limits
 - Automatically clear caches for non-image files that are replaced or deleted within the Craft CP
 
-## 4.0.9 - 2024-11-15
-
-### Fixed
-
-- Speculative fix for compatibility with previewPlaceholderHtml changes in Craft 5.5.0
-
-## 4.0.8 - 2024-09-30
+## 3.5.19 - 2024-09-30
 
 ### Fixed
 
 - Added handling for image transform strings passed as an array
 
-## 4.0.7 - 2024-09-24
+## 3.5.18 - 2024-09-24
 
 ### Fixed
 
 - Replaced a removed twig function with an alternative
 
-## 4.0.6 - 2024-07-25
+## 3.5.17 - 2024-08-29
+
+## Updated
+
+- Fixed the version of the AWS PHP SDK to v3.319.4 to avoid deprecation errors breaking asset uploads.
+
+## 3.5.16 - 2024-07-25
 
 ### Fixed
 
 - Fixed a bug which caused asset files with accented characters to not load properly on the V3 asset platform.
 
-## 4.0.5 - 2024-07-16
+## 3.5.15 - 2024-07-16
 
 ### Fixed
 
 - Fixed a bug which caused images to be served in their original size instead of being transformed
 
-## 4.0.4 - 2024-07-15
+## 3.5.14 - 2024-07-15
 
 ### Updated
 
 - Switched asset platform image manipulation availability detection from Craft's native to a custom implementation to support transforms of HEIC/HEIF files even when local ImageMagick/GD isn't able to do so.
 
-## 4.0.3 - 2024-04-08
-
-### Fixed
-
-- Update class references in StaticCache to match Craft 5 deprecations
-- Removed a reference to a composer package which is  no longer installed with Craft 5
-
-## 4.0.2 - 2024-03-29
-
-### Added
-
-- Support for Craft 5 volume subpaths
+## 3.5.13 - 2024-03-13
 
 ### Updated
 
 - Moved image do-not-upscale logic over to asset platform
-- Merged recent v3.x plugin changes
+
+## 3.5.12 - 2024-03-12
 
 ### Fixed
 
 - Fixed a bug when purging static cache URLs with no defined path
-
-## 4.0.1 - 2024-03-08
-
-### Fixed
-
-- Fixed a call to a method which has changed signature in Craft 5
-
-## 4.0.0 - 2024-02-14
-
-### Added
-
-- Preliminary Craft 5 Support. Happy valentines day 💕
 
 ## 3.5.11 - 2024-03-11
 

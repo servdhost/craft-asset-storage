@@ -15,6 +15,9 @@ trait ControllerTrait
     protected $baseServdDomain = 'https://app.servd.host';
     protected $baseRunnerDomain = 'https://runner.servd.host';
 
+    // Variable for caching active environments
+    protected $_environments;
+
     protected function outputDebug($message)
     {
         if($this->verbose){
@@ -107,5 +110,46 @@ trait ControllerTrait
         }
 
         return true;
+    }
+
+    protected function fetchEnvironments()
+    {
+        if (!is_null($this->_environments)) {
+            return $this->_environments;
+        }
+
+        $this->_environments = [
+            'development' => 'Development',
+            'staging' => 'Staging',
+            'production' => 'Production'
+        ];
+
+        $url = 'https://app.servd.host/environments';
+        if (!empty(getenv('SERVD_ENVIRONMENTS_URL'))) {
+            $url = getenv('SERVD_ENVIRONMENTS_URL');
+        }
+
+        try {
+            $client = Craft::createGuzzleClient();
+            $response = $client->get($url, [
+                'query' => [
+                    'slug' => $this->servdSlug,
+                    'key' => $this->servdKey
+                ]
+            ]);
+            $data = json_decode((string) $response->getBody(), true);
+            $environments = [];
+            foreach (array_values($data['environments']) as $env) {
+                $environments[$env['slug']] = $env['name'];
+            }
+            if (!empty($environments)) {
+                $this->_environments = $environments;
+            }
+        } catch (\Exception $e) {
+            $this->outputDebug("Failed to fetch active environments");
+            $this->outputDebug((string) $e);
+        }
+
+        return $this->_environments;
     }
 }

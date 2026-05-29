@@ -2,7 +2,8 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
+use Aws\Handler\GuzzleV6\GuzzleHandler as GuzzleHandlerV6;
+use Aws\Handler\Guzzle\GuzzleHandler;
 use Craft;
 use craft\base\Component;
 use craft\elements\Asset;
@@ -127,7 +128,11 @@ class AssetsPlatform extends Component
         $config['request_checksum_calculation'] = 'when_required';
         $config['response_checksum_validation'] = 'when_required';
         $client = Craft::createGuzzleClient();
-        $config['http_handler'] = new GuzzleHandler($client);
+        if (class_exists(GuzzleHandler::class)) {
+            $config['http_handler'] = new GuzzleHandler($client);
+        } else {
+            $config['http_handler'] = new GuzzleHandlerV6($client);
+        }
 
         return $config;
     }
@@ -230,7 +235,11 @@ class AssetsPlatform extends Component
                     if ($fs instanceof Fs) {
                         $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        }
                     }
                 }
             );
@@ -249,16 +258,16 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $width = $event->width;
-                        $height = $event->height;
-
-                        $transform = new ImageTransform([
-                            'height' => $height,
-                            'width' => $width,
-                            'interlace' => 'line',
-                        ]);
+                        if ($fs->disableTransforms) {
+                            return;
+                        }
 
                         $event->handled = true;
+                        $transform = new ImageTransform([
+                            'height' => $event->height,
+                            'width' => $event->width,
+                            'interlace' => 'line',
+                        ]);
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
@@ -278,9 +287,12 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $event->transform, true);
+                        }
                     }
                 }
             );
@@ -353,13 +365,9 @@ class AssetsPlatform extends Component
     {
 
         $settings = Plugin::$plugin->getSettings();
-        $volume = $asset->getVolume();
-        $fs = $volume->getFs();
-
+        $fs = $asset->getVolume()->getFs();
 
         $normalizedCustomSubfolder = App::parseEnv($fs->customSubfolder);
-        $normalizedSubpath = trim(App::parseEnv($volume->getSubpath()), "/");
-        $normalizedSubpath  = strlen($normalizedSubpath) > 0 ? $normalizedSubpath . '/' : '';
 
         //Special handling for videos
         $assetIsVideo = AssetsHelper::getFileKindByExtension($asset->filename) === Asset::KIND_VIDEO
@@ -368,7 +376,6 @@ class AssetsPlatform extends Component
             return 'https://servd-' . $settings->getProjectSlug() . '.b-cdn.net/' .
                 $settings->getAssetsEnvironment() . '/' .
                 (strlen(trim($normalizedCustomSubfolder, "/")) > 0 ? (trim($normalizedCustomSubfolder, "/") . '/') : '') .
-                $normalizedSubpath .
                 $asset->getPath();
         }
 
@@ -379,7 +386,7 @@ class AssetsPlatform extends Component
                 "environment" => $settings->getAssetsEnvironment(),
                 "projectSlug" => $settings->getProjectSlug(),
                 "subfolder" => trim($normalizedCustomSubfolder, "/"),
-                "filePath" => $normalizedSubpath . $asset->getPath(),
+                "filePath" => $asset->getPath(),
             ];
             $finalUrl = $customPattern;
             foreach ($variables as $key => $value) {
@@ -389,7 +396,7 @@ class AssetsPlatform extends Component
             $urlParts = parse_url($finalUrl);
             $finalUrl = $urlParts['scheme'] . '://' . $urlParts['host'] . implode('/', array_map('rawurlencode', explode('/', $urlParts['path'])));
         } else {
-            $finalUrl = AssetsHelper::generateUrl($asset);
+            $finalUrl = AssetsHelper::generateUrl($fs, $asset);
         }
 
         // Append dm query parameter to allow cache busting if the underlying asset changes

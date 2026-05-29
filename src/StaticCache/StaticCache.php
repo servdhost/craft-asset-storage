@@ -21,7 +21,7 @@ use craft\events\TemplateEvent;
 use craft\helpers\ElementHelper;
 use craft\helpers\UrlHelper;
 use craft\services\Elements;
-use craft\services\Entries;
+use craft\services\Sections;
 use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
@@ -30,7 +30,8 @@ use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
-
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 class StaticCache extends Component
 {
 
@@ -205,14 +206,11 @@ class StaticCache extends Component
                     },
                 ];
 
-                /***
-                 * Deprecated cli key
-                 */
                 $event->options[] = [
-                    'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache (Deprecated)'),
+                    'key' => 'servd-edge-caches',
+                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
                     'action' => function () {
-                        $this->clearStaticCache();
+                        $this->clearEdgeCaches();
                     },
                 ];
             }
@@ -319,7 +317,7 @@ class StaticCache extends Component
     {
         Event::on(Application::class, Application::EVENT_INIT, function () {
             $user = Craft::$app->getUser();
-            if ($user->isGuest) {
+            if ($user->isGuest || Plugin::$plugin->getSettings()->disableLoggedInCookie) {
                 Craft::$app->response->cookies->remove(new \yii\web\Cookie([
                     'name' => 'SERVD_LOGGED_IN_STATUS',
                     'domain' => Craft::$app->getConfig()->getGeneral()->defaultCookieDomain,
@@ -333,7 +331,8 @@ class StaticCache extends Component
                         'expires' => $expire,
                         'path' => '/',
                         'domain' => $domain,
-                        'samesite' => null
+                        'samesite' => null,
+                        'secure' => true
                     ]);
                 } else {
                     setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
@@ -381,10 +380,7 @@ class StaticCache extends Component
         Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Element::class, Structures::EVENT_AFTER_INSERT_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Element::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
+        Event::on(Element::class, Element::EVENT_AFTER_MOVE_IN_STRUCTURE, function ($event) {
             $this->handleUpdateEvent($event);
         });
         Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, function ($event) {
@@ -393,7 +389,7 @@ class StaticCache extends Component
         Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
             $this->handleUpdateEvent($event);
         });
-        Event::on(Entries::class, Entries::EVENT_AFTER_SAVE_SECTION, function ($event) {
+        Event::on(Sections::class, Sections::EVENT_AFTER_SAVE_SECTION, function ($event) {
             $this->handleUpdateEvent($event);
         });
     }
@@ -484,7 +480,7 @@ class StaticCache extends Component
             $tags[] = Tags::SECTION_ID_PREFIX . $event->section->id;
         }
 
-        if ($event instanceof MoveElementEvent) {
+        if ($event instanceof MoveElementEvent or $event instanceof ElementStructureEvent) {
             $tags[] = Tags::STRUCTURE_ID_PREFIX . $event->structureId;
         }
 
@@ -523,6 +519,35 @@ class StaticCache extends Component
         } catch (Exception $e) {
             //Do nothing - this is expected most of the time
         }
+    }
+
+    public function clearEdgeCaches()
+    {
+        $settings = Plugin::$plugin->getSettings();
+
+        $url = 'https://app.servd.host/clear-edge-caches';
+        if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
+            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+        }
+
+        if (!getenv('ENVIRONMENT')) {
+            throw new Exception("No ENVIRONMENT environment variable detected");
+        }
+
+        try {
+            $client = new Client();
+            $client->post($url, [
+                'json' => [
+                    'slug' => $settings->getProjectSlug(),
+                    'key' => $settings->getSecurityKey(),
+                    'environment' => getenv('ENVIRONMENT')
+                ]
+            ]);
+        } catch (GuzzleException $e) {
+            throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
+        }
+
+        Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()
