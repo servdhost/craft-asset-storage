@@ -38,6 +38,9 @@ class StaticCache extends Component
     public static $esiBlocks = [];
     public static $dynamicBlocksAdded = false;
 
+    private bool $originEnabled;
+    private bool $edgeEnabled;
+
     public static function purgePriority(): int
     {
         return is_numeric(getenv('SERVD_PURGE_PRIORITY'))
@@ -49,21 +52,15 @@ class StaticCache extends Component
     {
         $this->registerTwigExtension();
 
-        // If we aren't running on Servd, this component does nothing
-        if (!extension_loaded('redis')) {
-            return;
-        }
+        $this->edgeEnabled = getenv('SERVD_EDGE_CACHING') == 'true';
+        
+        $this->originEnabled = extension_loaded('redis')
+            && getenv('SERVD_CACHE_ENABLED') === 'true'
+            && !empty(getenv('REDIS_STATIC_CACHE_DB'))
+            && !empty(getenv('REDIS_HOST'))
+            && !empty(getenv('REDIS_PORT'));
 
-        // If static caching is disabled, this component does nothing
-        if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
-            return;
-        }
-
-        if (
-            empty(getenv('REDIS_STATIC_CACHE_DB'))
-            || empty(getenv('REDIS_HOST'))
-            || empty(getenv('REDIS_PORT'))
-        ) {
+        if (!$this->edgeEnabled && !$this->originEnabled) {
             return;
         }
 
@@ -219,8 +216,6 @@ class StaticCache extends Component
 
     private function registerFrontendEventHandlers()
     {
-
-
         $settings = Plugin::$plugin->getSettings();
 
         //Only track tags if we're using that feature
@@ -238,7 +233,7 @@ class StaticCache extends Component
         if (
             $request->getIsCpRequest() || $request->getIsLivePreview() ||
             $request->getIsActionRequest() || !$request->getIsGet() ||
-            ($request->headers['x-servd-cache'] ?? '0') !== '1'
+            (($request->headers['x-servd-cache'] ?? '0') !== '1')
         ) {
             return false;
         }
@@ -262,15 +257,11 @@ class StaticCache extends Component
         });
 
         Event::on(View::class, View::EVENT_AFTER_RENDER_PAGE_TEMPLATE, function (TemplateEvent $event) {
-
-            // Only store tags for pages which return a 200 response
-            $response = \Craft::$app->getResponse();
-            $responseCode = $response->statusCode;
-            if ($responseCode !== 200) {
+            if (\Craft::$app->getResponse()->statusCode !== 200) {
                 return;
             }
 
-            //Associate collected tags with the url
+            // Associate collected tags with the url
             Craft::beginProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
 
             $request = Craft::$app->getRequest();
@@ -278,13 +269,15 @@ class StaticCache extends Component
             if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
             }
-            $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
-            Craft::info(
-                'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),
-                __METHOD__
-            );
 
-            if (getenv('SERVD_EDGE_CACHING') == 'true') {
+            if ($this->originEnabled) {
+                $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
+                Craft::info('Associated the url: ' . $url . ' with tags: ' . implode(', ', $tags), __METHOD__);
+            } else {
+                $tags = Plugin::$plugin->get('tags')->getAllTagsForCurrentRequest();
+            }
+
+            if ($this->edgeEnabled) {
                 $this->setCacheTagHeader($tags);
             }
 
@@ -295,19 +288,17 @@ class StaticCache extends Component
     private function setCacheTagHeader(array $tags)
     {
         $headers = Craft::$app->getResponse()->getHeaders();
+        
         if ($headers->has('Cache-Tag')) { return; }
 
-        $host = Craft::$app->getRequest()->getHostName();
-        $hostHash = substr(md5($host), 0, 10);
+        $settings = Plugin::$plugin->getSettings();
+        $hash = hash_hmac('sha256', $settings->getProjectSlug() . getenv('ENVIRONMENT'), $settings->getSecurityKey());
+        $prefix = substr($hash, 0, 16);
 
-        $cacheTags = [
-            getenv('SERVD_PROJECT_SLUG'), // For clearing by project
-            getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT'), // For clearing by environment
-            getenv('SERVD_PROJECT_SLUG') . '-host-' . $hostHash, // For clearing by hostname
-        ];
+        $cacheTags = [$prefix];
 
         foreach ($tags as $tag) {
-            $cacheTags[] = getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $tag;
+            $cacheTags[] = "$prefix:$tag";
         }
 
         $headers->add('Cache-Tag', implode(',', $cacheTags));

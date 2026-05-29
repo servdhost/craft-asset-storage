@@ -36,10 +36,6 @@ trait TagPurger
             $url = getenv('SERVD_EDGE_CACHE_CLEAR_URL');
         }
 
-        $tagsList = array_map(function($t) {
-            return getenv('SERVD_PROJECT_SLUG') . '-env-' . getenv('ENVIRONMENT') . '-' . $t;
-        }, $tags);
-
         try {
             $client = new Client();
             $client->post($url, [
@@ -47,7 +43,7 @@ trait TagPurger
                     'slug' => $settings->getProjectSlug(),
                     'environment' => $settings->getAssetsEnvironment(),
                     'key' => $settings->getSecurityKey(),
-                    'tags' => implode(',', $tagsList)
+                    'tags' => implode(',', $tags)
                 ]
             ]);
         } catch (GuzzleException $e) {
