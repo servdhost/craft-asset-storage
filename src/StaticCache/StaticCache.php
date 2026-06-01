@@ -198,7 +198,7 @@ class StaticCache extends Component
             function (RegisterCacheOptionsEvent $event) {
                 $event->options[] = [
                     'key' => 'servd-static-cache',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache'),
+                    'label' => Craft::t('servd-asset-storage', 'Servd Origin Static Cache'),
                     'action' => function () {
                         Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
                     },
@@ -310,27 +310,29 @@ class StaticCache extends Component
         Event::on(Application::class, Application::EVENT_INIT, function () {
             $user = Craft::$app->getUser();
             if ($user->isGuest || Plugin::$plugin->getSettings()->disableLoggedInCookie) {
-                Craft::$app->response->cookies->remove(new \yii\web\Cookie([
-                    'name' => 'SERVD_LOGGED_IN_STATUS',
-                    'domain' => Craft::$app->getConfig()->getGeneral()->defaultCookieDomain,
-                ]));
-            } else {
-                $cookieValue = $user->checkPermission('accessCp') ? '1' : '2';
-                $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;
-                $expire = (int) time() + (3600 * 24 * 300);
-                if (PHP_VERSION_ID >= 70300) {
-                    setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, [
-                        'expires' => $expire,
-                        'path' => '/',
-                        'domain' => $domain,
-                        'samesite' => null,
-                        'secure' => true
-                    ]);
-                } else {
-                    setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
+                if (isset($_COOKIE['SERVD_LOGGED_IN_STATUS'])) {
+                    Craft::$app->response->cookies->remove(new \yii\web\Cookie([
+                        'name' => 'SERVD_LOGGED_IN_STATUS',
+                        'domain' => Craft::$app->getConfig()->getGeneral()->defaultCookieDomain,
+                    ]));
                 }
-                $_COOKIE['SERVD_LOGGED_IN_STATUS'] = $cookieValue;
+                return;
             }
+            $cookieValue = $user->checkPermission('accessCp') ? '1' : '2';
+            $domain = Craft::$app->getConfig()->getGeneral()->defaultCookieDomain;
+            $expire = (int) time() + (3600 * 24 * 300);
+            if (PHP_VERSION_ID >= 70300) {
+                setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, [
+                    'expires' => $expire,
+                    'path' => '/',
+                    'domain' => $domain,
+                    'samesite' => null,
+                    'secure' => true
+                ]);
+            } else {
+                setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
+            }
+            $_COOKIE['SERVD_LOGGED_IN_STATUS'] = $cookieValue;
         });
     }
 
