@@ -10,7 +10,7 @@ use GuzzleHttp\Exception\GuzzleException;
 
 trait Purger
 {
-    protected $cacheClearUrl = 'https://app.servd.host/clear-edge-cache';
+    protected $cacheClearUrl = 'https://app.servd.host/clear-edge-caches';
 
     protected function purgeUrlsForTag($tag): void
     {
