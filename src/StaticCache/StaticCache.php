@@ -234,7 +234,7 @@ class StaticCache extends Component
         if (
             $request->getIsCpRequest() || $request->getIsLivePreview() ||
             $request->getIsActionRequest() || !$request->getIsGet() ||
-            (($request->headers['x-servd-cache'] ?? '0') !== '1')
+            ($this->originEnabled && ($request->headers['x-servd-cache'] ?? '0') !== '1')
         ) {
             return false;
         }
