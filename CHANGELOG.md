@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.5 - 2026-06-08
+
+### Updated
+
+- Switched all getenv() calls out for craft\helpers\App::env() calls to maintain compatibility with Craft's botstrap.php dotenv changes
+
 ## 4.2.4.2 - 2026-03-24
 
 ### Updated
