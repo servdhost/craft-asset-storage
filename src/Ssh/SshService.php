@@ -47,8 +47,8 @@ class SshService
             mkdir($this->keyDirectory, 0700, true);
         }
 
-        $privateKeyEnv = getenv('SERVD_SSH_PRIVATE_KEY_B64');
-        $publicKeyEnv = getenv('SERVD_SSH_PUBLIC_KEY_B64');
+        $privateKeyEnv = \craft\helpers\App::env('SERVD_SSH_PRIVATE_KEY_B64');
+        $publicKeyEnv = \craft\helpers\App::env('SERVD_SSH_PUBLIC_KEY_B64');
 
         if (!empty($privateKeyEnv) && !empty($publicKeyEnv)) {
             // Base64 decode and store, then return

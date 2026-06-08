@@ -434,7 +434,7 @@ class LocalController extends Controller
     private function checkOnlyLocal()
     {
         $servdEnvironments = $this->fetchEnvironments();
-        $ok = !in_array(getenv('ENVIRONMENT'), array_keys($servdEnvironments));
+        $ok = !in_array(\craft\helpers\App::env('ENVIRONMENT'), array_keys($servdEnvironments));
         if (!$ok) {
             $this->stderr("You should only run local dev commands in a local dev environment." . PHP_EOL, Console::FG_RED);
         }

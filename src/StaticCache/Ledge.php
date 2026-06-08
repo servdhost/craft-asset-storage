@@ -42,10 +42,10 @@ class Ledge
             $hosts[$urlHost][] = str_ireplace('https://', 'http://', $withPort);
         }
 
-        $base = 'http://' . getenv('SERVD_PROJECT_SLUG') . '-' . getenv('ENVIRONMENT') . '.project-' . getenv('SERVD_PROJECT_SLUG') . '.svc.cluster.local';
+        $base = 'http://' . \craft\helpers\App::env('SERVD_PROJECT_SLUG') . '-' . \craft\helpers\App::env('ENVIRONMENT') . '.project-' . \craft\helpers\App::env('SERVD_PROJECT_SLUG') . '.svc.cluster.local';
 
-        $batchSize = is_numeric(getenv('SERVD_PURGE_BATCH_SIZE'))
-            ? intval(getenv('SERVD_PURGE_BATCH_SIZE'))
+        $batchSize = is_numeric(\craft\helpers\App::env('SERVD_PURGE_BATCH_SIZE'))
+            ? intval(\craft\helpers\App::env('SERVD_PURGE_BATCH_SIZE'))
             : 50;
 
         foreach ($hosts as $host => $hostUrls) {

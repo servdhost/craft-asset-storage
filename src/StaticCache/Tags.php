@@ -124,9 +124,9 @@ class Tags extends Component
     private function getRedisConnection()
     {
         if (static::$redis === null) {
-            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
+            $redisDb = intval(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'));
             static::$redis = new Redis();
-            static::$redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+            static::$redis->connect(\craft\helpers\App::env('REDIS_HOST'), \craft\helpers\App::env('REDIS_PORT'));
             static::$redis->select($redisDb);
         }
         return static::$redis;

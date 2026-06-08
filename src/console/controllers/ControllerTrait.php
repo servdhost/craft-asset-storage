@@ -70,8 +70,8 @@ trait ControllerTrait
 
         //If not they might be in environment variables
         if (empty($this->servdSlug) || empty($this->servdKey)) {
-            $this->servdSlug = getenv('SERVD_PROJECT_SLUG');
-            $this->servdKey = getenv('SERVD_SECURITY_KEY');
+            $this->servdSlug = \craft\helpers\App::env('SERVD_PROJECT_SLUG');
+            $this->servdKey = \craft\helpers\App::env('SERVD_SECURITY_KEY');
         }
 
         //If neither we can ask for them
@@ -125,8 +125,8 @@ trait ControllerTrait
         ];
 
         $url = 'https://app.servd.host/environments';
-        if (!empty(getenv('SERVD_ENVIRONMENTS_URL'))) {
-            $url = getenv('SERVD_ENVIRONMENTS_URL');
+        if (!empty(\craft\helpers\App::env('SERVD_ENVIRONMENTS_URL'))) {
+            $url = \craft\helpers\App::env('SERVD_ENVIRONMENTS_URL');
         }
 
         try {

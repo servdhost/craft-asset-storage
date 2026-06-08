@@ -149,7 +149,7 @@ class AssetsPlatform extends Component
 
     private function getSecurityToken($projectSlug, $securityKey)
     {
-        $securityTokenUrl = getenv('SECURITY_TOKEN_URL');
+        $securityTokenUrl = \craft\helpers\App::env('SECURITY_TOKEN_URL');
         if (empty($securityTokenUrl)) {
             $securityTokenUrl = static::DEFAULT_SECURITY_TOKEN_URL;
         }

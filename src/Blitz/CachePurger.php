@@ -102,11 +102,11 @@ class CachePurger extends BaseCachePurger
 
     private function isRunningInServd()
     {
-        return extension_loaded('redis') && !empty(getenv('REDIS_STATIC_CACHE_DB'));
+        return extension_loaded('redis') && !empty(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'));
     }
 
     private function isStaticCachingEnabled()
     {
-        return getenv('SERVD_CACHE_ENABLED') === 'true';
+        return \craft\helpers\App::env('SERVD_CACHE_ENABLED') === 'true';
     }
 }

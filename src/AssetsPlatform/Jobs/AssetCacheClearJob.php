@@ -48,8 +48,8 @@ class AssetCacheClearJob extends BaseJob
         ];
 
         $url = $this->cacheClearUrl;
-        if (!empty(getenv('SERVD_ASSET_CACHE_CLEAR_URL'))) {
-            $url = getenv('SERVD_ASSET_CACHE_CLEAR_URL');
+        if (!empty(\craft\helpers\App::env('SERVD_ASSET_CACHE_CLEAR_URL'))) {
+            $url = \craft\helpers\App::env('SERVD_ASSET_CACHE_CLEAR_URL');
         }
 
         try {

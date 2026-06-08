@@ -33,7 +33,7 @@ class IncludeNode extends Node implements NodeOutputInterface
         $compiler->write('if( \servd\AssetStorage\Plugin::$plugin->getSettings()->disableDynamic || !\Craft::$app->request->getIsSiteRequest() ){' . "\n")->indent();
         $this->standardInclude($compiler);
         $compiler->outdent()->write('} else {' . "\n")->indent();
-        $compiler->write('if(getenv("SERVD_ESI_ENABLED") === "true" && ($_SERVER["HTTP_X_SERVD_CACHE"] ?? "0") === "1"){' . "\n")->indent();
+        $compiler->write('if(\craft\helpers\App::env("SERVD_ESI_ENABLED") === "true" && ($_SERVER["HTTP_X_SERVD_CACHE"] ?? "0") === "1"){' . "\n")->indent();
         //NOTE: Use the below line to test ESI output when working locally
         //$compiler->write('if(true){' . "\n")->indent();
         $this->esiInclude($compiler);

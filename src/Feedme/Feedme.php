@@ -18,9 +18,9 @@ class Feedme extends Component
         }
 
         if (
-            empty(getenv('REDIS_HOST'))
-            || empty(getenv('REDIS_PORT'))
-            || empty(getenv('REDIS_DB'))
+            empty(\craft\helpers\App::env('REDIS_HOST'))
+            || empty(\craft\helpers\App::env('REDIS_PORT'))
+            || empty(\craft\helpers\App::env('REDIS_DB'))
         ) {
             return;
         }

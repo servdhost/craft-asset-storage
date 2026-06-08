@@ -41,8 +41,8 @@ class StaticCache extends Component
 
     public static function purgePriority(): int
     {
-        return is_numeric(getenv('SERVD_PURGE_PRIORITY'))
-            ? intval(getenv('SERVD_PURGE_PRIORITY'))
+        return is_numeric(\craft\helpers\App::env('SERVD_PURGE_PRIORITY'))
+            ? intval(\craft\helpers\App::env('SERVD_PURGE_PRIORITY'))
             : 1025;
     }
 
@@ -56,14 +56,14 @@ class StaticCache extends Component
         }
 
         // If static caching is disabled, this component does nothing
-        if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
+        if (\craft\helpers\App::env('SERVD_CACHE_ENABLED') !== 'true') {
             return;
         }
 
         if (
-            empty(getenv('REDIS_STATIC_CACHE_DB'))
-            || empty(getenv('REDIS_HOST'))
-            || empty(getenv('REDIS_PORT'))
+            empty(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'))
+            || empty(\craft\helpers\App::env('REDIS_HOST'))
+            || empty(\craft\helpers\App::env('REDIS_PORT'))
         ) {
             return;
         }
@@ -276,7 +276,7 @@ class StaticCache extends Component
 
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
-            if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
+            if (\craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
             }
             $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
@@ -477,11 +477,11 @@ class StaticCache extends Component
     private function clearRedisBasedCache()
     {
         try {
-            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
+            $redisDb = intval(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'));
             $redis = new Redis();
 
             //Clear out content
-            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'), 5);
+            $redis->connect(\craft\helpers\App::env('REDIS_HOST'), \craft\helpers\App::env('REDIS_PORT'), 5);
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
@@ -491,8 +491,8 @@ class StaticCache extends Component
 
         try {
             //Clear out metadata - ledge stores cached redirects here
-            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
-            $redis->connect($qlessHost, getenv('REDIS_PORT'), 5);
+            $qlessHost = str_ireplace('-redis.', '-redis-qless.', \craft\helpers\App::env('REDIS_HOST'));
+            $redis->connect($qlessHost, \craft\helpers\App::env('REDIS_PORT'), 5);
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
@@ -506,11 +506,11 @@ class StaticCache extends Component
         $settings = Plugin::$plugin->getSettings();
 
         $url = 'https://app.servd.host/clear-edge-caches';
-        if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
-            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+        if (!empty(\craft\helpers\App::env('SERVD_CLEAR_EDGE_CACHES_URL'))) {
+            $url = \craft\helpers\App::env('SERVD_CLEAR_EDGE_CACHES_URL');
         }
 
-        if (!getenv('ENVIRONMENT')) {
+        if (!\craft\helpers\App::env('ENVIRONMENT')) {
             throw new Exception("No ENVIRONMENT environment variable detected");
         }
 
@@ -520,14 +520,14 @@ class StaticCache extends Component
                 'json' => [
                     'slug' => $settings->getProjectSlug(),
                     'key' => $settings->getSecurityKey(),
-                    'environment' => getenv('ENVIRONMENT')
+                    'environment' => \craft\helpers\App::env('ENVIRONMENT')
                 ]
             ]);
         } catch (GuzzleException $e) {
             throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
         }
 
-        Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
+        Craft::info('Servd ' . \craft\helpers\App::env('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()
