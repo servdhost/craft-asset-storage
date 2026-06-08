@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.6 - 2026-06-08
+
+### Fixed
+
+- Cover the possibility of type conversion of boolean env vars
+
 ## 4.2.5 - 2026-06-08
 
 ### Updated

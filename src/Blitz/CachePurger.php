@@ -107,6 +107,6 @@ class CachePurger extends BaseCachePurger
 
     private function isStaticCachingEnabled()
     {
-        return \craft\helpers\App::env('SERVD_CACHE_ENABLED') === 'true';
+        return \craft\helpers\App::env('SERVD_CACHE_ENABLED') === 'true' || \craft\helpers\App::env('SERVD_CACHE_ENABLED') === true;
     }
 }

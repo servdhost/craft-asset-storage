@@ -56,7 +56,7 @@ class StaticCache extends Component
         }
 
         // If static caching is disabled, this component does nothing
-        if (\craft\helpers\App::env('SERVD_CACHE_ENABLED') !== 'true') {
+        if (!\craft\helpers\App::env('SERVD_CACHE_ENABLED')) {
             return;
         }
 
@@ -276,7 +276,7 @@ class StaticCache extends Component
 
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
-            if (\craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') === 'false') {
+            if (!\craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') || \craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
             }
             $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
