@@ -56,7 +56,7 @@ trait Purger
             $client->post($url, [
                 'json' => array_merge($payload, [
                     'slug' => $settings->getProjectSlug(),
-                    'environment' => $settings->getAssetsEnvironment(),
+                    'environment' => getenv('ENVIRONMENT'),
                     'key' => $settings->getSecurityKey()
                 ])
             ]);
