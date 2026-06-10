@@ -206,7 +206,7 @@ class StaticCache extends Component
 
                 $event->options[] = [
                     'key' => 'servd-edge-caches',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
+                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Static Caches'),
                     'action' => function () {
                         Queue::push(new PurgeEdgeCachesForEnvironmentJob(), StaticCache::purgePriority());
                     },
