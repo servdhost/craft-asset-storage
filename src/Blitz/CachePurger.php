@@ -8,6 +8,9 @@ use putyourlightson\blitz\helpers\SiteUriHelper;
 use Craft;
 use servd\AssetStorage\StaticCache\Ledge;
 use craft\helpers\Queue;
+use servd\AssetStorage\StaticCache\Jobs\PurgeUrlsJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEdgeCachesForEnvironmentJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeEdgeCachesForUrlsJob;
 use servd\AssetStorage\StaticCache\Jobs\PurgeEnvironmentJob;
 use servd\AssetStorage\StaticCache\StaticCache;
 
@@ -41,8 +44,14 @@ class CachePurger extends BaseCachePurger
             call_user_func($setProgressHandler, $count, $total, $progressLabel);
         }
 
-        if($this->isRunningInServd() && $this->isStaticCachingEnabled()) {  
-            Ledge::purgeUrls(SiteUriHelper::getUrlsFromSiteUris($siteUris));
+        $urls = SiteUriHelper::getUrlsFromSiteUris($siteUris);
+
+        if ($this->isOriginCachingEnabled()) {
+            Queue::push(new PurgeUrlsJob(['urls' => $urls]), StaticCache::purgePriority());
+        }
+
+        if ($this->isEdgeCachingEnabled()) {
+            Queue::push(new PurgeEdgeCachesForUrlsJob(['urls' => $urls]), StaticCache::purgePriority());
         }
 
         $count = $total;
@@ -65,11 +74,17 @@ class CachePurger extends BaseCachePurger
             return;
         }
 
-        if(!$this->isRunningInServd() || !$this->isStaticCachingEnabled()) {
+        if (!$this->isOriginCachingEnabled() && !$this->isEdgeCachingEnabled()) {
             return;
         }
 
-        Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
+        if ($this->isOriginCachingEnabled()) {
+            Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
+        }
+
+        if ($this->isEdgeCachingEnabled()) {
+            Queue::push(new PurgeEdgeCachesForEnvironmentJob(), StaticCache::purgePriority());
+        }
 
         if ($this->hasEventHandlers(self::EVENT_AFTER_PURGE_ALL_CACHE)) {
             $this->trigger(self::EVENT_AFTER_PURGE_ALL_CACHE, $event);
@@ -97,13 +112,15 @@ class CachePurger extends BaseCachePurger
     // Private Methods
     // =========================================================================
 
-    private function isRunningInServd()
+    private function isOriginCachingEnabled(): bool
     {
-        return extension_loaded('redis') && !empty(getenv('REDIS_STATIC_CACHE_DB'));
+        return extension_loaded('redis')
+            && !empty(getenv('REDIS_STATIC_CACHE_DB'))
+            && getenv('SERVD_CACHE_ENABLED') === 'true';
     }
 
-    private function isStaticCachingEnabled()
+    private function isEdgeCachingEnabled(): bool
     {
-        return getenv('SERVD_CACHE_ENABLED') === 'true';
+        return getenv('SERVD_EDGE_CACHING') === 'true';
     }
 }
