@@ -39,7 +39,25 @@ trait Purger
 
     private function purgeEdgeCacheForUrls(array $urls)
     {
-        return $this->sendEdgeCacheRequest(['urls' => implode(',', $urls)]);
+        return $this->sendEdgeCacheRequest(['urls' => implode(',', $this->normalizeUrlsForPurge($urls))]);
+    }
+
+    private function normalizeUrlsForPurge(array $urls): array
+    {
+        foreach ($urls as $url) {
+            $urlParts = parse_url($url);
+            if (empty($urlParts['path']) || $urlParts['path'] == '/') {
+                continue;
+            }
+            $query = isset($urlParts['query']) ? '?' . $urlParts['query'] : '';
+            $base = $urlParts['scheme'] . '://' . $urlParts['host'];
+            if (substr($urlParts['path'], -1) == '/') {
+                $urls[] = $base . substr($urlParts['path'], 0, -1) . $query;
+            } else {
+                $urls[] = $base . $urlParts['path'] . '/' . $query;
+            }
+        }
+        return array_unique($urls);
     }
 
     private function sendEdgeCacheRequest($payload = [])
