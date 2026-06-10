@@ -191,18 +191,19 @@ class StaticCache extends Component
 
     private function registerEventHandlers()
     {
-
         Event::on(
             ClearCaches::class,
             ClearCaches::EVENT_REGISTER_CACHE_OPTIONS,
             function (RegisterCacheOptionsEvent $event) {
-                $event->options[] = [
-                    'key' => 'servd-static-cache',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Origin Static Cache'),
-                    'action' => function () {
-                        Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
-                    },
-                ];
+                if ($this->originEnabled) {
+                    $event->options[] = [
+                        'key' => 'servd-static-cache',
+                        'label' => Craft::t('servd-asset-storage', 'Servd Origin Static Cache'),
+                        'action' => function () {
+                            Queue::push(new PurgeEnvironmentJob(), StaticCache::purgePriority());
+                        },
+                    ];
+                }
 
                 $event->options[] = [
                     'key' => 'servd-edge-caches',
