@@ -19,6 +19,10 @@ class DynamicContentController extends Controller
             return $this->asFailure('Not to be used with control panel requests');
         }
 
+        if (getenv('SERVD_EDGE_CACHING') === 'true') {
+            Craft::$app->getResponse()->getHeaders()->set('Cache-Control', 'no-store, private');
+        }
+
         $seomatic = Craft::$app->plugins->getPlugin('seomatic');
         if (!empty($seomatic)) {
             $seomatic::$plugin->settings->renderEnabled = false;
