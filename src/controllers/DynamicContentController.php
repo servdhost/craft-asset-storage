@@ -5,6 +5,9 @@ namespace servd\AssetStorage\controllers;
 use Craft;
 use craft\web\Controller;
 use craft\web\Request;
+use craft\helpers\App;
+use servd\AssetStorage\Plugin;
+use yii\web\NotFoundHttpException;
 
 class DynamicContentController extends Controller
 {
@@ -13,6 +16,11 @@ class DynamicContentController extends Controller
 
     public function actionGetContent()
     {
+        $settings = Plugin::$plugin->getSettings();
+        if (!App::env('SERVD_CACHE_ENABLED') || $settings->disableDynamic) {
+            throw new NotFoundHttpException();
+        }
+
         /** @var Request $req */
         $req = Craft::$app->getRequest();
         if ($req->getIsCpRequest()) {
