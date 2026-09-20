@@ -17,7 +17,9 @@ class DynamicContentController extends Controller
     public function actionGetContent()
     {
         $settings = Plugin::$plugin->getSettings();
-        if (!App::env('SERVD_CACHE_ENABLED') || $settings->disableDynamic) {
+        $isLocal = in_array(App::env('ENVIRONMENT') ?? App::env('CRAFT_ENVIRONMENT'), ['local', 'dev'], true);
+
+        if (!$isLocal && (!App::env('SERVD_CACHE_ENABLED') || $settings->disableDynamic)) {
             throw new NotFoundHttpException();
         }
 
