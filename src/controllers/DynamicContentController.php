@@ -17,7 +17,9 @@ class DynamicContentController extends Controller
     public function actionGetContent()
     {
         $settings = Plugin::$plugin->getSettings();
-        if (!App::env('SERVD_CACHE_ENABLED') || $settings->disableDynamic) {
+        $isLocal = in_array(App::env('ENVIRONMENT') ?? App::env('CRAFT_ENVIRONMENT'), ['local', 'dev'], true);
+
+        if (!$isLocal && (!App::env('SERVD_CACHE_ENABLED') || $settings->disableDynamic)) {
             throw new NotFoundHttpException();
         }
 
@@ -37,7 +39,6 @@ class DynamicContentController extends Controller
             $blocks = json_decode($req->getRawBody(), true);
 
             $response = ['blocks' => []];
-
             foreach ($blocks as $block) {
                 if (!isset($block['id']) || !isset($block['siteId']) || !isset($block['template']) || !isset($block['args'])) {
                     Craft::warning('Invalid dynamic block request - required parameter missing', 'servd-asset-storage');
