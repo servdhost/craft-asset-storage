@@ -66,6 +66,10 @@ class DynamicContentController extends Controller
         } else {
             //ESI can only use get requests and only contain a single block
 
+            if (App::env('SERVD_ESI_ENABLED') !== 'true') {
+                throw new NotFoundHttpException();
+            }
+
             //Make sure the request has a blocks query param
             $blocks = $req->getQueryParam('blocks');
             if (empty($blocks)) {
