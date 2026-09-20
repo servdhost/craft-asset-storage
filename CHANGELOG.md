@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.7.1 - 2026-09-20
+
+### Fixed
+
+- Fixed dynamic includes not working on local environments
+
 ## 4.2.7 - 2026-09-20 [CRITICAL]
 
 ### Fixed
