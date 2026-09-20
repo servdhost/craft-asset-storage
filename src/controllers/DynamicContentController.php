@@ -43,7 +43,7 @@ class DynamicContentController extends Controller
                     Craft::warning('Invalid dynamic block request - supplied template failed security check: ' . $block['template'] , 'servd-asset-storage');
                     continue;
                 }
-                $args = unserialize(gzuncompress(base64_decode($block['args'])));
+                $args = unserialize(gzuncompress(base64_decode($block['args'])), ['allowed_classes' => false]);
                 $args = $this->rehydrateArgs($args);
 
                 Craft::$app->getSites()->setCurrentSite($siteId);
@@ -64,7 +64,7 @@ class DynamicContentController extends Controller
                 return $this->asErrorJson('No blocks specified');
             }
 
-            $blocks = unserialize(gzuncompress(base64_decode($blocks)));
+            $blocks = unserialize(gzuncompress(base64_decode($blocks)), ['allowed_classes' => false]);
 
             $response = ['blocks' => []];
             foreach ($blocks as $block) {
