@@ -6,6 +6,11 @@
 
 - Fixed a remote code execution vulnerability
 
+### Updated
+
+- Updated DynamicContentController#actionGetContent to throw a NotFoundHttpException if static caching or disableDynamic plugin setting is disabled
+- Updated CsrfTokenController#actionGetToken to throw a NotFoundHttpException if static caching or injectCors plugin setting is disabled
+
 ## 4.2.6 - 2026-06-08
 
 ### Fixed
