@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.6 - 2026-09-20 [CRITICAL]
+
+### Fixed
+
+- Fixed a remote code execution vulnerability
+
 ## 3.7.5.1 - 2026-03-24
 
 ### Updated
