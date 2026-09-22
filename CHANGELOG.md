@@ -1,5 +1,12 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.8 - 2026-09-22
+
+### Added
+
+- Added `forceEnableStaticCachingControllers` plugin setting to enable static caching actions (dynamic content includes and CSRF token injection) when static caching is not enabled
+
+
 ## 2.11.7.1 - 2026-09-20
 
 ### Fixed
