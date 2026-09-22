@@ -15,7 +15,7 @@ class CsrfTokenController extends Controller
     public function actionGetToken()
     {
         $settings = Plugin::$plugin->getSettings();
-        if (!App::env('SERVD_CACHE_ENABLED') || !$settings->injectCors) {
+        if ((!App::env('SERVD_CACHE_ENABLED') && !$settings->forceEnableStaticCachingControllers) || !$settings->injectCors) {
             throw new NotFoundHttpException();
         }
 
