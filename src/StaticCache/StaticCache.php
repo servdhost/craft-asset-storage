@@ -27,12 +27,14 @@ use craft\services\Structures;
 use craft\utilities\ClearCaches;
 use craft\web\Application;
 use craft\web\View;
-use servd\AssetStorage\StaticCache\Jobs\PurgeTagJob;
+use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
+use servd\AssetStorage\StaticCache\Ledge;
+
 class StaticCache extends Component
 {
 
@@ -284,8 +286,29 @@ class StaticCache extends Component
                 'Associated the url: ' . $url . ' with tags: ' .  implode(', ', $tags),
                 __METHOD__
             );
+            if (getenv('SERVD_EDGE_CACHING') == 'true') {
+                $this->setCacheTagHeader($tags);
+            }
             Craft::endProfile('StaticCache::Event::View::EVENT_AFTER_RENDER_PAGE_TEMPLATE', __METHOD__);
         });
+    }
+
+    private function setCacheTagHeader(array $tags)
+    {
+        $headers = Craft::$app->getResponse()->getHeaders();
+        if ($headers->has('Cache-Tag')) { return; }
+
+        $settings = Plugin::$plugin->getSettings();
+        $projectSlug = $settings->getProjectSlug();
+
+        $prefix = sprintf('%x', crc32($projectSlug . getenv('ENVIRONMENT')));
+
+        $cacheTags = [$prefix];
+        foreach ($tags as $tag) {
+            $cacheTags[] = $prefix . ':' . $tag;
+        }
+
+        $headers->add('Cache-Tag', implode(',', $cacheTags));
     }
 
     private function registerLoggedInHandlers()
@@ -405,12 +428,10 @@ class StaticCache extends Component
             __METHOD__
         );
 
-        foreach ($updatedTags as $tag) {
-            \craft\helpers\Queue::push(new PurgeTagJob([
-                'description' => 'Purge static cache by tag',
-                'tag' => $tag
-            ]), static::purgePriority());
-        }
+        \craft\helpers\Queue::push(new PurgeTagsJob([
+            'description' => 'Purge static cache by tags',
+            'tags' => $updatedTags
+        ]), static::purgePriority());
     }
 
     private function getTagsFromElementUpdateEvent($event)
@@ -498,32 +519,51 @@ class StaticCache extends Component
         }
     }
 
-    public function clearEdgeCaches()
+    public static function clearEdgeCachesUrl()
     {
-        $settings = Plugin::$plugin->getSettings();
-
-        $url = 'https://app.servd.host/clear-edge-caches';
         if (!empty(getenv('SERVD_CLEAR_EDGE_CACHES_URL'))) {
-            $url = getenv('SERVD_CLEAR_EDGE_CACHES_URL');
+            return getenv('SERVD_CLEAR_EDGE_CACHES_URL');
         }
+        return 'https://app.servd.host/clear-edge-caches';
+    }
 
+    public function purgeUrlsForTag($tag): void
+    {
+        $tags = Plugin::$plugin->get('tags');
+        $tags->iterateUrlsForTag($tag, function ($urls) use ($tags) {
+            try {
+                Ledge::purgeUrls($urls);
+                foreach ($urls as $url) {
+                    $tags->clearTagsForUrl($url);
+                }
+            } catch (Exception $e) {
+                throw new Exception("Failed to purge all urls: " . $e->getMessage());
+            }
+        });
+    }
+
+    public function clearEdgeCaches($tags)
+    {
         if (!getenv('ENVIRONMENT')) {
             throw new Exception("No ENVIRONMENT environment variable detected");
         }
 
+        $settings = Plugin::$plugin->getSettings();
+        $payload = [
+            'slug' => $settings->getProjectSlug(),
+            'environment' => getenv('ENVIRONMENT'),
+            'key' => $settings->getSecurityKey()
+        ];
+        if (!is_null($tags)) {
+            $payload['tags'] = implode(',', $tags);
+        }
+
         try {
             $client = new Client();
-            $client->post($url, [
-                'json' => [
-                    'slug' => $settings->getProjectSlug(),
-                    'key' => $settings->getSecurityKey(),
-                    'environment' => getenv('ENVIRONMENT')
-                ]
-            ]);
+            $client->post(static::clearEdgeCachesUrl(), ['json' => $payload]);
         } catch (GuzzleException $e) {
             throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
         }
-
         Craft::info('Servd ' . getenv('ENVIRONMENT') . ' edge caches cleared.');
     }
 
