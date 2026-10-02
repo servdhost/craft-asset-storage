@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.9 - 2026-10-02
+
+### Fixed
+
+- Fixed PHP session `has()` check triggering session open when headers have already been sent
+
 ## 2.11.8 - 2026-09-22
 
 ### Added
