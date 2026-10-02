@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.9 - 2026-10-02
+
+### Fixed
+
+- Fixed `SessionHandler::has()` incorrectly opening a Redis session when headers have already been sent
+
 ## 4.2.8 - 2026-09-22
 
 ### Added
