@@ -1,5 +1,35 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.8 - 2026-10-02
+
+### Fixed
+
+- Fixed PHP session `has()` check triggering session open when headers have already been sent
+
+## 3.7.7 - 2026-09-22
+
+### Added
+
+- Added `forceEnableStaticCachingControllers` plugin setting to enable static caching actions (dynamic content includes and CSRF token injection) when static caching is not enabled
+
+## 3.7.6.1 - 2026-09-20
+
+### Fixed
+
+- Fixed dynamic includes not working on local environments
+
+## 3.7.6 - 2026-09-20 [CRITICAL]
+
+### Fixed
+
+- Fixed a remote code execution vulnerability
+
+### Updated
+
+- Updated DynamicContentController#actionGetContent to throw a NotFoundHttpException if static caching or disableDynamic plugin setting is disabled
+- Updated DynamicContentController#actionGetContent ESI path to throw a NotFoundHttpException if ESI is disabled
+- Updated CsrfTokenController#actionGetToken to throw a NotFoundHttpException if static caching or injectCors plugin setting is disabled
+
 ## 3.7.5.1 - 2026-03-24
 
 ### Updated

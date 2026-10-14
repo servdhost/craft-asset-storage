@@ -80,6 +80,14 @@
     }) }}
 
 	{{ forms.lightswitchField({
+        label: "Force Enable Static Caching Actions",
+        instructions: "Enable the static caching actions (dynamic content includes and CSRF token injection) even when Servd's static caching is not enabled.",
+        id: 'forceEnableStaticCachingControllers',
+        name: 'forceEnableStaticCachingControllers',
+        on: settings.forceEnableStaticCachingControllers
+    }) }}
+
+	{{ forms.lightswitchField({
         label: "Disable Dynamic Content Includes",
         instructions: "Render all {% dynamicInclude %} tags as normal {% include %} tags. This can be useful for testing.",
         id: 'disableDynamic',
