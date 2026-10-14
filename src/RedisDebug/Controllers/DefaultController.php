@@ -15,9 +15,9 @@ class DefaultController extends ControllersDefaultController
     {
         parent::__construct($id, $module, $config);
 
-        $redisDb = intval(getenv('REDIS_DB'));
+        $redisDb = intval(\craft\helpers\App::env('REDIS_DB'));
         $redis = new \Redis();
-        $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'));
+        $redis->connect(\craft\helpers\App::env('REDIS_HOST'), \craft\helpers\App::env('REDIS_PORT'));
         $redis->select($redisDb);
         $this->redisCon = $redis;
     }

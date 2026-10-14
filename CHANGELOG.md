@@ -1,5 +1,132 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.9 - 2026-10-02
+
+### Fixed
+
+- Fixed `SessionHandler::has()` incorrectly opening a Redis session when headers have already been sent
+
+## 4.2.8 - 2026-09-22
+
+### Added
+
+- Added `forceEnableStaticCachingControllers` plugin setting to enable static caching actions (dynamic content includes and CSRF token injection) when static caching is not enabled
+
+
+## 4.2.7.1 - 2026-09-20
+
+### Fixed
+
+- Fixed dynamic includes not working on local environments
+
+## 4.2.7 - 2026-09-20 [CRITICAL]
+
+### Fixed
+
+- Fixed a remote code execution vulnerability
+
+### Updated
+
+- Updated DynamicContentController#actionGetContent to throw a NotFoundHttpException if static caching or disableDynamic plugin setting is disabled
+- Updated DynamicContentController#actionGetContent ESI path to throw a NotFoundHttpException if ESI is disabled
+- Updated CsrfTokenController#actionGetToken to throw a NotFoundHttpException if static caching or injectCors plugin setting is disabled
+
+## 4.2.6 - 2026-06-08
+
+### Fixed
+
+- Cover the possibility of type conversion of boolean env vars
+
+## 4.2.5 - 2026-06-08
+
+### Updated
+
+- Switched all getenv() calls out for craft\helpers\App::env() calls to maintain compatibility with Craft's botstrap.php dotenv changes
+
+## 4.2.4.2 - 2026-03-24
+
+### Updated
+
+- Fixed `Calling unknown method servd\AssetStorage\console\controllers\LocalController::fetchEnvironments()` error
+
+## 4.2.4.1 - 2026-03-20
+
+### Updated
+
+- Moved the "Disable Push Console Commands" setting to a more appropriate place
+
+## 4.2.4 - 2026-03-20
+
+### Added
+
+- Added "Disable Push Console Commands" plugin setting to disable local/push-database and local/push-assets console commands.
+
+### Updated
+
+- Updated the pull and push commands to get an up-to-date list of active environments
+
+### Fixed
+
+- Fixed a bug where a non-image asset is used as a thumbnail image when the disable transforms setting is enabled on it's filesystem.
+
+## 4.2.3 - 2026-01-20
+
+### Fixed
+
+- Fixed an class reference issue introduced by an update to the AWS SDK Package
+
+## 4.2.2 - 2025-11-28
+
+### Added
+
+- Added the "Disable SERVD_LOGGED_IN_STATUS cookie" plugin setting. Note that enabling this setting will prevent the "Logged in users skip the cache" static caching setting from working.
+- Added a setting for Servd Asset Storage filesystems which allows transforms and optimisations to be disabled for specific filesystems.
+
+## 4.2.1 - 2025-11-07
+
+### Updated
+
+- Set SERVD_LOGGED_IN_STATUS cookie to be 'secure' by default
+
+## 4.2.0 - 2025-09-17
+
+### Fixed
+
+- Encoding issue with commas in filenames.
+
+### Added
+
+- Added `clear-caches/servd-edge-caches` CLI command.
+
+### Removed
+
+- Removed deprecated `clear-caches/servd-asset-storage` CLI command.
+
+## 4.1.3 - 2025-08-22
+
+### Fixed
+
+- Fixed a bug that prevented the focal point coordinates from being passed to the Servd transformer if either the X or Y values were set to zero.
+
+## 4.1.2 - 2025-07-21
+
+### Fixed
+
+- Added support for local mysql client CLI v8.4 to database push/pull commands
+
+
+## 4.1.1 - 2025-07-19
+
+### Updated
+
+- Store SSH keys in runtime directory to prevent git trying to commit them
+
+## 4.1.0 - 2025-07-17
+
+### Updated
+
+- Switched database push/pull CLI commands to use SSH Session tunnelling 
+
 ## 4.0.17 - 2025-06-13
 
 ### Added

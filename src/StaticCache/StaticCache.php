@@ -30,6 +30,8 @@ use servd\AssetStorage\StaticCache\Jobs\PurgeTagsJob;
 use servd\AssetStorage\StaticCache\Twig\Extension;
 use yii\base\InvalidConfigException;
 use yii\web\View as WebView;
+use GuzzleHttp\Client;
+use GuzzleHttp\Exception\GuzzleException;
 
 class StaticCache extends Component
 {
@@ -39,8 +41,8 @@ class StaticCache extends Component
 
     public static function purgePriority(): int
     {
-        return is_numeric(getenv('SERVD_PURGE_PRIORITY'))
-            ? intval(getenv('SERVD_PURGE_PRIORITY'))
+        return is_numeric(\craft\helpers\App::env('SERVD_PURGE_PRIORITY'))
+            ? intval(\craft\helpers\App::env('SERVD_PURGE_PRIORITY'))
             : 1025;
     }
 
@@ -54,14 +56,14 @@ class StaticCache extends Component
         }
 
         // If static caching is disabled, this component does nothing
-        if (getenv('SERVD_CACHE_ENABLED') !== 'true') {
+        if (!\craft\helpers\App::env('SERVD_CACHE_ENABLED')) {
             return;
         }
 
         if (
-            empty(getenv('REDIS_STATIC_CACHE_DB'))
-            || empty(getenv('REDIS_HOST'))
-            || empty(getenv('REDIS_PORT'))
+            empty(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'))
+            || empty(\craft\helpers\App::env('REDIS_HOST'))
+            || empty(\craft\helpers\App::env('REDIS_PORT'))
         ) {
             return;
         }
@@ -205,14 +207,11 @@ class StaticCache extends Component
                     },
                 ];
 
-                /***
-                 * Deprecated cli key
-                 */
                 $event->options[] = [
-                    'key' => 'servd-asset-storage',
-                    'label' => Craft::t('servd-asset-storage', 'Servd Static Cache (Deprecated)'),
+                    'key' => 'servd-edge-caches',
+                    'label' => Craft::t('servd-asset-storage', 'Servd Edge Caches'),
                     'action' => function () {
-                        $this->clearStaticCache();
+                        $this->clearEdgeCaches();
                     },
                 ];
             }
@@ -277,7 +276,7 @@ class StaticCache extends Component
 
             $request = \Craft::$app->getRequest();
             $url = $request->getHostInfo() . $request->getUrl();
-            if (getenv('SERVD_CACHE_INCLUDE_GET') === 'false') {
+            if (!\craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') || \craft\helpers\App::env('SERVD_CACHE_INCLUDE_GET') === 'false') {
                 $url = preg_replace('/\?.*/', '', $url);
             }
             $tags = Plugin::$plugin->get('tags')->associateCurrentRequestTagsWithUrl($url);
@@ -319,7 +318,7 @@ class StaticCache extends Component
     {
         Event::on(Application::class, Application::EVENT_INIT, function () {
             $user = Craft::$app->getUser();
-            if ($user->isGuest) {
+            if ($user->isGuest || Plugin::$plugin->getSettings()->disableLoggedInCookie) {
                 Craft::$app->response->cookies->remove(new \yii\web\Cookie([
                     'name' => 'SERVD_LOGGED_IN_STATUS',
                     'domain' => Craft::$app->getConfig()->getGeneral()->defaultCookieDomain,
@@ -333,7 +332,8 @@ class StaticCache extends Component
                         'expires' => $expire,
                         'path' => '/',
                         'domain' => $domain,
-                        'samesite' => null
+                        'samesite' => null,
+                        'secure' => true
                     ]);
                 } else {
                     setcookie('SERVD_LOGGED_IN_STATUS', $cookieValue, $expire, '/', $domain, false, false);
@@ -501,11 +501,11 @@ class StaticCache extends Component
     private function clearRedisBasedCache()
     {
         try {
-            $redisDb = intval(getenv('REDIS_STATIC_CACHE_DB'));
+            $redisDb = intval(\craft\helpers\App::env('REDIS_STATIC_CACHE_DB'));
             $redis = new Redis();
 
             //Clear out content
-            $redis->connect(getenv('REDIS_HOST'), getenv('REDIS_PORT'), 5);
+            $redis->connect(\craft\helpers\App::env('REDIS_HOST'), \craft\helpers\App::env('REDIS_PORT'), 5);
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
@@ -515,14 +515,43 @@ class StaticCache extends Component
 
         try {
             //Clear out metadata - ledge stores cached redirects here
-            $qlessHost = str_ireplace('-redis.', '-redis-qless.', getenv('REDIS_HOST'));
-            $redis->connect($qlessHost, getenv('REDIS_PORT'), 5);
+            $qlessHost = str_ireplace('-redis.', '-redis-qless.', \craft\helpers\App::env('REDIS_HOST'));
+            $redis->connect($qlessHost, \craft\helpers\App::env('REDIS_PORT'), 5);
             $redis->select($redisDb);
             $redis->flushDb(true);
             $redis->close();
         } catch (Exception $e) {
             //Do nothing - this is expected most of the time
         }
+    }
+
+    public function clearEdgeCaches()
+    {
+        $settings = Plugin::$plugin->getSettings();
+
+        $url = 'https://app.servd.host/clear-edge-caches';
+        if (!empty(\craft\helpers\App::env('SERVD_CLEAR_EDGE_CACHES_URL'))) {
+            $url = \craft\helpers\App::env('SERVD_CLEAR_EDGE_CACHES_URL');
+        }
+
+        if (!\craft\helpers\App::env('ENVIRONMENT')) {
+            throw new Exception("No ENVIRONMENT environment variable detected");
+        }
+
+        try {
+            $client = new Client();
+            $client->post($url, [
+                'json' => [
+                    'slug' => $settings->getProjectSlug(),
+                    'key' => $settings->getSecurityKey(),
+                    'environment' => \craft\helpers\App::env('ENVIRONMENT')
+                ]
+            ]);
+        } catch (GuzzleException $e) {
+            throw new Exception("Failed to contact Servd's edge cache clear endpoint: " . $e->getMessage());
+        }
+
+        Craft::info('Servd ' . \craft\helpers\App::env('ENVIRONMENT') . ' edge caches cleared.');
     }
 
     private function hookCPSidebarTemplate()

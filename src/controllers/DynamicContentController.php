@@ -3,8 +3,11 @@
 namespace servd\AssetStorage\controllers;
 
 use Craft;
+use craft\helpers\App;
 use craft\web\Controller;
 use craft\web\Request;
+use servd\AssetStorage\Plugin;
+use yii\web\NotFoundHttpException;
 
 class DynamicContentController extends Controller
 {
@@ -13,6 +16,13 @@ class DynamicContentController extends Controller
 
     public function actionGetContent()
     {
+        $settings = Plugin::$plugin->getSettings();
+        $isLocal = in_array(App::env('ENVIRONMENT') ?? App::env('CRAFT_ENVIRONMENT'), ['local', 'dev'], true);
+
+        if (!$isLocal && ((!App::env('SERVD_CACHE_ENABLED') && !$settings->forceEnableStaticCachingControllers) || $settings->disableDynamic)) {
+            throw new NotFoundHttpException();
+        }
+
         /** @var Request $req */
         $req = Craft::$app->getRequest();
         if ($req->getIsCpRequest()) {
@@ -29,7 +39,6 @@ class DynamicContentController extends Controller
             $blocks = json_decode($req->getRawBody(), true);
 
             $response = ['blocks' => []];
-
             foreach ($blocks as $block) {
                 if (!isset($block['id']) || !isset($block['siteId']) || !isset($block['template']) || !isset($block['args'])) {
                     Craft::warning('Invalid dynamic block request - required parameter missing', 'servd-asset-storage');
@@ -43,7 +52,7 @@ class DynamicContentController extends Controller
                     Craft::warning('Invalid dynamic block request - supplied template failed security check: ' . $block['template'] , 'servd-asset-storage');
                     continue;
                 }
-                $args = unserialize(gzuncompress(base64_decode($block['args'])));
+                $args = unserialize(gzuncompress(base64_decode($block['args'])), ['allowed_classes' => false]);
                 $args = $this->rehydrateArgs($args);
 
                 Craft::$app->getSites()->setCurrentSite($siteId);
@@ -58,13 +67,17 @@ class DynamicContentController extends Controller
         } else {
             //ESI can only use get requests and only contain a single block
 
+            if (App::env('SERVD_ESI_ENABLED') !== 'true') {
+                throw new NotFoundHttpException();
+            }
+
             //Make sure the request has a blocks query param
             $blocks = $req->getQueryParam('blocks');
             if (empty($blocks)) {
                 return $this->asFailure('No blocks specified');
             }
 
-            $blocks = unserialize(gzuncompress(base64_decode($blocks)));
+            $blocks = unserialize(gzuncompress(base64_decode($blocks)), ['allowed_classes' => false]);
 
             $response = ['blocks' => []];
             foreach ($blocks as $block) {

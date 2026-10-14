@@ -9,7 +9,6 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
 use Aws\S3\S3Client;
 use Craft;
 use craft\flysystem\base\FlysystemFs;
@@ -35,6 +34,7 @@ class Fs extends FlysystemFs
     public $securityKey = '';
     public $cdnUrlPattern = '';
     public $optimiseUrlPattern = '';
+    public $disableTransforms = false;
 
     public $subfolder = ''; //Required for compatibility with Imager-X + Imgix
 

@@ -24,6 +24,9 @@ class Settings extends Model
     public $suppressWarnings = false;
     public $useLocalVolumes = false; // Removed in Craft 4 (kept to prevent model hydration errors)
     public $disableDynamic = false;
+    public $disableLoggedInCookie = false;
+    public $forceEnableStaticCachingControllers = false;
+    public $disablePushCommands = false;
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
     public $fsMapsEnabled = false;
@@ -119,7 +122,7 @@ class Settings extends Model
         if (!empty($this->projectSlug)) {
             return App::parseEnv($this->projectSlug);
         }
-        return getenv('SERVD_PROJECT_SLUG');
+        return \craft\helpers\App::env('SERVD_PROJECT_SLUG');
     }
 
     public function getSecurityKey()
@@ -127,7 +130,7 @@ class Settings extends Model
         if (!empty($this->securityKey)) {
             return App::parseEnv($this->securityKey);
         }
-        return getenv('SERVD_SECURITY_KEY');
+        return \craft\helpers\App::env('SERVD_SECURITY_KEY');
     }
 
     public function getAssetsEnvironment()
@@ -138,10 +141,10 @@ class Settings extends Model
                 return $overwrite;
             }
         }
-        if (!empty(getenv('SERVD_ASSETS_ENVIRONMENT'))) {
-            return App::parseEnv(getenv('SERVD_ASSETS_ENVIRONMENT'));
+        if (!empty(\craft\helpers\App::env('SERVD_ASSETS_ENVIRONMENT'))) {
+            return App::parseEnv(\craft\helpers\App::env('SERVD_ASSETS_ENVIRONMENT'));
         }
-        $environment = getenv('ENVIRONMENT');
+        $environment = \craft\helpers\App::env('ENVIRONMENT');
         if ('development' == $environment || 'staging' == $environment || 'production' == $environment) {
             return $environment;
         }

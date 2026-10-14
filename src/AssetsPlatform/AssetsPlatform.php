@@ -2,7 +2,8 @@
 
 namespace servd\AssetStorage\AssetsPlatform;
 
-use Aws\Handler\GuzzleV6\GuzzleHandler;
+use Aws\Handler\GuzzleV6\GuzzleHandler as GuzzleHandlerV6;
+use Aws\Handler\Guzzle\GuzzleHandler;
 use Craft;
 use craft\base\Component;
 use craft\elements\Asset;
@@ -15,7 +16,6 @@ use craft\events\RegisterComponentTypesEvent;
 use craft\events\ReplaceAssetEvent;
 use craft\helpers\App;
 use craft\helpers\Assets as AssetsHelper;
-use craft\helpers\Image as ImageHelper;
 use craft\models\ImageTransform;
 use craft\services\Assets;
 use Exception;
@@ -127,7 +127,11 @@ class AssetsPlatform extends Component
         $config['request_checksum_calculation'] = 'when_required';
         $config['response_checksum_validation'] = 'when_required';
         $client = Craft::createGuzzleClient();
-        $config['http_handler'] = new GuzzleHandler($client);
+        if (class_exists(GuzzleHandler::class)) {
+            $config['http_handler'] = new GuzzleHandler($client);
+        } else {
+            $config['http_handler'] = new GuzzleHandlerV6($client);
+        }
 
         return $config;
     }
@@ -145,7 +149,7 @@ class AssetsPlatform extends Component
 
     private function getSecurityToken($projectSlug, $securityKey)
     {
-        $securityTokenUrl = getenv('SECURITY_TOKEN_URL');
+        $securityTokenUrl = \craft\helpers\App::env('SECURITY_TOKEN_URL');
         if (empty($securityTokenUrl)) {
             $securityTokenUrl = static::DEFAULT_SECURITY_TOKEN_URL;
         }
@@ -230,7 +234,11 @@ class AssetsPlatform extends Component
                     if ($fs instanceof Fs) {
                         $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        }
                     }
                 }
             );
@@ -249,16 +257,16 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $width = $event->width;
-                        $height = $event->height;
-
-                        $transform = new ImageTransform([
-                            'height' => $height,
-                            'width' => $width,
-                            'interlace' => 'line',
-                        ]);
+                        if ($fs->disableTransforms) {
+                            return;
+                        }
 
                         $event->handled = true;
+                        $transform = new ImageTransform([
+                            'height' => $event->height,
+                            'width' => $event->width,
+                            'interlace' => 'line',
+                        ]);
                         $event->url = $this->handleAssetTransform($asset, $transform, false);
                     }
                 }
@@ -278,9 +286,12 @@ class AssetsPlatform extends Component
                     $fs = $asset->getVolume()->getFs();
 
                     if ($fs instanceof Fs) {
-                        $transform = $event->transform;
                         $event->handled = true;
-                        $event->url = $this->handleAssetTransform($asset, $transform, true);
+                        if ($fs->disableTransforms) {
+                            $event->url = $this->getFileUrl($asset);
+                        } else {
+                            $event->url = $this->handleAssetTransform($asset, $event->transform, true);
+                        }
                     }
                 }
             );
