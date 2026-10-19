@@ -4,7 +4,7 @@ namespace servd\AssetStorage\StaticCache;
 
 use Craft;
 use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\GuzzleException;
+use servd\AssetStorage\Plugin;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;

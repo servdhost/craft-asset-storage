@@ -76,8 +76,25 @@
         },
         id: 'cacheClearMode',
         name: 'cacheClearMode',
-        value: settings.cacheClearMode
+        value: settings.cacheClearMode,
+        toggle: true,
+        targetPrefix: 'cacheClearMode-'
     }) }}
+
+    <div id="cacheClearMode-tags" {% if settings.cacheClearMode != 'tags' %}class="hidden"{% endif %}>
+        {{ forms.selectField({
+            label: "Tag-Based Purge Mode",
+            instructions: "Determine how Servd's static cache handles existing cached content when URLs are purged using the Automated Tag Based Purge strategy.",
+            options: {
+                'invalidate' : 'Mark as expired, serve stale until next request',
+                'revalidate' : 'Mark as expired, immediately re-fetch from Craft',
+                'delete' : 'Remove from cache immediately',
+            },
+            id: 'staticCachePurgeMode',
+            name: 'staticCachePurgeMode',
+            value: settings.staticCachePurgeMode
+        }) }}
+    </div>
 
 	{{ forms.lightswitchField({
         label: "Force Enable Static Caching Actions",

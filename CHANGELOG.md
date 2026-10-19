@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 3.7.9 - 2026-10-19
+
+### Added
+
+- Added `staticCachePurgeMode` plugin setting to control how Servd's edge cache handles URLs when they are purged using the Automated Tag Based Purge strategy
+
 ## 3.7.8 - 2026-10-02
 
 ### Fixed
