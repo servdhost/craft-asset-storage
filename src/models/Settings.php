@@ -25,6 +25,7 @@ class Settings extends Model
     public $disableTransforms = false;
     public $adjustFeedmeLogs = false;
     public $imageAutoConversion = 'webp';
+    public $staticCachePurgeMode = 'invalidate';
 
     public function checkForType()
     {

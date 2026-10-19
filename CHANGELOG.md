@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.10 - 2026-10-19
+
+### Added
+
+- Added `staticCachePurgeMode` plugin setting to control how static cache handles URLs when they are purged using the Automated Tag Based Purge strategy
+
 ## 2.11.9 - 2026-10-02
 
 ### Fixed

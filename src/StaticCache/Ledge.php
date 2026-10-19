@@ -4,7 +4,7 @@ namespace servd\AssetStorage\StaticCache;
 
 use Craft;
 use GuzzleHttp\Exception\BadResponseException;
-use GuzzleHttp\Exception\GuzzleException;
+use servd\AssetStorage\Plugin;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
 use Psr\Http\Message\RequestInterface;
@@ -63,10 +63,11 @@ class Ledge
                     'proxy' => null,
                 ]);
                 try {
+                    $purgeMode = Plugin::$plugin->getSettings()->staticCachePurgeMode ?? 'invalidate';
                     $client->request('PURGE', '/', [
                         'json' => [
                             'uris' => $hostUrls,
-                            'purge_mode' => 'invalidate'
+                            'purge_mode' => $purgeMode
                         ],
                         'allow_redirects' => false
                     ]);
