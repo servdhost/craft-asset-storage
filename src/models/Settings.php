@@ -34,6 +34,7 @@ class Settings extends Model
     public $imageAutoConversion = 'webp';
     public $transformSvgs = 'no';
     public $clearCdnCacheWhenAssetChanges = true;
+    public $staticCachePurgeMode = 'invalidate';
 
     public function checkForType()
     {
