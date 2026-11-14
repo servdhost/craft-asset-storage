@@ -41,9 +41,9 @@ class DefaultController extends ControllersDefaultController
 
             if ($content === false) {
                 $this->_manifest = [];
+            } else {
+                $this->_manifest = array_reverse($this->unserialize($content), true);
             }
-
-            $this->_manifest = array_reverse($this->unserialize($content), true);
 
         }
 
