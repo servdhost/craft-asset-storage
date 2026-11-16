@@ -1,5 +1,15 @@
 # Release Notes for Servd Assets and Helpers
 
+## 4.2.11 - 2026-11-16
+
+### Fixed
+
+- Fixed TypeError when Redis has no debugbar-manifest key
+
+### Changed
+
+- Changed the default Cache Clear Strategy to Automated Tag Based Purge
+
 ## 4.2.10 - 2026-10-19
 
 ### Added
