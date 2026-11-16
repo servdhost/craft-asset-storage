@@ -1,5 +1,11 @@
 # Release Notes for Servd Assets and Helpers
 
+## 2.11.11 - 2026-11-16
+
+### Changed
+
+- Changed the default Cache Clear Strategy to Automated Tag Based Purge
+
 ## 2.11.10 - 2026-10-19
 
 ### Added
