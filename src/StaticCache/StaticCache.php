@@ -352,24 +352,35 @@ class StaticCache extends Component
             return;
         }
 
-        Event::on(Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Element::class, Structures::EVENT_AFTER_INSERT_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Element::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
-        Event::on(Entries::class, Entries::EVENT_AFTER_SAVE_SECTION, function ($event) {
-            $this->handleUpdateEvent($event);
-        });
+        foreach (static::getElementUpdateEvents() as [$class, $name]) {
+            Event::on($class, $name, function ($event) {
+                $this->handleUpdateEvent($event);
+            });
+        }
+    }
+
+    /**
+     * The events that can make a cached page stale, as [class, event name] pairs.
+     *
+     * Structures triggers its insert and move events on the Structures service, not on the element.
+     * Craft 5.9 replaced EVENT_AFTER_MOVE_ELEMENT with EVENT_AFTER_UPDATE_ELEMENT and no longer
+     * triggers the old event, so both are registered.
+     */
+    public static function getElementUpdateEvents(): array
+    {
+        $events = [
+            [Elements::class, Elements::EVENT_AFTER_SAVE_ELEMENT],
+            [Elements::class, Elements::EVENT_AFTER_DELETE_ELEMENT],
+            [Structures::class, Structures::EVENT_AFTER_INSERT_ELEMENT],
+            [Structures::class, Structures::EVENT_AFTER_MOVE_ELEMENT],
+            [Entries::class, Entries::EVENT_AFTER_SAVE_SECTION],
+        ];
+
+        if (defined(Structures::class . '::EVENT_AFTER_UPDATE_ELEMENT')) {
+            $events[] = [Structures::class, Structures::EVENT_AFTER_UPDATE_ELEMENT];
+        }
+
+        return $events;
     }
 
     private function handleUpdateEvent(Event $event)
@@ -453,6 +464,11 @@ class StaticCache extends Component
                 if (!$event->isNew) {
                     $tags[] = Tags::ELEMENT_ID_PREFIX . $event->element->getId();
                 }
+                // Pages that list a structure are tagged with its ID. An element that was hidden
+                // at render time (disabled, expired) never tagged those pages with its own ID.
+                if (isset($event->element->structureId)) {
+                    $tags[] = Tags::STRUCTURE_ID_PREFIX . $event->element->structureId;
+                }
             }
         }
 
@@ -464,7 +480,7 @@ class StaticCache extends Component
             $tags[] = Tags::STRUCTURE_ID_PREFIX . $event->structureId;
         }
 
-        return $tags;
+        return array_values(array_unique($tags));
     }
 
 
