@@ -34,6 +34,11 @@
             "servd\\AssetStorage\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "servd\\AssetStorage\\Tests\\": "tests/"
+        }
+    },
     "extra": {
         "name": "Servd Assets and Helpers",
         "handle": "servd-asset-storage",
@@ -42,7 +47,7 @@
     "minimum-stability": "dev",
     "prefer-stable": true,
     "require-dev": {
-
+        "phpunit/phpunit": "^10.5 || ^11.0"
     },
     "config": {
         "allow-plugins": {
